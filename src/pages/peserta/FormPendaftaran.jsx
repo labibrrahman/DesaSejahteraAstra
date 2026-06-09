@@ -78,7 +78,7 @@ const kategoriByPilar = {
   kesehatan: ['Posyandu & Gizi', 'Sanitasi & Air Bersih', 'Kesehatan Ibu & Anak'],
   pendidikan: ['Beasiswa & Pendidikan', 'Perpustakaan Desa', 'Pelatihan Vokasi'],
   lingkungan: ['Konservasi Hutan', 'Pertanian Berkelanjutan', 'Energi Terbarukan'],
-  kewirausahaan: ['UMKM Kriya & Kerajinan', 'UMKM Kuliner & Pangan Lokal', 'Pariwisata Desa'],
+  kewirausahaan: ['Inovasi Kelompok', 'Tokoh Penggerak Individu'],
 };
 
 const wilayahOptions = {

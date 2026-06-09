@@ -260,7 +260,7 @@ const LandingPage = () => {
               >
                 Daftar Sekarang
               </Button>
-              <Button
+              {/* <Button
                 size="large"
                 ghost
                 block={isMobile}
@@ -275,7 +275,7 @@ const LandingPage = () => {
                 onClick={() => scrollTo('tentang-section')}
               >
                 Pelajari Lebih Lanjut <ArrowRightOutlined />
-              </Button>
+              </Button> */}
             </Space>
           </div>
         </div>

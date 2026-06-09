@@ -242,7 +242,7 @@ const MasterWilayah = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <Title level={3} style={{ margin: 0 }}>Master Wilayah</Title>
           <Text type="secondary">Kelola data wilayah administratif</Text>
@@ -254,7 +254,7 @@ const MasterWilayah = () => {
 
       <Card>
         <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} />
-        <Table columns={getColumns()} dataSource={getData()} pagination={false} />
+        <Table columns={getColumns()} dataSource={getData()} pagination={false} scroll={{ x: 500 }} />
       </Card>
 
       <Modal

@@ -117,52 +117,32 @@ const AdminDashboard = () => {
       </div>
 
       {/* Statistics Cards */}
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={6}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={12} sm={6}>
           <Card>
-            <Statistic
-              title="Total Pendaftar"
-              value={statisticsData.total_pendaftar}
-              prefix={<TeamOutlined />}
-              valueStyle={{ color: '#1890ff' }}
-            />
+            <Statistic title="Total Pendaftar" value={statisticsData.total_pendaftar} prefix={<TeamOutlined />} valueStyle={{ color: '#1890ff' }} />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={12} sm={6}>
           <Card>
-            <Statistic
-              title="Menunggu Screening"
-              value={statisticsData.menunggu_screening}
-              prefix={<ClockCircleOutlined />}
-              valueStyle={{ color: '#faad14' }}
-            />
+            <Statistic title="Menunggu Screening" value={statisticsData.menunggu_screening} prefix={<ClockCircleOutlined />} valueStyle={{ color: '#faad14' }} />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={12} sm={6}>
           <Card>
-            <Statistic
-              title="Sedang Dinilai"
-              value={statisticsData.sedang_dinilai}
-              prefix={<FileTextOutlined />}
-              valueStyle={{ color: '#1890ff' }}
-            />
+            <Statistic title="Sedang Dinilai" value={statisticsData.sedang_dinilai} prefix={<FileTextOutlined />} valueStyle={{ color: '#1890ff' }} />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={12} sm={6}>
           <Card>
-            <Statistic
-              title="Selesai Dinilai"
-              value={statisticsData.selesai_dinilai}
-              prefix={<CheckCircleOutlined />}
-              valueStyle={{ color: '#52c41a' }}
-            />
+            <Statistic title="Selesai Dinilai" value={statisticsData.selesai_dinilai} prefix={<CheckCircleOutlined />} valueStyle={{ color: '#52c41a' }} />
           </Card>
         </Col>
       </Row>
 
-      <Row gutter={24}>
+      <Row gutter={[24, 24]}>
         {/* Pilar Statistics */}
-        <Col span={8}>
+        <Col xs={24} lg={8}>
           <Card title="Statistik per Pilar" style={{ marginBottom: 24 }}>
             {pilarStats.map((pilar, index) => (
               <div key={index} style={{ marginBottom: 16 }}>
@@ -170,23 +150,13 @@ const AdminDashboard = () => {
                   <Text>{pilar.name}</Text>
                   <Text strong>{pilar.count}</Text>
                 </div>
-                <Progress
-                  percent={Math.round((pilar.count / statisticsData.total_pendaftar) * 100)}
-                  strokeColor={pilar.color}
-                  showInfo={false}
-                />
+                <Progress percent={Math.round((pilar.count / statisticsData.total_pendaftar) * 100)} strokeColor={pilar.color} showInfo={false} />
               </div>
             ))}
           </Card>
-
           <Card title="Distribusi Status">
             <div style={{ textAlign: 'center' }}>
-              <Progress
-                type="circle"
-                percent={Math.round((statisticsData.selesai_dinilai / statisticsData.total_pendaftar) * 100)}
-                format={(percent) => `${percent}%`}
-                strokeColor="#52c41a"
-              />
+              <Progress type="circle" percent={Math.round((statisticsData.selesai_dinilai / statisticsData.total_pendaftar) * 100)} format={(percent) => `${percent}%`} strokeColor="#52c41a" />
               <div style={{ marginTop: 16 }}>
                 <Text type="secondary">Pendaftaran Selesai Dinilai</Text>
               </div>
@@ -195,14 +165,9 @@ const AdminDashboard = () => {
         </Col>
 
         {/* Recent Registrations */}
-        <Col span={16}>
+        <Col xs={24} lg={16}>
           <Card title="Pendaftaran Terbaru">
-            <Table
-              columns={columns}
-              dataSource={recentRegistrations}
-              pagination={false}
-              size="middle"
-            />
+            <Table columns={columns} dataSource={recentRegistrations} pagination={false} size="middle" scroll={{ x: 600 }} />
           </Card>
         </Col>
       </Row>

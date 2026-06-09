@@ -140,18 +140,16 @@ const MasterUser = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <Title level={3} style={{ margin: 0 }}>Master User</Title>
           <Text type="secondary">Kelola data admin dan juri</Text>
         </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
-          Tambah User
-        </Button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>Tambah User</Button>
       </div>
 
       <Card>
-        <Table columns={columns} dataSource={data} pagination={false} />
+        <Table columns={columns} dataSource={data} pagination={false} scroll={{ x: 500 }} />
       </Card>
 
       <Modal

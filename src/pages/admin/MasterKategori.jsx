@@ -143,18 +143,16 @@ const MasterKategori = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <Title level={3} style={{ margin: 0 }}>Master Kategori</Title>
           <Text type="secondary">Kelola data kategori program</Text>
         </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
-          Tambah Kategori
-        </Button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>Tambah Kategori</Button>
       </div>
 
       <Card>
-        <Table columns={columns} dataSource={data} pagination={false} />
+        <Table columns={columns} dataSource={data} pagination={false} scroll={{ x: 500 }} />
       </Card>
 
       <Modal

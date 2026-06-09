@@ -195,7 +195,7 @@ const AdminPenilaianHistory = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <Title level={3} style={{ margin: 0 }}>Riwayat Penilaian</Title>
           <Text type="secondary">Daftar seluruh penilaian dari semua juri</Text>
@@ -204,92 +204,46 @@ const AdminPenilaianHistory = () => {
       </div>
 
       {/* Summary Cards */}
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={6}>
-          <Card>
-            <div style={{ textAlign: 'center' }}>
-              <Title level={2} style={{ margin: 0, color: '#1890ff' }}>
-                {historyData.length}
-              </Title>
-              <Text type="secondary">Total Penilaian</Text>
-            </div>
-          </Card>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={12} sm={6}>
+          <Card><div style={{ textAlign: 'center' }}><Title level={2} style={{ margin: 0, color: '#1890ff' }}>{historyData.length}</Title><Text type="secondary">Total Penilaian</Text></div></Card>
         </Col>
-        <Col span={6}>
-          <Card>
-            <div style={{ textAlign: 'center' }}>
-              <Title level={2} style={{ margin: 0, color: '#52c41a' }}>
-                {Math.round(historyData.reduce((sum, item) => sum + item.total, 0) / historyData.length)}
-              </Title>
-              <Text type="secondary">Rata-rata Nilai</Text>
-            </div>
-          </Card>
+        <Col xs={12} sm={6}>
+          <Card><div style={{ textAlign: 'center' }}><Title level={2} style={{ margin: 0, color: '#52c41a' }}>{Math.round(historyData.reduce((sum, item) => sum + item.total, 0) / historyData.length)}</Title><Text type="secondary">Rata-rata Nilai</Text></div></Card>
         </Col>
-        <Col span={6}>
-          <Card>
-            <div style={{ textAlign: 'center' }}>
-              <Title level={2} style={{ margin: 0, color: '#722ed1' }}>
-                {Math.max(...historyData.map(item => item.total))}
-              </Title>
-              <Text type="secondary">Nilai Tertinggi</Text>
-            </div>
-          </Card>
+        <Col xs={12} sm={6}>
+          <Card><div style={{ textAlign: 'center' }}><Title level={2} style={{ margin: 0, color: '#722ed1' }}>{Math.max(...historyData.map(item => item.total))}</Title><Text type="secondary">Nilai Tertinggi</Text></div></Card>
         </Col>
-        <Col span={6}>
-          <Card>
-            <div style={{ textAlign: 'center' }}>
-              <Title level={2} style={{ margin: 0, color: '#1890ff' }}>
-                {new Set(historyData.map(item => item.juri)).size}
-              </Title>
-              <Text type="secondary">Juri Aktif</Text>
-            </div>
-          </Card>
+        <Col xs={12} sm={6}>
+          <Card><div style={{ textAlign: 'center' }}><Title level={2} style={{ margin: 0, color: '#1890ff' }}>{new Set(historyData.map(item => item.juri)).size}</Title><Text type="secondary">Juri Aktif</Text></div></Card>
         </Col>
       </Row>
 
       {/* Filters */}
       <Card style={{ marginBottom: 24 }}>
-        <Row gutter={16}>
-          <Col span={8}>
-            <Input
-              placeholder="Cari nama desa atau kelompok..."
-              prefix={<SearchOutlined />}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              allowClear
-            />
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} lg={8}>
+            <Input placeholder="Cari nama desa atau kelompok..." prefix={<SearchOutlined />} value={searchText} onChange={(e) => setSearchText(e.target.value)} allowClear />
           </Col>
-          <Col span={5}>
-            <Select
-              placeholder="Filter Pilar"
-              style={{ width: '100%' }}
-              allowClear
-              onChange={(value) => setPilarFilter(value)}
-            >
+          <Col xs={24} sm={12} lg={5}>
+            <Select placeholder="Filter Pilar" style={{ width: '100%' }} allowClear onChange={(value) => setPilarFilter(value)}>
               <Option value="Pilar Ekonomi">Pilar Ekonomi</Option>
               <Option value="Pilar Sosial">Pilar Sosial</Option>
               <Option value="Pilar Lingkungan">Pilar Lingkungan</Option>
               <Option value="Pilar Infrastruktur">Pilar Infrastruktur</Option>
             </Select>
           </Col>
-          <Col span={5}>
-            <Select
-              placeholder="Filter Juri"
-              style={{ width: '100%' }}
-              allowClear
-              onChange={(value) => setJuriFilter(value)}
-            >
+          <Col xs={24} sm={12} lg={5}>
+            <Select placeholder="Filter Juri" style={{ width: '100%' }} allowClear onChange={(value) => setJuriFilter(value)}>
               <Option value="Juri 1">Juri 1</Option>
               <Option value="Juri 2">Juri 2</Option>
               <Option value="Juri 3">Juri 3</Option>
             </Select>
           </Col>
-          <Col span={6}>
-            <Space>
+          <Col xs={24} sm={12} lg={6}>
+            <Space wrap>
               <Button icon={<FilterOutlined />}>Filter Lanjutan</Button>
-              <Button onClick={() => { setSearchText(''); setPilarFilter(null); setJuriFilter(null); }}>
-                Reset
-              </Button>
+              <Button onClick={() => { setSearchText(''); setPilarFilter(null); setJuriFilter(null); }}>Reset</Button>
             </Space>
           </Col>
         </Row>
@@ -297,13 +251,7 @@ const AdminPenilaianHistory = () => {
 
       {/* Table */}
       <Card>
-        <Table
-          columns={columns}
-          dataSource={filteredData}
-          pagination={{ pageSize: 10 }}
-          size="middle"
-          scroll={{ x: 1400 }}
-        />
+        <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 10 }} size="middle" scroll={{ x: 1200 }} />
       </Card>
 
       {/* Detail Modal */}

@@ -178,7 +178,7 @@ const AdminPesertaList = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <Title level={3} style={{ margin: 0 }}>Daftar Peserta</Title>
           <Text type="secondary">Kelola data peserta pendaftaran</Text>
@@ -188,49 +188,27 @@ const AdminPesertaList = () => {
 
       {/* Filters */}
       <Card style={{ marginBottom: 24 }}>
-        <Row gutter={16}>
-          <Col span={8}>
-            <Input
-              placeholder="Cari nama desa atau kelompok..."
-              prefix={<SearchOutlined />}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              allowClear
-            />
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} lg={8}>
+            <Input placeholder="Cari nama desa atau kelompok..." prefix={<SearchOutlined />} value={searchText} onChange={(e) => setSearchText(e.target.value)} allowClear />
           </Col>
-          <Col span={5}>
-            <Select
-              placeholder="Filter Status"
-              style={{ width: '100%' }}
-              allowClear
-              onChange={(value) => setStatusFilter(value)}
-            >
-              {Object.entries(statusMap).map(([key, value]) => (
-                <Option key={key} value={parseInt(key)}>
-                  {value.label}
-                </Option>
-              ))}
+          <Col xs={24} sm={12} lg={5}>
+            <Select placeholder="Filter Status" style={{ width: '100%' }} allowClear onChange={(value) => setStatusFilter(value)}>
+              {Object.entries(statusMap).map(([key, value]) => (<Option key={key} value={parseInt(key)}>{value.label}</Option>))}
             </Select>
           </Col>
-          <Col span={5}>
-            <Select
-              placeholder="Filter Pilar"
-              style={{ width: '100%' }}
-              allowClear
-              onChange={(value) => setPilarFilter(value)}
-            >
+          <Col xs={24} sm={12} lg={5}>
+            <Select placeholder="Filter Pilar" style={{ width: '100%' }} allowClear onChange={(value) => setPilarFilter(value)}>
               <Option value="Pilar Ekonomi">Pilar Ekonomi</Option>
               <Option value="Pilar Sosial">Pilar Sosial</Option>
               <Option value="Pilar Lingkungan">Pilar Lingkungan</Option>
               <Option value="Pilar Infrastruktur">Pilar Infrastruktur</Option>
             </Select>
           </Col>
-          <Col span={6}>
-            <Space>
+          <Col xs={24} sm={12} lg={6}>
+            <Space wrap>
               <Button icon={<FilterOutlined />}>Filter Lanjutan</Button>
-              <Button onClick={() => { setSearchText(''); setStatusFilter(null); setPilarFilter(null); }}>
-                Reset
-              </Button>
+              <Button onClick={() => { setSearchText(''); setStatusFilter(null); setPilarFilter(null); }}>Reset</Button>
             </Space>
           </Col>
         </Row>
@@ -238,12 +216,7 @@ const AdminPesertaList = () => {
 
       {/* Table */}
       <Card>
-        <Table
-          columns={columns}
-          dataSource={filteredData}
-          pagination={{ pageSize: 10 }}
-          size="middle"
-        />
+        <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 10 }} size="middle" scroll={{ x: 900 }} />
       </Card>
 
       {/* Detail Modal */}

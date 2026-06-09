@@ -173,68 +173,33 @@ const JuriPenilaianHistory = () => {
       </div>
 
       {/* Summary Cards */}
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={8}>
-          <Card>
-            <div style={{ textAlign: 'center' }}>
-              <Title level={2} style={{ margin: 0, color: '#1890ff' }}>
-                {historyData.length}
-              </Title>
-              <Text type="secondary">Total Penilaian</Text>
-            </div>
-          </Card>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={8}>
+          <Card><div style={{ textAlign: 'center' }}><Title level={2} style={{ margin: 0, color: '#1890ff' }}>{historyData.length}</Title><Text type="secondary">Total Penilaian</Text></div></Card>
         </Col>
-        <Col span={8}>
-          <Card>
-            <div style={{ textAlign: 'center' }}>
-              <Title level={2} style={{ margin: 0, color: '#52c41a' }}>
-                {Math.round(historyData.reduce((sum, item) => sum + item.total, 0) / historyData.length)}
-              </Title>
-              <Text type="secondary">Rata-rata Nilai</Text>
-            </div>
-          </Card>
+        <Col xs={24} sm={8}>
+          <Card><div style={{ textAlign: 'center' }}><Title level={2} style={{ margin: 0, color: '#52c41a' }}>{Math.round(historyData.reduce((sum, item) => sum + item.total, 0) / historyData.length)}</Title><Text type="secondary">Rata-rata Nilai</Text></div></Card>
         </Col>
-        <Col span={8}>
-          <Card>
-            <div style={{ textAlign: 'center' }}>
-              <Title level={2} style={{ margin: 0, color: '#722ed1' }}>
-                {Math.max(...historyData.map(item => item.total))}
-              </Title>
-              <Text type="secondary">Nilai Tertinggi</Text>
-            </div>
-          </Card>
+        <Col xs={24} sm={8}>
+          <Card><div style={{ textAlign: 'center' }}><Title level={2} style={{ margin: 0, color: '#722ed1' }}>{Math.max(...historyData.map(item => item.total))}</Title><Text type="secondary">Nilai Tertinggi</Text></div></Card>
         </Col>
       </Row>
 
       {/* Filter */}
       <Card style={{ marginBottom: 24 }}>
-        <Row gutter={16}>
-          <Col span={12}>
-            <Input
-              placeholder="Cari nama desa atau kelompok..."
-              prefix={<SearchOutlined />}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              allowClear
-            />
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12}>
+            <Input placeholder="Cari nama desa atau kelompok..." prefix={<SearchOutlined />} value={searchText} onChange={(e) => setSearchText(e.target.value)} allowClear />
           </Col>
-          <Col span={12}>
-            <Button icon={<FilterOutlined />}>
-              Filter Lanjutan
-            </Button>
+          <Col xs={24} sm={12}>
+            <Button icon={<FilterOutlined />}>Filter Lanjutan</Button>
           </Col>
         </Row>
       </Card>
 
       {/* Table */}
       <Card>
-        <Table
-          columns={columns}
-          dataSource={filteredData}
-          pagination={{ pageSize: 10 }}
-          size="middle"
-          scroll={{ x: 1200 }}
-        />
+        <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 10 }} size="middle" scroll={{ x: 1000 }} />
       </Card>
 
       {/* Detail Modal */}

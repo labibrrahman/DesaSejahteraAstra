@@ -179,48 +179,27 @@ const JuriPesertaList = () => {
 
       {/* Filters */}
       <Card style={{ marginBottom: 24 }}>
-        <Row gutter={16}>
-          <Col span={10}>
-            <Input
-              placeholder="Cari nama desa atau kelompok..."
-              prefix={<SearchOutlined />}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              allowClear
-            />
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} lg={10}>
+            <Input placeholder="Cari nama desa atau kelompok..." prefix={<SearchOutlined />} value={searchText} onChange={(e) => setSearchText(e.target.value)} allowClear />
           </Col>
-          <Col span={6}>
-            <Select
-              placeholder="Filter Pilar"
-              style={{ width: '100%' }}
-              allowClear
-              onChange={(value) => setPilarFilter(value)}
-            >
+          <Col xs={24} sm={12} lg={6}>
+            <Select placeholder="Filter Pilar" style={{ width: '100%' }} allowClear onChange={(value) => setPilarFilter(value)}>
               <Option value="Pilar Ekonomi">Pilar Ekonomi</Option>
               <Option value="Pilar Sosial">Pilar Sosial</Option>
               <Option value="Pilar Lingkungan">Pilar Lingkungan</Option>
               <Option value="Pilar Infrastruktur">Pilar Infrastruktur</Option>
             </Select>
           </Col>
-          <Col span={8}>
-            <Button
-              icon={<FilterOutlined />}
-              onClick={() => { setSearchText(''); setPilarFilter(null); }}
-            >
-              Reset Filter
-            </Button>
+          <Col xs={24} sm={12} lg={8}>
+            <Button icon={<FilterOutlined />} onClick={() => { setSearchText(''); setPilarFilter(null); }}>Reset Filter</Button>
           </Col>
         </Row>
       </Card>
 
       {/* Table */}
       <Card>
-        <Table
-          columns={columns}
-          dataSource={filteredData}
-          pagination={{ pageSize: 10 }}
-          size="middle"
-        />
+        <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 10 }} size="middle" scroll={{ x: 900 }} />
       </Card>
 
       {/* Detail Modal */}

@@ -127,18 +127,16 @@ const MasterGrupAstra = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <Title level={3} style={{ margin: 0 }}>Master Grup Astra</Title>
           <Text type="secondary">Kelola data grup astra</Text>
         </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
-          Tambah Grup
-        </Button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>Tambah Grup</Button>
       </div>
 
       <Card>
-        <Table columns={columns} dataSource={data} pagination={false} />
+        <Table columns={columns} dataSource={data} pagination={false} scroll={{ x: 500 }} />
       </Card>
 
       <Modal

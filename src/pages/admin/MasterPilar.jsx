@@ -129,18 +129,16 @@ const MasterPilar = () => {
 
   return (
     <div>
-      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <Title level={3} style={{ margin: 0 }}>Master Pilar</Title>
           <Text type="secondary">Kelola data pilar program</Text>
         </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
-          Tambah Pilar
-        </Button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>Tambah Pilar</Button>
       </div>
 
       <Card>
-        <Table columns={columns} dataSource={data} pagination={false} />
+        <Table columns={columns} dataSource={data} pagination={false} scroll={{ x: 500 }} />
       </Card>
 
       <Modal

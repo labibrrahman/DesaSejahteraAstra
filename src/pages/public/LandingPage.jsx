@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Row, Col, Typography, Space, Layout, Collapse } from 'antd';
+import { Button, Row, Col, Typography, Space, Layout, Collapse, Drawer } from 'antd';
 import {
   HeartOutlined,
   ReadOutlined,
@@ -12,10 +12,13 @@ import {
   PhoneOutlined,
   MailOutlined,
   EnvironmentOutlined,
+  MenuOutlined,
+  CloseOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import astraLogo from '../../assets/images/astra-logo.png';
 import satuIndoLogo from '../../assets/images/satu-indonesia-logo.png';
+import useIsMobile from '../../hooks/useIsMobile';
 
 const { Title, Paragraph, Text, Link } = Typography;
 const { Header, Content, Footer } = Layout;
@@ -71,28 +74,37 @@ const faqData = [
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [activeFaq, setActiveFaq] = useState([0]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const px = isMobile ? 20 : 60;
 
   const faqItems = faqData.map((item, index) => ({
     key: index,
     label: (
-      <Text style={{ fontSize: 16, fontWeight: 500, color: '#1a1a2e' }}>
+      <Text style={{ fontSize: isMobile ? 14 : 16, fontWeight: 500, color: '#1a1a2e' }}>
         {item.question}
       </Text>
     ),
     children: (
-      <Paragraph style={{ fontSize: 15, color: '#555', lineHeight: 1.8 }}>
+      <Paragraph style={{ fontSize: isMobile ? 14 : 15, color: '#555', lineHeight: 1.8 }}>
         {item.answer}
       </Paragraph>
     ),
   }));
+
+  const scrollTo = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    setDrawerOpen(false);
+  };
 
   return (
     <Layout style={{ minHeight: '100vh', background: '#fff' }}>
       {/* Header */}
       <Header
         style={{
-          padding: '0 60px',
+          padding: `0 ${px}px`,
           background: '#fff',
           display: 'flex',
           alignItems: 'center',
@@ -101,60 +113,85 @@ const LandingPage = () => {
           position: 'sticky',
           top: 0,
           zIndex: 10,
-          height: 80,
+          height: isMobile ? 64 : 80,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 12 : 24 }}>
           <img
             src={astraLogo}
             alt="Astra Logo"
-            style={{ height: 45, objectFit: 'contain' }}
+            style={{ height: isMobile ? 32 : 45, objectFit: 'contain' }}
           />
           <img
             src={satuIndoLogo}
             alt="Satu Indonesia Logo"
-            style={{ height: 45, objectFit: 'contain' }}
+            style={{ height: isMobile ? 32 : 45, objectFit: 'contain' }}
           />
         </div>
-        <Space size={32}>
-          <Link
-            style={{ fontSize: 15, color: '#333' }}
-            onClick={() => {
-              document.getElementById('tentang-section')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-          >
+
+        {isMobile ? (
+          <Button
+            type="text"
+            icon={<MenuOutlined style={{ fontSize: 20 }} />}
+            onClick={() => setDrawerOpen(true)}
+          />
+        ) : (
+          <Space size={32}>
+            <Link style={{ fontSize: 15, color: '#333' }} onClick={() => scrollTo('tentang-section')}>
+              Tentang Program
+            </Link>
+            <Link style={{ fontSize: 15, color: '#333' }} onClick={() => scrollTo('kontak-section')}>
+              Kontak
+            </Link>
+            <Button
+              type="primary"
+              style={{ background: '#1890ff', borderColor: '#1890ff', borderRadius: 6, height: 38, paddingInline: 24 }}
+              onClick={() => navigate('/login')}
+            >
+              Masuk
+            </Button>
+          </Space>
+        )}
+      </Header>
+
+      {/* Mobile Drawer */}
+      <Drawer
+        placement="right"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        width={260}
+        title="Menu"
+        closeIcon={<CloseOutlined />}
+      >
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          <Link style={{ fontSize: 15, color: '#333' }} onClick={() => scrollTo('tentang-section')}>
             Tentang Program
           </Link>
-          <Link
-            style={{ fontSize: 15, color: '#333' }}
-            onClick={() => {
-              document.getElementById('kontak-section')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-          >
+          <Link style={{ fontSize: 15, color: '#333' }} onClick={() => scrollTo('kontak-section')}>
             Kontak
           </Link>
           <Button
             type="primary"
-            style={{ background: '#1890ff', borderColor: '#1890ff', borderRadius: 6, height: 38, paddingInline: 24 }}
-            onClick={() => navigate('/login')}
+            block
+            style={{ background: '#1890ff', borderColor: '#1890ff', borderRadius: 6 }}
+            onClick={() => { setDrawerOpen(false); navigate('/login'); }}
           >
             Masuk
           </Button>
         </Space>
-      </Header>
+      </Drawer>
 
       <Content>
         {/* Hero Section */}
         <div
           style={{
             position: 'relative',
-            minHeight: 480,
+            minHeight: isMobile ? 400 : 480,
             display: 'flex',
             alignItems: 'center',
             overflow: 'hidden',
           }}
         >
-          {/* Background image */}
           <div
             style={{
               position: 'absolute',
@@ -183,15 +220,15 @@ const LandingPage = () => {
               zIndex: 1,
             }}
           />
-          <div style={{ position: 'relative', zIndex: 2, padding: '0 60px', maxWidth: 600 }}>
+          <div style={{ position: 'relative', zIndex: 2, padding: `${isMobile ? 40 : 0}px ${px}px`, maxWidth: 600 }}>
             <Title
               level={1}
               style={{
                 color: '#fff',
-                fontSize: 42,
+                fontSize: isMobile ? 28 : 42,
                 fontWeight: 700,
                 lineHeight: 1.2,
-                marginBottom: 20,
+                marginBottom: isMobile ? 14 : 20,
               }}
             >
               Pemberdayaan Desa Menuju Sejahtera
@@ -199,17 +236,18 @@ const LandingPage = () => {
             <Paragraph
               style={{
                 color: 'rgba(255,255,255,0.85)',
-                fontSize: 16,
+                fontSize: isMobile ? 14 : 16,
                 lineHeight: 1.8,
-                marginBottom: 32,
+                marginBottom: isMobile ? 24 : 32,
               }}
             >
               Platform pendaftaran dan penilaian program CSR Astra dalam empat pilar utama guna mewujudkan kemandirian ekonomi masyarakat desa.
             </Paragraph>
-            <Space size={16}>
+            <Space size={12} direction={isMobile ? 'vertical' : 'horizontal'} style={{ width: isMobile ? '100%' : 'auto' }}>
               <Button
                 type="primary"
                 size="large"
+                block={isMobile}
                 style={{
                   background: '#1890ff',
                   borderColor: '#1890ff',
@@ -225,6 +263,7 @@ const LandingPage = () => {
               <Button
                 size="large"
                 ghost
+                block={isMobile}
                 style={{
                   color: '#fff',
                   borderColor: 'rgba(255,255,255,0.5)',
@@ -233,9 +272,7 @@ const LandingPage = () => {
                   borderRadius: 8,
                   fontWeight: 500,
                 }}
-                onClick={() => {
-                  document.getElementById('tentang-section')?.scrollIntoView({ behavior: 'smooth' });
-                }}
+                onClick={() => scrollTo('tentang-section')}
               >
                 Pelajari Lebih Lanjut <ArrowRightOutlined />
               </Button>
@@ -244,12 +281,12 @@ const LandingPage = () => {
         </div>
 
         {/* 4 Pilar Section */}
-        <div id="tentang-section" style={{ padding: '80px 60px', background: '#f8fafc' }}>
-          <div style={{ textAlign: 'center', marginBottom: 56 }}>
-            <Title level={2} style={{ fontSize: 32, fontWeight: 700, color: '#1a1a2e', marginBottom: 12 }}>
+        <div id="tentang-section" style={{ padding: `${isMobile ? 48 : 80}px ${px}px`, background: '#f8fafc' }}>
+          <div style={{ textAlign: 'center', marginBottom: isMobile ? 36 : 56 }}>
+            <Title level={2} style={{ fontSize: isMobile ? 24 : 32, fontWeight: 700, color: '#1a1a2e', marginBottom: 12 }}>
               4 Pilar Utama Pemberdayaan
             </Title>
-            <Paragraph style={{ fontSize: 16, color: '#666', maxWidth: 550, margin: '0 auto' }}>
+            <Paragraph style={{ fontSize: isMobile ? 14 : 16, color: '#666', maxWidth: 550, margin: '0 auto' }}>
               Membangun ekosistem desa yang berkelanjutan melalui integrasi aspek esensial kehidupan masyarakat.
             </Paragraph>
           </div>
@@ -260,15 +297,17 @@ const LandingPage = () => {
                   style={{
                     background: '#fff',
                     borderRadius: 12,
-                    padding: '32px 24px',
+                    padding: isMobile ? '24px 20px' : '32px 24px',
                     height: '100%',
                     border: '1px solid #eee',
                     transition: 'box-shadow 0.3s, transform 0.3s',
                     cursor: 'default',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.08)';
-                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    if (!isMobile) {
+                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.08)';
+                      e.currentTarget.style.transform = 'translateY(-4px)';
+                    }
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.boxShadow = 'none';
@@ -302,14 +341,14 @@ const LandingPage = () => {
         </div>
 
         {/* Stats Section */}
-        <div style={{ padding: '60px 60px', background: '#e6f7ff' }}>
-          <Row gutter={[32, 32]} justify="center">
+        <div style={{ padding: `${isMobile ? 40 : 60}px ${px}px`, background: '#e6f7ff' }}>
+          <Row gutter={[isMobile ? 16 : 32, isMobile ? 24 : 32]} justify="center">
             {statsData.map((stat, index) => (
               <Col xs={12} sm={6} key={index} style={{ textAlign: 'center' }}>
-                <Title style={{ color: '#1890ff', margin: 0, fontSize: 40, fontWeight: 700 }}>
+                <Title style={{ color: '#1890ff', margin: 0, fontSize: isMobile ? 28 : 40, fontWeight: 700 }}>
                   {stat.number}
                 </Title>
-                <Text style={{ fontSize: 15, color: '#555', marginTop: 8, display: 'block' }}>
+                <Text style={{ fontSize: isMobile ? 13 : 15, color: '#555', marginTop: 8, display: 'block' }}>
                   {stat.label}
                 </Text>
               </Col>
@@ -318,12 +357,12 @@ const LandingPage = () => {
         </div>
 
         {/* FAQ Section */}
-        <div id="faq-section" style={{ padding: '80px 60px', background: '#fff' }}>
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <Title level={2} style={{ fontSize: 32, fontWeight: 700, color: '#1a1a2e', marginBottom: 12 }}>
+        <div id="faq-section" style={{ padding: `${isMobile ? 48 : 80}px ${px}px`, background: '#fff' }}>
+          <div style={{ textAlign: 'center', marginBottom: isMobile ? 32 : 48 }}>
+            <Title level={2} style={{ fontSize: isMobile ? 24 : 32, fontWeight: 700, color: '#1a1a2e', marginBottom: 12 }}>
               Pertanyaan Sering Diajukan
             </Title>
-            <Paragraph style={{ fontSize: 16, color: '#666', maxWidth: 500, margin: '0 auto' }}>
+            <Paragraph style={{ fontSize: isMobile ? 14 : 16, color: '#666', maxWidth: 500, margin: '0 auto' }}>
               Temukan jawaban cepat mengenai proses pendaftaran dan kriteria program.
             </Paragraph>
           </div>
@@ -333,28 +372,25 @@ const LandingPage = () => {
               activeKey={activeFaq}
               onChange={(keys) => setActiveFaq(keys)}
               expandIconPosition="end"
-              style={{
-                background: 'transparent',
-                border: 'none',
-              }}
-              size="large"
+              style={{ background: 'transparent', border: 'none' }}
+              size={isMobile ? 'middle' : 'large'}
             />
           </div>
         </div>
 
         {/* Contact Section */}
-        <div id="kontak-section" style={{ padding: '60px 60px', background: '#f8fafc' }}>
-          <div style={{ textAlign: 'center', marginBottom: 40 }}>
-            <Title level={3} style={{ fontSize: 24, fontWeight: 600, color: '#1a1a2e', marginBottom: 8 }}>
+        <div id="kontak-section" style={{ padding: `${isMobile ? 40 : 60}px ${px}px`, background: '#f8fafc' }}>
+          <div style={{ textAlign: 'center', marginBottom: isMobile ? 28 : 40 }}>
+            <Title level={3} style={{ fontSize: isMobile ? 20 : 24, fontWeight: 600, color: '#1a1a2e', marginBottom: 8 }}>
               Butuh Bantuan?
             </Title>
-            <Paragraph style={{ fontSize: 15, color: '#666' }}>
+            <Paragraph style={{ fontSize: isMobile ? 14 : 15, color: '#666' }}>
               Hubungi tim kami untuk informasi lebih lanjut
             </Paragraph>
           </div>
           <Row gutter={[24, 24]} justify="center">
             <Col xs={24} sm={8}>
-              <div style={{ textAlign: 'center', padding: 24 }}>
+              <div style={{ textAlign: 'center', padding: isMobile ? 16 : 24 }}>
                 <PhoneOutlined style={{ fontSize: 24, color: '#1890ff', marginBottom: 12 }} />
                 <br />
                 <Text style={{ fontSize: 14, color: '#666' }}>Telepon</Text>
@@ -363,7 +399,7 @@ const LandingPage = () => {
               </div>
             </Col>
             <Col xs={24} sm={8}>
-              <div style={{ textAlign: 'center', padding: 24 }}>
+              <div style={{ textAlign: 'center', padding: isMobile ? 16 : 24 }}>
                 <MailOutlined style={{ fontSize: 24, color: '#1890ff', marginBottom: 12 }} />
                 <br />
                 <Text style={{ fontSize: 14, color: '#666' }}>Email</Text>
@@ -372,7 +408,7 @@ const LandingPage = () => {
               </div>
             </Col>
             <Col xs={24} sm={8}>
-              <div style={{ textAlign: 'center', padding: 24 }}>
+              <div style={{ textAlign: 'center', padding: isMobile ? 16 : 24 }}>
                 <EnvironmentOutlined style={{ fontSize: 24, color: '#1890ff', marginBottom: 12 }} />
                 <br />
                 <Text style={{ fontSize: 14, color: '#666' }}>Alamat</Text>
@@ -387,7 +423,7 @@ const LandingPage = () => {
       {/* Footer */}
       <Footer
         style={{
-          padding: '32px 60px',
+          padding: `${isMobile ? 24 : 32}px ${px}px`,
           background: '#1a1a2e',
           color: 'rgba(255,255,255,0.65)',
         }}
@@ -396,8 +432,8 @@ const LandingPage = () => {
           style={{
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
+            alignItems: isMobile ? 'flex-start' : 'center',
+            flexDirection: isMobile ? 'column' : 'row',
             gap: 16,
           }}
         >

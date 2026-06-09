@@ -113,9 +113,9 @@ const JuriFormPenilaian = () => {
         <Text type="secondary">Beri nilai untuk peserta berikut</Text>
       </div>
 
-      <Row gutter={24}>
+      <Row gutter={[24, 24]}>
         {/* Peserta Info */}
-        <Col span={10}>
+        <Col xs={24} lg={10}>
           <Card title="Informasi Peserta" style={{ marginBottom: 24 }}>
             <Descriptions column={1} size="small">
               <Descriptions.Item label="Nama Desa">{pesertaDetail.nama_desa}</Descriptions.Item>
@@ -139,7 +139,7 @@ const JuriFormPenilaian = () => {
         </Col>
 
         {/* Scoring Form */}
-        <Col span={14}>
+        <Col xs={24} lg={14}>
           <Card title="Form Penilaian">
             <div style={{ textAlign: 'center', marginBottom: 24 }}>
               <Title level={2} style={{ margin: 0, color: '#1890ff' }}>

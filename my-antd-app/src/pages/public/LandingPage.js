@@ -14,6 +14,8 @@ import {
   EnvironmentOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import astraLogo from '../../assets/images/astra-logo.png';
+import satuIndoLogo from '../../assets/images/satu-indonesia-logo.png';
 
 const { Title, Paragraph, Text, Link } = Typography;
 const { Header, Content, Footer } = Layout;
@@ -99,12 +101,16 @@ const LandingPage = () => {
           position: 'sticky',
           top: 0,
           zIndex: 10,
-          height: 64,
+          height: 80,
         }}
       >
-        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1a1a2e' }}>
-          Desa Sejahtera Astra
-        </Text>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <img
+            src={astraLogo}
+            alt="Astra Logo"
+            style={{ height: 45, objectFit: 'contain' }}
+          />
+        </div>
         <Space size={32}>
           <Link
             style={{ fontSize: 15, color: '#333' }}

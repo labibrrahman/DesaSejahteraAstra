@@ -1,24 +1,15 @@
 import React, { useState } from 'react';
+import { Typography, Button, Select, Input, Row, Col, message, Modal } from 'antd';
 import {
-  Form,
-  Input,
-  Select,
-  Button,
-  Card,
-  Steps,
-  Row,
-  Col,
-  Typography,
-  Divider,
-  message,
-  Result,
-} from 'antd';
-import {
-  TrophyOutlined,
-  TeamOutlined,
-  EnvironmentOutlined,
-  FileTextOutlined,
+  ArrowLeftOutlined,
+  ArrowRightOutlined,
   CheckCircleOutlined,
+  MedicineBoxOutlined,
+  ReadOutlined,
+  EnvironmentOutlined,
+  ShopOutlined,
+  ExclamationCircleOutlined,
+  CheckOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
@@ -26,42 +17,68 @@ const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
 
-const steps = [
-  { title: 'Pilar & Kategori', icon: <TrophyOutlined /> },
-  { title: 'Identitas', icon: <TeamOutlined /> },
-  { title: 'Data Program', icon: <EnvironmentOutlined /> },
-  { title: 'Review & Submit', icon: <FileTextOutlined /> },
+// ─── Static Data ──────────────────────────────────────────────────────────────
+
+const STEPS = ['Pilar', 'Identitas', 'Program', 'Review'];
+
+const STEP_TITLES = [
+  'Registrasi Peserta Baru',
+  'Identitas Pendaftar',
+  'Detail Program Inisiatif',
+  'Review & Konfirmasi',
 ];
 
-// Dummy data - will be replaced with API calls
-const pilarOptions = [
-  { id: 1, name: 'Pilar Ekonomi' },
-  { id: 2, name: 'Pilar Sosial' },
-  { id: 3, name: 'Pilar Lingkungan' },
-  { id: 4, name: 'Pilar Infrastruktur' },
+const STEP_SUBTITLES = [
+  'Silakan pilih pilar program yang sesuai dengan inisiatif yang akan didaftarkan.',
+  'Lengkapi data identitas desa dan penanggung jawab program.',
+  'Jelaskan detail program, latar belakang, dan dampaknya.',
+  'Periksa kembali data yang telah Anda isi sebelum mengirimkan pendaftaran.',
 ];
 
-const kategoriOptions = {
-  1: [
-    { id: 1, name: 'UMKM' },
-    { id: 2, name: 'Koperasi' },
-    { id: 3, name: 'Kewirausahaan' },
-  ],
-  2: [
-    { id: 4, name: 'Pendidikan' },
-    { id: 5, name: 'Kesehatan' },
-    { id: 6, name: 'Sosial Budaya' },
-  ],
-  3: [
-    { id: 7, name: 'Konservasi' },
-    { id: 8, name: 'Pertanian Berkelanjutan' },
-    { id: 9, name: 'Energi Terbarukan' },
-  ],
-  4: [
-    { id: 10, name: 'Jalan & Jembatan' },
-    { id: 11, name: 'Irigasi' },
-    { id: 12, name: 'Fasilitas Umum' },
-  ],
+const PILARS = [
+  {
+    id: 'kesehatan',
+    title: 'Kesehatan',
+    desc: 'Peningkatan fasilitas & akses kesehatan desa.',
+    Icon: MedicineBoxOutlined,
+    color: '#10b981',
+    bgLight: '#ecfdf5',
+    bgActive: '#d1fae5',
+  },
+  {
+    id: 'pendidikan',
+    title: 'Pendidikan',
+    desc: 'Pengembangan kualitas SDM & literasi.',
+    Icon: ReadOutlined,
+    color: '#8b5cf6',
+    bgLight: '#f5f3ff',
+    bgActive: '#ede9fe',
+  },
+  {
+    id: 'lingkungan',
+    title: 'Lingkungan',
+    desc: 'Pelestarian alam & ekonomi sirkular.',
+    Icon: EnvironmentOutlined,
+    color: '#22c55e',
+    bgLight: '#f0fdf4',
+    bgActive: '#dcfce7',
+  },
+  {
+    id: 'kewirausahaan',
+    title: 'Kewirausahaan',
+    desc: 'Pemberdayaan UMKM & potensi ekonomi lokal.',
+    Icon: ShopOutlined,
+    color: '#f59e0b',
+    bgLight: '#fffbeb',
+    bgActive: '#fef3c7',
+  },
+];
+
+const kategoriByPilar = {
+  kesehatan: ['Posyandu & Gizi', 'Sanitasi & Air Bersih', 'Kesehatan Ibu & Anak'],
+  pendidikan: ['Beasiswa & Pendidikan', 'Perpustakaan Desa', 'Pelatihan Vokasi'],
+  lingkungan: ['Konservasi Hutan', 'Pertanian Berkelanjutan', 'Energi Terbarukan'],
+  kewirausahaan: ['UMKM Kriya & Kerajinan', 'UMKM Kuliner & Pangan Lokal', 'Pariwisata Desa'],
 };
 
 const wilayahOptions = {
@@ -72,382 +89,693 @@ const wilayahOptions = {
 };
 
 const grupAstraOptions = [
-  { id: 1, name: 'Grup Astra 1' },
-  { id: 2, name: 'Grup Astra 2' },
-  { id: 3, name: 'Grup Astra 3' },
+  { id: 1, name: 'PT Astra Honda Motor' },
+  { id: 2, name: 'PT Toyota Astra Motor' },
+  { id: 3, name: 'PT Astra Agro Lestari' },
 ];
 
+// ─── Shared Styles ────────────────────────────────────────────────────────────
+
+const inputStyle = {
+  borderRadius: 8,
+  height: 44,
+  borderColor: '#e2e8f0',
+  fontSize: 13,
+  transition: 'all 0.2s',
+};
+
+const labelStyle = {
+  display: 'block',
+  marginBottom: 8,
+  fontSize: 13,
+  fontWeight: 600,
+  color: '#002444',
+};
+
+const fieldWrapper = { marginBottom: 20 };
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
 const FormPendaftaran = () => {
-  const [current, setCurrent] = useState(0);
-  const [form] = Form.useForm();
-  const [formData, setFormData] = useState({});
-  const [submitted, setSubmitted] = useState(false);
   const navigate = useNavigate();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [selectedPilar, setSelectedPilar] = useState('kewirausahaan');
+  const [selectedKategori, setSelectedKategori] = useState(undefined);
+  const [formData, setFormData] = useState({});
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  const next = async () => {
-    try {
-      const values = await form.validateFields();
-      setFormData({ ...formData, ...values });
-      setCurrent(current + 1);
-    } catch (error) {
-      console.log('Validation failed:', error);
-    }
+  const updateField = (key, value) => setFormData(prev => ({ ...prev, [key]: value }));
+
+  const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 4));
+  const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
+
+  const handleSubmit = () => {
+    setShowConfirmModal(true);
   };
 
-  const prev = () => {
-    setCurrent(current - 1);
+  const confirmSubmit = () => {
+    setShowConfirmModal(false);
+    message.success('Pendaftaran berhasil dikirim!');
+    navigate('/peserta/dashboard');
   };
 
-  const handleSubmit = async () => {
-    try {
-      const values = await form.validateFields();
-      const allData = { ...formData, ...values };
-      console.log('Form submitted:', allData);
-      // TODO: Send to API
-      message.success('Pendaftaran berhasil dikirim!');
-      setSubmitted(true);
-    } catch (error) {
-      console.log('Validation failed:', error);
-    }
+  // ── Step 1: Pilar & Kategori ────────────────────────────────────────────────
+
+  const renderStep1 = () => {
+    const currentPilar = PILARS.find(p => p.id === selectedPilar);
+
+    return (
+      <div style={{ width: '100%', maxWidth: 800, marginBottom: 32 }}>
+        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+          {PILARS.map(({ id, title, desc, Icon, color, bgLight, bgActive }) => {
+            const isActive = selectedPilar === id;
+            return (
+              <Col xs={12} sm={6} key={id}>
+                <div
+                  onClick={() => { setSelectedPilar(id); setSelectedKategori(undefined); }}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    textAlign: 'center',
+                    padding: '24px 16px',
+                    borderRadius: 12,
+                    minHeight: 160,
+                    border: `2px solid ${isActive ? color : '#e2e8f0'}`,
+                    background: isActive ? bgActive : '#fff',
+                    cursor: 'pointer',
+                    transition: 'all 0.25s ease',
+                    boxShadow: isActive ? `0 4px 12px ${color}20` : '0 1px 3px rgba(0,0,0,0.04)',
+                    transform: isActive ? 'translateY(-2px)' : 'none',
+                  }}
+                  onMouseEnter={e => {
+                    if (!isActive) {
+                      e.currentTarget.style.borderColor = `${color}60`;
+                      e.currentTarget.style.boxShadow = `0 4px 12px ${color}15`;
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (!isActive) {
+                      e.currentTarget.style.borderColor = '#e2e8f0';
+                      e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)';
+                    }
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 52,
+                      height: 52,
+                      borderRadius: 14,
+                      marginBottom: 14,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: isActive ? color : bgLight,
+                      transition: 'all 0.25s ease',
+                    }}
+                  >
+                    <Icon style={{ fontSize: 24, color: isActive ? '#fff' : color }} />
+                  </div>
+                  <Text
+                    strong
+                    style={{
+                      color: '#002444',
+                      display: 'block',
+                      marginBottom: 6,
+                      fontSize: 14,
+                    }}
+                  >
+                    {title}
+                  </Text>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      color: isActive ? color : '#64748b',
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    {desc}
+                  </Text>
+                </div>
+              </Col>
+            );
+          })}
+        </Row>
+
+        <div
+          style={{
+            background: currentPilar?.bgLight || '#eff4ff',
+            borderRadius: 12,
+            padding: 24,
+            maxWidth: 600,
+            margin: '0 auto',
+            border: `1px solid ${currentPilar?.color}30`,
+          }}
+        >
+          <Text style={labelStyle}>Pilih Kategori Spesifik</Text>
+          <Select
+            value={selectedKategori}
+            onChange={setSelectedKategori}
+            placeholder="Pilih sub-kategori pilar..."
+            style={{ width: '100%' }}
+            size="large"
+          >
+            {(kategoriByPilar[selectedPilar] || []).map(kat => (
+              <Option key={kat} value={kat}>{kat}</Option>
+            ))}
+          </Select>
+          <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 12 }}>
+            Kategori ini akan menentukan kriteria penilaian program Anda.
+          </Text>
+        </div>
+      </div>
+    );
   };
 
-  const renderStepContent = () => {
-    switch (current) {
-      case 0:
-        return (
-          <>
-            <Title level={4}>Pilih Pilar dan Kategori</Title>
-            <Paragraph type="secondary">
-              Pilih pilar program dan kategori yang sesuai dengan program desa Anda
-            </Paragraph>
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  name="pilar_id"
-                  label="Pilar Program"
-                  rules={[{ required: true, message: 'Pilih pilar program' }]}
-                >
-                  <Select placeholder="Pilih Pilar">
-                    {pilarOptions.map((pilar) => (
-                      <Option key={pilar.id} value={pilar.id}>
-                        {pilar.name}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="kategori_id"
-                  label="Kategori"
-                  rules={[{ required: true, message: 'Pilih kategori' }]}
-                >
-                  <Select placeholder="Pilih Kategori">
-                    {kategoriOptions[formData.pilar_id]?.map((kat) => (
-                      <Option key={kat.id} value={kat.id}>
-                        {kat.name}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-          </>
-        );
+  // ── Step 2: Identitas ───────────────────────────────────────────────────────
 
-      case 1:
-        return (
-          <>
-            <Title level={4}>Identitas Desa/Kelompok</Title>
-            <Paragraph type="secondary">
-              Isi identitas lengkap desa atau kelompok yang mendaftar
-            </Paragraph>
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  name="nama_desa"
-                  label="Nama Desa"
-                  rules={[{ required: true, message: 'Masukkan nama desa' }]}
-                >
-                  <Input placeholder="Masukkan nama desa" />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item
-                  name="nama_kelompok"
-                  label="Nama Kelompok/Individu"
-                  rules={[{ required: true, message: 'Masukkan nama kelompok/individu' }]}
-                >
-                  <Input placeholder="Masukkan nama kelompok atau individu" />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Form.Item
-              name="alamat"
-              label="Alamat Lengkap"
-              rules={[{ required: true, message: 'Masukkan alamat lengkap' }]}
-            >
-              <TextArea rows={3} placeholder="Masukkan alamat lengkap" />
-            </Form.Item>
-            <Row gutter={16}>
-              <Col span={6}>
-                <Form.Item
-                  name="provinsi"
-                  label="Provinsi"
-                  rules={[{ required: true, message: 'Pilih provinsi' }]}
-                >
-                  <Select placeholder="Pilih Provinsi">
-                    {wilayahOptions.provinsi.map((item) => (
-                      <Option key={item} value={item}>
-                        {item}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item
-                  name="kabupaten"
-                  label="Kabupaten/Kota"
-                  rules={[{ required: true, message: 'Pilih kabupaten' }]}
-                >
-                  <Select placeholder="Pilih Kabupaten">
-                    {wilayahOptions.kabupaten.map((item) => (
-                      <Option key={item} value={item}>
-                        {item}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item
-                  name="kecamatan"
-                  label="Kecamatan"
-                  rules={[{ required: true, message: 'Pilih kecamatan' }]}
-                >
-                  <Select placeholder="Pilih Kecamatan">
-                    {wilayahOptions.kecamatan.map((item) => (
-                      <Option key={item} value={item}>
-                        {item}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={6}>
-                <Form.Item
-                  name="desa"
-                  label="Desa/Kelurahan"
-                  rules={[{ required: true, message: 'Pilih desa' }]}
-                >
-                  <Select placeholder="Pilih Desa">
-                    {wilayahOptions.desa.map((item) => (
-                      <Option key={item} value={item}>
-                        {item}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-          </>
-        );
+  const renderStep2 = () => (
+    <div
+      style={{
+        width: '100%',
+        maxWidth: 800,
+        marginBottom: 32,
+        background: '#fff',
+        border: '1px solid #e2e8f0',
+        borderRadius: 12,
+        padding: 32,
+      }}
+    >
+      <div style={{ marginBottom: 24 }}>
+        <Text style={{ ...labelStyle, fontSize: 15 }}>
+          Data Desa & Kelompok
+        </Text>
+        <Text type="secondary" style={{ fontSize: 13 }}>
+          Isi informasi identitas desa dan kelompok yang mendaftar
+        </Text>
+      </div>
 
-      case 2:
-        return (
-          <>
-            <Title level={4}>Data Program</Title>
-            <Paragraph type="secondary">
-              Isi informasi detail tentang program yang didaftarkan
-            </Paragraph>
-            <Form.Item
-              name="grup_astra_id"
-              label="Grup Astra"
-              rules={[{ required: true, message: 'Pilih grup astra' }]}
-            >
-              <Select placeholder="Pilih Grup Astra">
-                {grupAstraOptions.map((grup) => (
-                  <Option key={grup.id} value={grup.id}>
-                    {grup.name}
-                  </Option>
+      <Row gutter={[24, 0]}>
+        <Col xs={24} sm={12}>
+          <div style={fieldWrapper}>
+            <Text style={labelStyle}>Nama Desa *</Text>
+            <Input
+              placeholder="Contoh: Desa Suka Maju"
+              style={inputStyle}
+              value={formData.nama_desa}
+              onChange={e => updateField('nama_desa', e.target.value)}
+            />
+          </div>
+        </Col>
+        <Col xs={24} sm={12}>
+          <div style={fieldWrapper}>
+            <Text style={labelStyle}>Nama Kelompok / Asosiasi *</Text>
+            <Input
+              placeholder="Contoh: Koperasi Tani Makmur"
+              style={inputStyle}
+              value={formData.nama_kelompok}
+              onChange={e => updateField('nama_kelompok', e.target.value)}
+            />
+          </div>
+        </Col>
+      </Row>
+
+      <div style={fieldWrapper}>
+        <Text style={labelStyle}>Alamat Lengkap *</Text>
+        <TextArea
+          rows={3}
+          placeholder="Detail jalan, RW/RT..."
+          style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }}
+          value={formData.alamat}
+          onChange={e => updateField('alamat', e.target.value)}
+        />
+      </div>
+
+      <div style={{ marginTop: 28, marginBottom: 20 }}>
+        <Text style={{ ...labelStyle, fontSize: 15 }}>
+          Wilayah Administratif
+        </Text>
+        <Text type="secondary" style={{ fontSize: 13 }}>
+          Pilih lokasi wilayah administratif desa
+        </Text>
+      </div>
+
+      <Row gutter={[24, 0]}>
+        {[
+          { key: 'provinsi', label: 'Provinsi', options: wilayahOptions.provinsi },
+          { key: 'kabupaten', label: 'Kabupaten / Kota', options: wilayahOptions.kabupaten },
+          { key: 'kecamatan', label: 'Kecamatan', options: wilayahOptions.kecamatan },
+          { key: 'desa', label: 'Desa / Kelurahan', options: wilayahOptions.desa },
+        ].map(({ key, label, options }) => (
+          <Col xs={24} sm={12} key={key}>
+            <div style={fieldWrapper}>
+              <Text style={labelStyle}>{label} *</Text>
+              <Select
+                placeholder={`Pilih ${label}`}
+                style={{ width: '100%' }}
+                size="large"
+                value={formData[key]}
+                onChange={val => updateField(key, val)}
+              >
+                {options.map(opt => (
+                  <Option key={opt} value={opt}>{opt}</Option>
                 ))}
               </Select>
-            </Form.Item>
-            <Form.Item
-              name="latar_belakang"
-              label="Latar Belakang Program"
-              rules={[{ required: true, message: 'Masukkan latar belakang program' }]}
-            >
-              <TextArea
-                rows={4}
-                placeholder="Jelaskan latar belakang dan alasan program ini dijalankan"
-              />
-            </Form.Item>
-            <Form.Item
-              name="dampak_program"
-              label="Dampak Program"
-              rules={[{ required: true, message: 'Masukkan dampak program' }]}
-            >
-              <TextArea
-                rows={4}
-                placeholder="Jelaskan dampak positif yang diharapkan dari program ini"
-              />
-            </Form.Item>
-          </>
-        );
+            </div>
+          </Col>
+        ))}
+      </Row>
+    </div>
+  );
 
-      case 3:
-        return (
-          <>
-            <Title level={4}>Review Data Pendaftaran</Title>
-            <Paragraph type="secondary">
-              Periksa kembali data yang telah diisi sebelum mengirimkan pendaftaran
-            </Paragraph>
-            <Card title="Pilar & Kategori" style={{ marginBottom: 16 }}>
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Text type="secondary">Pilar Program:</Text>
-                  <br />
-                  <Text strong>
-                    {pilarOptions.find((p) => p.id === formData.pilar_id)?.name || '-'}
-                  </Text>
-                </Col>
-                <Col span={12}>
-                  <Text type="secondary">Kategori:</Text>
-                  <br />
-                  <Text strong>
-                    {kategoriOptions[formData.pilar_id]?.find((k) => k.id === formData.kategori_id)
-                      ?.name || '-'}
-                  </Text>
-                </Col>
-              </Row>
-            </Card>
-            <Card title="Identitas" style={{ marginBottom: 16 }}>
-              <Row gutter={[16, 16]}>
-                <Col span={12}>
-                  <Text type="secondary">Nama Desa:</Text>
-                  <br />
-                  <Text strong>{formData.nama_desa || '-'}</Text>
-                </Col>
-                <Col span={12}>
-                  <Text type="secondary">Nama Kelompok/Individu:</Text>
-                  <br />
-                  <Text strong>{formData.nama_kelompok || '-'}</Text>
-                </Col>
-                <Col span={24}>
-                  <Text type="secondary">Alamat:</Text>
-                  <br />
-                  <Text strong>{formData.alamat || '-'}</Text>
-                </Col>
-                <Col span={6}>
-                  <Text type="secondary">Provinsi:</Text>
-                  <br />
-                  <Text strong>{formData.provinsi || '-'}</Text>
-                </Col>
-                <Col span={6}>
-                  <Text type="secondary">Kabupaten:</Text>
-                  <br />
-                  <Text strong>{formData.kabupaten || '-'}</Text>
-                </Col>
-                <Col span={6}>
-                  <Text type="secondary">Kecamatan:</Text>
-                  <br />
-                  <Text strong>{formData.kecamatan || '-'}</Text>
-                </Col>
-                <Col span={6}>
-                  <Text type="secondary">Desa:</Text>
-                  <br />
-                  <Text strong>{formData.desa || '-'}</Text>
-                </Col>
-              </Row>
-            </Card>
-            <Card title="Data Program">
-              <Row gutter={[16, 16]}>
-                <Col span={24}>
-                  <Text type="secondary">Grup Astra:</Text>
-                  <br />
-                  <Text strong>
-                    {grupAstraOptions.find((g) => g.id === formData.grup_astra_id)?.name || '-'}
-                  </Text>
-                </Col>
-                <Col span={24}>
-                  <Text type="secondary">Latar Belakang:</Text>
-                  <br />
-                  <Text>{formData.latar_belakang || '-'}</Text>
-                </Col>
-                <Col span={24}>
-                  <Text type="secondary">Dampak Program:</Text>
-                  <br />
-                  <Text>{formData.dampak_program || '-'}</Text>
-                </Col>
-              </Row>
-            </Card>
-          </>
-        );
+  // ── Step 3: Program Details ─────────────────────────────────────────────────
 
-      default:
-        return null;
+  const renderStep3 = () => (
+    <div
+      style={{
+        width: '100%',
+        maxWidth: 800,
+        marginBottom: 32,
+        background: '#fff',
+        border: '1px solid #e2e8f0',
+        borderRadius: 12,
+        padding: 32,
+      }}
+    >
+      <div style={{ marginBottom: 24 }}>
+        <Text style={{ ...labelStyle, fontSize: 15 }}>
+          Informasi Program
+        </Text>
+        <Text type="secondary" style={{ fontSize: 13 }}>
+          Jelaskan detail program inisiatif yang akan dijalankan
+        </Text>
+      </div>
+
+      <div style={fieldWrapper}>
+        <Text style={labelStyle}>Grup Astra Pendamping (Opsional)</Text>
+        <Select
+          placeholder="Pilih perusahaan/grup Astra pendamping jika ada..."
+          style={{ width: '100%' }}
+          size="large"
+          allowClear
+          value={formData.grup_astra_id}
+          onChange={val => updateField('grup_astra_id', val)}
+        >
+          {grupAstraOptions.map(g => (
+            <Option key={g.id} value={g.id}>{g.name}</Option>
+          ))}
+        </Select>
+      </div>
+
+      <div style={fieldWrapper}>
+        <Text style={labelStyle}>Latar Belakang / Rasionalisasi *</Text>
+        <TextArea
+          rows={5}
+          placeholder="Jelaskan alasan dan latar belakang inisiatif program ini..."
+          style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }}
+          value={formData.latar_belakang}
+          onChange={e => updateField('latar_belakang', e.target.value)}
+        />
+        <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>
+          Minimal 50 karakter untuk menjelaskan latar belakang program
+        </Text>
+      </div>
+
+      <div>
+        <Text style={labelStyle}>Dampak Program yang Diharapkan *</Text>
+        <TextArea
+          rows={5}
+          placeholder="Jelaskan perubahan atau dampak yang diharapkan dari berjalannya program ini..."
+          style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }}
+          value={formData.dampak_program}
+          onChange={e => updateField('dampak_program', e.target.value)}
+        />
+        <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>
+          Jelaskan target dampak yang ingin dicapai
+        </Text>
+      </div>
+    </div>
+  );
+
+  // ── Step 4: Review ──────────────────────────────────────────────────────────
+
+  const ReviewCard = ({ title, icon, children }) => (
+    <div
+      style={{
+        background: '#fff',
+        border: '1px solid #e2e8f0',
+        borderRadius: 12,
+        padding: 24,
+        marginBottom: 16,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 8,
+            background: '#eff4ff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {icon}
+        </div>
+        <Text strong style={{ fontSize: 15, color: '#002444' }}>
+          {title}
+        </Text>
+      </div>
+      {children}
+    </div>
+  );
+
+  const ReviewField = ({ label, value, span = 12 }) => (
+    <Col xs={24} sm={span}>
+      <div style={{ marginBottom: 12 }}>
+        <Text style={{ color: '#94a3b8', fontSize: 11, display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+          {label}
+        </Text>
+        <Text strong style={{ fontSize: 13, color: '#0f172a' }}>
+          {value || <Text type="secondary" style={{ fontWeight: 400 }}>—</Text>}
+        </Text>
+      </div>
+    </Col>
+  );
+
+  const pilarData = PILARS.find(p => p.id === selectedPilar);
+  const pilarLabel = pilarData?.title || selectedPilar;
+  const grupLabel = grupAstraOptions.find(g => g.id === formData.grup_astra_id)?.name;
+
+  const renderStep4 = () => (
+    <div style={{ width: '100%', maxWidth: 800, marginBottom: 32 }}>
+      <ReviewCard
+        title="Kategori Spesifik"
+        icon={<CheckCircleOutlined style={{ color: '#1890ff', fontSize: 16 }} />}
+      >
+        <Row gutter={[16, 12]}>
+          <ReviewField label="Pilar Terpilih" value={pilarLabel} />
+          <ReviewField label="Sub-kategori" value={selectedKategori} />
+        </Row>
+      </ReviewCard>
+
+      <ReviewCard
+        title="Identitas Pendaftar"
+        icon={<MedicineBoxOutlined style={{ color: '#1890ff', fontSize: 16 }} />}
+      >
+        <Row gutter={[16, 12]}>
+          <ReviewField label="Nama Desa" value={formData.nama_desa} />
+          <ReviewField label="Nama Kelompok / Asosiasi" value={formData.nama_kelompok} />
+          <ReviewField label="Alamat Lengkap" value={formData.alamat} span={24} />
+          <ReviewField label="Provinsi" value={formData.provinsi} />
+          <ReviewField label="Kabupaten / Kota" value={formData.kabupaten} />
+          <ReviewField label="Kecamatan" value={formData.kecamatan} />
+          <ReviewField label="Desa / Kelurahan" value={formData.desa} />
+        </Row>
+      </ReviewCard>
+
+      <ReviewCard
+        title="Detail Program"
+        icon={<EnvironmentOutlined style={{ color: '#1890ff', fontSize: 16 }} />}
+      >
+        <Row gutter={[16, 12]}>
+          <ReviewField label="Grup Astra Pendamping" value={grupLabel || 'Belum dipilih'} span={24} />
+          <ReviewField label="Latar Belakang / Rasionalisasi" value={formData.latar_belakang} span={24} />
+          <ReviewField label="Dampak Program yang Diharapkan" value={formData.dampak_program} span={24} />
+        </Row>
+      </ReviewCard>
+    </div>
+  );
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1: return renderStep1();
+      case 2: return renderStep2();
+      case 3: return renderStep3();
+      case 4: return renderStep4();
+      default: return null;
     }
   };
 
-  if (submitted) {
-    return (
-      <Result
-        status="success"
-        title="Pendaftaran Berhasil Dikirim!"
-        subTitle="Status pendaftaran Anda: Menunggu Screening. Anda dapat melihat progress di dashboard."
-        extra={[
-          <Button type="primary" key="dashboard" onClick={() => navigate('/peserta/dashboard')}>
-            Ke Dashboard
-          </Button>,
-        ]}
-      />
-    );
-  }
+  // ── Layout ──────────────────────────────────────────────────────────────────
 
   return (
-    <div>
-      <Title level={3}>Formulir Pendaftaran</Title>
-      <Paragraph type="secondary">
-        Lengkapi formulir pendaftaran berikut untuk mendaftar program Desa Sejahtera Astra
-      </Paragraph>
+    <>
+      <div style={{ background: '#f8faff', minHeight: '100%' }}>
+        <div
+          style={{
+            padding: '40px 24px 60px',
+            maxWidth: 1000,
+            margin: '0 auto',
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          {/* Stepper */}
+          <div
+            style={{
+              position: 'relative',
+              display: 'flex',
+              justifyContent: 'space-between',
+              width: '100%',
+              maxWidth: 520,
+              marginBottom: 48,
+            }}
+          >
+            {/* Connector line - background */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 16,
+                left: 40,
+                right: 40,
+                height: 2,
+                background: '#e2e8f0',
+                zIndex: 0,
+              }}
+            />
+            {/* Connector line - progress */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 16,
+                left: 40,
+                width: `calc(${((currentStep - 1) / (STEPS.length - 1)) * 100}% - 0px)`,
+                height: 2,
+                background: '#002444',
+                zIndex: 0,
+                transition: 'width 0.3s ease',
+              }}
+            />
 
-      <Steps current={current} items={steps} style={{ marginBottom: 32 }} />
+            {STEPS.map((step, i) => {
+              const stepNum = i + 1;
+              const isActive = currentStep === stepNum;
+              const isPast = currentStep > stepNum;
+              return (
+                <div
+                  key={step}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    zIndex: 1,
+                    background: '#f8faff',
+                    padding: '0 8px',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 700,
+                      fontSize: 13,
+                      marginBottom: 8,
+                      background: isActive || isPast ? '#002444' : '#e5eeff',
+                      color: isActive || isPast ? '#fff' : '#436084',
+                      transition: 'all 0.3s ease',
+                      boxShadow: isActive ? '0 0 0 4px rgba(0,36,68,0.15)' : 'none',
+                    }}
+                  >
+                    {isPast ? <CheckOutlined style={{ fontSize: 14 }} /> : stepNum}
+                  </div>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      fontWeight: isActive ? 700 : 600,
+                      color: isActive || isPast ? '#002444' : '#94a3b8',
+                      transition: 'color 0.2s',
+                    }}
+                  >
+                    {step}
+                  </Text>
+                </div>
+              );
+            })}
+          </div>
 
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={formData}
-        onValuesChange={(changedValues, allValues) => {
-          setFormData({ ...formData, ...changedValues });
-        }}
-      >
-        {renderStepContent()}
+          {/* Title */}
+          <Title
+            level={2}
+            style={{
+              color: '#002444',
+              textAlign: 'center',
+              marginBottom: 8,
+              fontWeight: 700,
+            }}
+          >
+            {STEP_TITLES[currentStep - 1]}
+          </Title>
+          <Paragraph
+            style={{
+              color: '#64748b',
+              textAlign: 'center',
+              marginBottom: 40,
+              maxWidth: 560,
+              fontSize: 14,
+            }}
+          >
+            {STEP_SUBTITLES[currentStep - 1]}
+          </Paragraph>
 
-        <Divider />
+          {/* Step Content */}
+          {renderStepContent()}
 
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          {current > 0 && (
-            <Button onClick={prev}>
-              Kembali
-            </Button>
-          )}
-          <div style={{ marginLeft: 'auto' }}>
-            {current < steps.length - 1 && (
-              <Button type="primary" onClick={next}>
-                Selanjutnya
-              </Button>
-            )}
-            {current === steps.length - 1 && (
-              <Button type="primary" onClick={handleSubmit} icon={<CheckCircleOutlined />}>
-                Kirim Pendaftaran
-              </Button>
-            )}
+          {/* Navigation Footer */}
+          <div
+            style={{
+              width: '100%',
+              maxWidth: 800,
+              borderTop: '1px solid #e2e8f0',
+              paddingTop: 24,
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              {currentStep > 1 ? (
+                <Button
+                  type="text"
+                  icon={<ArrowLeftOutlined />}
+                  onClick={prevStep}
+                  style={{ fontWeight: 600, color: '#64748b', height: 40 }}
+                >
+                  Kembali
+                </Button>
+              ) : (
+                <Button
+                  type="text"
+                  icon={<ArrowLeftOutlined />}
+                  onClick={() => navigate('/peserta/dashboard')}
+                  style={{ fontWeight: 600, color: '#64748b', height: 40 }}
+                >
+                  Kembali ke Beranda
+                </Button>
+              )}
+
+              {currentStep < 4 ? (
+                <Button
+                  onClick={nextStep}
+                  style={{
+                    background: '#002444',
+                    borderColor: '#002444',
+                    color: '#fff',
+                    fontWeight: 600,
+                    height: 40,
+                    paddingLeft: 24,
+                    paddingRight: 24,
+                    borderRadius: 8,
+                  }}
+                >
+                  Lanjut ke {STEPS[currentStep]} <ArrowRightOutlined />
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleSubmit}
+                  style={{
+                    background: '#0051d5',
+                    borderColor: '#0051d5',
+                    color: '#fff',
+                    fontWeight: 600,
+                    height: 40,
+                    paddingLeft: 24,
+                    paddingRight: 24,
+                    borderRadius: 8,
+                  }}
+                >
+                  Kirim Pendaftaran <CheckCircleOutlined />
+                </Button>
+              )}
+            </div>
           </div>
         </div>
-      </Form>
-    </div>
+      </div>
+
+      {/* Confirmation Modal */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <ExclamationCircleOutlined style={{ color: '#faad14', fontSize: 20 }} />
+            <span>Konfirmasi Pendaftaran</span>
+          </div>
+        }
+        open={showConfirmModal}
+        onOk={confirmSubmit}
+        onCancel={() => setShowConfirmModal(false)}
+        okText="Ya, Kirim"
+        cancelText="Batal"
+        okButtonProps={{
+          style: {
+            background: '#0051d5',
+            borderColor: '#0051d5',
+            fontWeight: 600,
+          },
+        }}
+        cancelButtonProps={{
+          style: { fontWeight: 600 },
+        }}
+      >
+        <div style={{ padding: '8px 0' }}>
+          <Paragraph style={{ marginBottom: 16, fontSize: 14 }}>
+            Pastikan semua data yang Anda isi sudah benar. Setelah dikirim, pendaftaran akan masuk ke tahap <Text strong>Screening</Text> oleh tim admin.
+          </Paragraph>
+          <div
+            style={{
+              background: '#f6f8fa',
+              borderRadius: 8,
+              padding: 16,
+              border: '1px solid #e8e8e8',
+            }}
+          >
+            <Text style={{ fontSize: 13, color: '#64748b' }}>Ringkasan:</Text>
+            <div style={{ marginTop: 8 }}>
+              <Text style={{ fontSize: 13 }}>
+                <Text type="secondary">Pilar:</Text>{' '}
+                <Text strong>{pilarLabel}</Text>
+              </Text>
+              {selectedKategori && (
+                <Text style={{ fontSize: 13, display: 'block', marginTop: 4 }}>
+                  <Text type="secondary">Kategori:</Text>{' '}
+                  <Text strong>{selectedKategori}</Text>
+                </Text>
+              )}
+              {formData.nama_desa && (
+                <Text style={{ fontSize: 13, display: 'block', marginTop: 4 }}>
+                  <Text type="secondary">Desa:</Text>{' '}
+                  <Text strong>{formData.nama_desa}</Text>
+                </Text>
+              )}
+            </div>
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 };
 

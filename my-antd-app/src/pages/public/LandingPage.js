@@ -104,10 +104,15 @@ const LandingPage = () => {
           height: 80,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
           <img
             src={astraLogo}
             alt="Astra Logo"
+            style={{ height: 45, objectFit: 'contain' }}
+          />
+          <img
+            src={satuIndoLogo}
+            alt="Satu Indonesia Logo"
             style={{ height: 45, objectFit: 'contain' }}
           />
         </div>

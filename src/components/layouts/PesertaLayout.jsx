@@ -14,6 +14,7 @@ import {
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import useIsMobile from '../../hooks/useIsMobile';
+import useAuthStore from '../../stores/authStore';
 
 const { Header, Content, Sider } = Layout;
 const { Text } = Typography;
@@ -43,9 +44,10 @@ const PesertaLayout = () => {
     navigate(key);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('token');
+  const { logout } = useAuthStore();
+
+  const handleLogout = async () => {
+    await logout();
     navigate('/');
   };
 

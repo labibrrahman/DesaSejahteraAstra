@@ -2,10 +2,12 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import idID from 'antd/locale/id_ID';
+import useAuthStore from './stores/authStore';
 
 // Public Pages
 import LandingPage from './pages/public/LandingPage';
 import Login from './pages/public/Login';
+import AuthCallback from './pages/public/AuthCallback';
 
 // Peserta Pages
 import PesertaLayout from './components/layouts/PesertaLayout';
@@ -33,10 +35,9 @@ import './App.css';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  // TODO: Implement actual auth check
-  const userRole = localStorage.getItem('userRole') || 'peserta';
+  const { isAuthenticated, role } = useAuthStore();
 
-  if (!allowedRoles.includes(userRole)) {
+  if (!isAuthenticated || !allowedRoles.includes(role)) {
     return <Navigate to="/login" replace />;
   }
 
@@ -53,6 +54,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/login/admin" element={<Login role="admin" />} />
           <Route path="/login/juri" element={<Login role="juri" />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
 
           {/* Peserta Routes */}
           <Route

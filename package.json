@@ -2,6 +2,9 @@
   "name": "desa-sejahtera-astra",
   "version": "1.0.0",
   "private": true,
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "dependencies": {
     "@ant-design/icons": "^6.2.5",
     "antd": "^6.4.3",

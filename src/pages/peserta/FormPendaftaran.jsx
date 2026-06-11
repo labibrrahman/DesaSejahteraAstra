@@ -458,13 +458,17 @@ const FormPendaftaran = () => {
   return (
     <>
       {/* Header */}
+      {!registrationId && (
       <div style={{ position: 'sticky', top: 0, zIndex: 100, background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', gap: 12 }}>
-        <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/peserta/dashboard')} style={{ fontWeight: 600, color: '#64748b' }}>
-          Kembali
-        </Button>
-        <div style={{ height: 20, width: 1, background: '#e2e8f0' }} />
+          <>
+            <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} style={{ fontWeight: 600, color: '#64748b' }}>
+              Kembali
+            </Button>
+            <div style={{ height: 20, width: 1, background: '#e2e8f0' }} />
+          </>
         <Text strong style={{ fontSize: 14, color: '#1e293b' }}>Formulir Pendaftaran</Text>
       </div>
+      )}
 
       <div style={{ background: '#f8faff', minHeight: 'calc(100vh - 56px)' }}>
         <div style={{ padding: '40px 24px 60px', maxWidth: 1000, margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>

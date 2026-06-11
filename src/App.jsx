@@ -13,6 +13,7 @@ import AuthCallback from './pages/public/AuthCallback';
 import PesertaLayout from './components/layouts/PesertaLayout';
 import PesertaDashboard from './pages/peserta/PesertaDashboard';
 import FormPendaftaran from './pages/peserta/FormPendaftaran';
+import PendaftaranGuard from './pages/peserta/PendaftaranGuard';
 
 // Admin Pages
 import AdminLayout from './components/layouts/AdminLayout';
@@ -56,7 +57,7 @@ function App() {
           <Route path="/login/juri" element={<Login role="juri" />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
 
-          {/* Peserta Routes */}
+          {/* Peserta Routes — dengan sidebar */}
           <Route
             path="/peserta"
             element={
@@ -67,7 +68,19 @@ function App() {
           >
             <Route index element={<PesertaDashboard />} />
             <Route path="dashboard" element={<PesertaDashboard />} />
-            <Route path="pendaftaran" element={<FormPendaftaran />} />
+          </Route>
+
+          {/* Form Pendaftaran — guard cek status registrasi */}
+          <Route
+            path="/peserta/pendaftaran"
+            element={
+              <ProtectedRoute allowedRoles={['peserta']}>
+                <PendaftaranGuard />
+              </ProtectedRoute>
+            }
+          >
+            {/* Child route: tampil tanpa sidebar (Outlet) */}
+            <Route index element={<FormPendaftaran />} />
           </Route>
 
           {/* Admin Routes */}

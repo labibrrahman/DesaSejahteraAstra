@@ -6,6 +6,7 @@ import {
   Typography,
   Button,
   Space,
+  Spin,
 } from 'antd';
 import {
   FileTextOutlined,
@@ -18,25 +19,59 @@ import {
   ArrowRightOutlined,
   InfoCircleOutlined,
 } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import useRegistration from '../../hooks/useRegistration';
 
 const { Title, Text, Paragraph } = Typography;
 
-// Dummy data - will be replaced with API calls
-const pesertaData = {
-  nama: 'Bapak Ahmad',
-  nama_desa: 'Desa Sejahtera Mandiri',
-  nama_kelompok: 'Tani Maju Bersama',
-  pilar: 'Kewirausahaan',
-  status: 2, // Menunggu Screening
-  status_label: 'Menunggu Screening',
-};
-
 const PesertaDashboard = () => {
+  const navigate = useNavigate();
+  const { registration, loading, hasRegistration } = useRegistration();
+
+  // Loading
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
+        <Spin size="large" description="Memuat data..." />
+      </div>
+    );
+  }
+
+  // Belum ada registrasi → redirect ke form
+  if (!hasRegistration) {
+    navigate('/peserta/pendaftaran', { replace: true });
+    return null;
+  }
+
+  // Data dari API
+  const reg = registration;
+  const nama = reg?.user?.name || 'Peserta';
+  const namaDesa = reg?.villageName || '—';
+  const namaKelompok = reg?.groupName || '—';
+  const pilar = reg?.pillar?.name || '—';
+  const status = reg?.status || 'draft';
+
+  const statusLabel = {
+    draft: 'Draft',
+    waiting_screening: 'Menunggu Screening',
+    being_assessed: 'Sedang Dinilai',
+    assessed: 'Selesai Dinilai',
+    finalist: 'Finalis',
+  }[status] || status;
+
+  const statusStep = {
+    draft: 0,
+    waiting_screening: 1,
+    being_assessed: 2,
+    assessed: 3,
+    finalist: 4,
+  }[status] || 0;
+
   const statusSteps = [
-    { title: 'Registration', icon: <CheckCircleFilled />, completed: true },
-    { title: 'Screening', icon: <SearchOutlined />, current: true },
-    { title: 'Assessment', icon: <FormOutlined />, completed: false },
-    { title: 'Finalist', icon: <TrophyOutlined />, completed: false },
+    { title: 'Registration', icon: <CheckCircleFilled />, completed: statusStep >= 1 },
+    { title: 'Screening', icon: <SearchOutlined />, current: statusStep === 1, completed: statusStep > 1 },
+    { title: 'Assessment', icon: <FormOutlined />, current: statusStep === 2, completed: statusStep > 2 },
+    { title: 'Finalist', icon: <TrophyOutlined />, current: statusStep >= 3, completed: statusStep > 3 },
   ];
 
   return (
@@ -88,7 +123,7 @@ const PesertaDashboard = () => {
         <Row justify="space-between" align="middle">
           <Col>
             <Title level={3} style={{ color: '#fff', margin: 0, marginBottom: 10, fontWeight: 600 }}>
-              Selamat Datang, {pesertaData.nama}!
+              Selamat Datang, {nama}!
             </Title>
             <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, lineHeight: 1.6 }}>
               Pantau kemajuan pendaftaran dan kelola informasi program desa Anda di sini.
@@ -120,7 +155,7 @@ const PesertaDashboard = () => {
               <Space size={8}>
                 <ClockCircleOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
                 <Text strong style={{ color: '#fff', fontSize: 14 }}>
-                  {pesertaData.status_label}
+                  {statusLabel}
                 </Text>
               </Space>
             </div>
@@ -264,7 +299,7 @@ const PesertaDashboard = () => {
                       Pilar Program
                     </Text>
                     <Text strong style={{ fontSize: 15, color: '#1e293b' }}>
-                      {pesertaData.pilar}
+                      {pilar}
                     </Text>
                   </div>
                 </Col>
@@ -291,7 +326,7 @@ const PesertaDashboard = () => {
                       Nama Desa
                     </Text>
                     <Text strong style={{ fontSize: 15, color: '#1e293b' }}>
-                      {pesertaData.nama_desa}
+                      {namaDesa}
                     </Text>
                   </div>
                 </Col>
@@ -318,7 +353,7 @@ const PesertaDashboard = () => {
                       Nama Kelompok
                     </Text>
                     <Text strong style={{ fontSize: 15, color: '#1e293b' }}>
-                      {pesertaData.nama_kelompok}
+                      {namaKelompok}
                     </Text>
                   </div>
                 </Col>

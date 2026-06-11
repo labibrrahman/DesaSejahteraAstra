@@ -49,7 +49,7 @@ const authService = {
    * Backend: GET /api/auth/google (redirect browser ke Google)
    */
   redirectToGoogle: () => {
-    const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
+    const baseURL = import.meta.env.VITE_API_BASE_URL;
     window.location.href = `${baseURL}/auth/google`;
   },
 };

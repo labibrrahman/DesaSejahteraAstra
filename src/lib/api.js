@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',
@@ -69,7 +69,7 @@ api.interceptors.response.use(
       try {
         // Panggil endpoint refresh (tanpa interceptor supaya tidak loop)
         const { data } = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'}/auth/refresh`,
+          `${import.meta.env.VITE_API_BASE_URL}/auth/refresh`,
           { refresh_token: refreshToken },
           { headers: { 'Content-Type': 'application/json' } }
         );

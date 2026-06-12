@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   Form,
@@ -14,72 +14,127 @@ import {
   message,
   Result,
   Progress,
+  Spin,
 } from 'antd';
 import {
   SaveOutlined,
   ArrowLeftOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
+import adminService from '../../services/adminService';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 
-// Dummy data - will be replaced with API calls
-const pesertaDetail = {
-  id: '1',
-  nama_desa: 'Desa Sukamaju',
-  nama_kelompok: 'Kelompok Tani Makmur',
-  pilar: 'Pilar Ekonomi',
-  kategori: 'UMKM',
-  wilayah: 'Jawa Barat - Bandung - Cidadap - Desa Sukamaju',
-  alamat: 'Jl. Raya Sukamaju No. 123, RT 01/RW 02',
-  grup_astra: 'Grup Astra 1',
-  latar_belakang: 'Program ini bertujuan untuk meningkatkan kapasitas UMKM di Desa Sukamaju melalui pelatihan dan pendampingan usaha. Desa memiliki potensi besar dalam sektor pertanian dan kerajinan yang perlu dikembangkan.',
-  dampak_program: 'Diharapkan dapat meningkatkan pendapatan UMKM sebesar 30% dalam 2 tahun, menciptakan 50 lapangan kerja baru, dan mengembangkan produk unggulan desa yang dapat bersaing di pasar regional.',
-};
-
-const kriteriaPenilaian = [
+/** Kriteria penilaian yang ditampilkan di form */
+const KRITERIA_PENILAIAN = [
   {
-    key: 'kriteria1',
+    key: 'criteria1',
     label: 'Kriteria 1: Inovasi & Kreativitas',
     description: 'Penilaian terhadap tingkat inovasi dan kreativitas dalam program yang diajukan',
   },
   {
-    key: 'kriteria2',
+    key: 'criteria2',
     label: 'Kriteria 2: Dampak & Keberlanjutan',
     description: 'Penilaian terhadap dampak program dan aspek keberlanjutan jangka panjang',
   },
   {
-    key: 'kriteria3',
+    key: 'criteria3',
     label: 'Kriteria 3: Kelayakan & Implementasi',
     description: 'Penilaian terhadap kelayakan teknis dan rencana implementasi program',
   },
 ];
 
+/**
+ * Mapping data registration dari API ke format UI.
+ */
+const mapRegistrationFromApi = (item) => ({
+  id: item.id,
+  nama_desa: item.villageName || '-',
+  nama_kelompok: item.groupName || '-',
+  pilar: item.pillar?.name || '-',
+  kategori: item.category?.name || '-',
+  wilayah: [
+    item.province?.name,
+    item.city?.name,
+    item.district?.name,
+    item.villageRegion?.name,
+  ].filter(Boolean).join(' - ') || '-',
+  alamat: item.address || '-',
+  grup_astra: item.astraGroup?.name || '-',
+  latar_belakang: item.background || '-',
+  dampak_program: item.programImpact || '-',
+});
+
 const JuriFormPenilaian = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const [peserta, setPeserta] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [totalScore, setTotalScore] = useState(0);
 
-  const handleValuesChange = (changedValues, allValues) => {
-    const total = (allValues.kriteria1 || 0) + (allValues.kriteria2 || 0) + (allValues.kriteria3 || 0);
+  /** Fetch detail peserta dari API */
+  const fetchDetail = useCallback(async () => {
+    setLoading(true);
+    try {
+      const result = await adminService.getRegistrationDetail(id);
+      setPeserta(mapRegistrationFromApi(result));
+    } catch (error) {
+      message.error('Gagal memuat data peserta');
+      console.error('Fetch registration detail error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchDetail();
+  }, [fetchDetail]);
+
+  /** Update total score saat nilai berubah */
+  const handleValuesChange = (_, allValues) => {
+    const total =
+      (allValues.criteria1 || 0) +
+      (allValues.criteria2 || 0) +
+      (allValues.criteria3 || 0);
     setTotalScore(total);
   };
 
+  /** Submit penilaian ke API */
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      const total = values.kriteria1 + values.kriteria2 + values.kriteria3;
-      console.log('Penilaian submitted:', { peserta_id: id, ...values, total });
-      // TODO: Send to API
+      setSubmitting(true);
+
+      await adminService.createAssessment({
+        registrationId: id,
+        criteria1: values.criteria1,
+        criteria2: values.criteria2,
+        criteria3: values.criteria3,
+        notes: values.notes || undefined,
+      });
+
       message.success('Penilaian berhasil disubmit!');
       setSubmitted(true);
     } catch (error) {
-      console.log('Validation failed:', error);
+      if (error.response) {
+        message.error(error.response.data?.message || 'Gagal menyimpan penilaian');
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: 100 }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   if (submitted) {
     return (
@@ -95,6 +150,20 @@ const JuriFormPenilaian = () => {
             Lihat Riwayat
           </Button>,
         ]}
+      />
+    );
+  }
+
+  if (!peserta) {
+    return (
+      <Result
+        status="404"
+        title="Peserta Tidak Ditemukan"
+        extra={
+          <Button type="primary" onClick={() => navigate('/juri/peserta')}>
+            Kembali ke Daftar Peserta
+          </Button>
+        }
       />
     );
   }
@@ -118,23 +187,23 @@ const JuriFormPenilaian = () => {
         <Col xs={24} lg={10}>
           <Card title="Informasi Peserta" style={{ marginBottom: 24 }}>
             <Descriptions column={1} size="small">
-              <Descriptions.Item label="Nama Desa">{pesertaDetail.nama_desa}</Descriptions.Item>
-              <Descriptions.Item label="Kelompok">{pesertaDetail.nama_kelompok}</Descriptions.Item>
+              <Descriptions.Item label="Nama Desa">{peserta.nama_desa}</Descriptions.Item>
+              <Descriptions.Item label="Kelompok">{peserta.nama_kelompok}</Descriptions.Item>
               <Descriptions.Item label="Pilar">
-                <Tag color="blue">{pesertaDetail.pilar}</Tag>
+                <Tag color="blue">{peserta.pilar}</Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="Kategori">{pesertaDetail.kategori}</Descriptions.Item>
-              <Descriptions.Item label="Wilayah">{pesertaDetail.wilayah}</Descriptions.Item>
-              <Descriptions.Item label="Grup Astra">{pesertaDetail.grup_astra}</Descriptions.Item>
+              <Descriptions.Item label="Kategori">{peserta.kategori}</Descriptions.Item>
+              <Descriptions.Item label="Wilayah">{peserta.wilayah}</Descriptions.Item>
+              <Descriptions.Item label="Grup Astra">{peserta.grup_astra}</Descriptions.Item>
             </Descriptions>
           </Card>
 
           <Card title="Latar Belakang Program" style={{ marginBottom: 24 }}>
-            <Paragraph>{pesertaDetail.latar_belakang}</Paragraph>
+            <Paragraph>{peserta.latar_belakang}</Paragraph>
           </Card>
 
           <Card title="Dampak Program">
-            <Paragraph>{pesertaDetail.dampak_program}</Paragraph>
+            <Paragraph>{peserta.dampak_program}</Paragraph>
           </Card>
         </Col>
 
@@ -160,7 +229,7 @@ const JuriFormPenilaian = () => {
               layout="vertical"
               onValuesChange={handleValuesChange}
             >
-              {kriteriaPenilaian.map((kriteria, index) => (
+              {KRITERIA_PENILAIAN.map((kriteria) => (
                 <Card
                   key={kriteria.key}
                   type="inner"
@@ -189,7 +258,7 @@ const JuriFormPenilaian = () => {
               ))}
 
               <Card type="inner" title="Catatan Juri" style={{ marginBottom: 16 }}>
-                <Form.Item name="catatan">
+                <Form.Item name="notes">
                   <TextArea
                     rows={4}
                     placeholder="Tambahkan catatan atau komentar untuk peserta (opsional)"
@@ -205,6 +274,7 @@ const JuriFormPenilaian = () => {
                   type="primary"
                   icon={<SaveOutlined />}
                   onClick={handleSubmit}
+                  loading={submitting}
                   disabled={totalScore === 0}
                 >
                   Submit Penilaian

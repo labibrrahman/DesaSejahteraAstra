@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   Table,
@@ -10,67 +10,81 @@ import {
   Typography,
   Modal,
   Descriptions,
+  Spin,
+  message,
 } from 'antd';
 import {
   SearchOutlined,
   EyeOutlined,
   FilterOutlined,
 } from '@ant-design/icons';
+import adminService from '../../services/adminService';
 
 const { Title, Text, Paragraph } = Typography;
 
-// Dummy data - will be replaced with API calls
-const historyData = [
-  {
-    key: '1',
-    nama_desa: 'Desa Sukamaju',
-    nama_kelompok: 'Kelompok Tani Makmur',
-    pilar: 'Pilar Ekonomi',
-    kategori: 'UMKM',
-    kriteria1: 85,
-    kriteria2: 90,
-    kriteria3: 88,
-    total: 263,
-    tanggal_nilai: '2026-01-20',
-    catatan: 'Program sangat inovatif dan memiliki dampak yang baik untuk masyarakat.',
-  },
-  {
-    key: '2',
-    nama_desa: 'Desa Makmur',
-    nama_kelompok: 'Kelompok Wanita Sejahtera',
-    pilar: 'Pilar Sosial',
-    kategori: 'Pendidikan',
-    kriteria1: 78,
-    kriteria2: 82,
-    kriteria3: 75,
-    total: 235,
-    tanggal_nilai: '2026-01-19',
-    catatan: 'Program cukup baik, namun perlu ditingkatkan aspek keberlanjutan.',
-  },
-  {
-    key: '3',
-    nama_desa: 'Desa Sejahtera',
-    nama_kelompok: 'Kelompok Tani Hijau',
-    pilar: 'Pilar Lingkungan',
-    kategori: 'Konservasi',
-    kriteria1: 92,
-    kriteria2: 95,
-    kriteria3: 90,
-    total: 277,
-    tanggal_nilai: '2026-01-18',
-    catatan: 'Program luar biasa dengan dampak lingkungan yang sangat positif.',
-  },
-];
+/**
+ * Mapping data assessment dari API ke format UI.
+ */
+const mapFromApi = (item) => ({
+  id: item.id,
+  nama_desa: item.registration?.villageName || '-',
+  nama_kelompok: item.registration?.groupName || '-',
+  pilar: item.registration?.pillar?.name || '-',
+  kategori: item.registration?.category?.name || '-',
+  kriteria1: item.criteria1 || 0,
+  kriteria2: item.criteria2 || 0,
+  kriteria3: item.criteria3 || 0,
+  total: item.totalScore || 0,
+  tanggal_nilai: item.createdAt
+    ? new Date(item.createdAt).toLocaleDateString('id-ID')
+    : '-',
+  catatan: item.notes || '-',
+});
 
 const JuriPenilaianHistory = () => {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
 
-  const filteredData = historyData.filter((item) => {
-    return item.nama_desa.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.nama_kelompok.toLowerCase().includes(searchText.toLowerCase());
+  /** Fetch riwayat penilaian juri dari API */
+  const fetchHistory = useCallback(async () => {
+    setLoading(true);
+    try {
+      const result = await adminService.getMyAssessmentHistory();
+      const list = Array.isArray(result) ? result : [];
+      setData(list.map(mapFromApi));
+    } catch (error) {
+      message.error('Gagal memuat riwayat penilaian');
+      console.error('Fetch history error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
+
+  /** Filter data di client side */
+  const filteredData = data.filter((item) => {
+    return (
+      item.nama_desa.toLowerCase().includes(searchText.toLowerCase()) ||
+      item.nama_kelompok.toLowerCase().includes(searchText.toLowerCase())
+    );
   });
+
+  /** Hitung statistik */
+  const stats = {
+    total: data.length,
+    rataRata: data.length > 0
+      ? Math.round(data.reduce((sum, item) => sum + item.total, 0) / data.length)
+      : 0,
+    tertinggi: data.length > 0
+      ? Math.max(...data.map((item) => item.total))
+      : 0,
+  };
 
   const showDetail = (record) => {
     setSelectedRecord(record);
@@ -95,21 +109,9 @@ const JuriPenilaianHistory = () => {
         </Button>
       ),
     },
-    {
-      title: 'Kelompok',
-      dataIndex: 'nama_kelompok',
-      key: 'nama_kelompok',
-    },
-    {
-      title: 'Pilar',
-      dataIndex: 'pilar',
-      key: 'pilar',
-    },
-    {
-      title: 'Kategori',
-      dataIndex: 'kategori',
-      key: 'kategori',
-    },
+    { title: 'Kelompok', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
+    { title: 'Pilar', dataIndex: 'pilar', key: 'pilar' },
+    { title: 'Kategori', dataIndex: 'kategori', key: 'kategori' },
     {
       title: 'Kriteria 1',
       dataIndex: 'kriteria1',
@@ -145,20 +147,12 @@ const JuriPenilaianHistory = () => {
         </Tag>
       ),
     },
-    {
-      title: 'Tanggal',
-      dataIndex: 'tanggal_nilai',
-      key: 'tanggal_nilai',
-    },
+    { title: 'Tanggal', dataIndex: 'tanggal_nilai', key: 'tanggal_nilai' },
     {
       title: 'Aksi',
       key: 'action',
       render: (_, record) => (
-        <Button
-          type="link"
-          icon={<EyeOutlined />}
-          onClick={() => showDetail(record)}
-        >
+        <Button type="link" icon={<EyeOutlined />} onClick={() => showDetail(record)}>
           Detail
         </Button>
       ),
@@ -175,13 +169,28 @@ const JuriPenilaianHistory = () => {
       {/* Summary Cards */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={8}>
-          <Card><div style={{ textAlign: 'center' }}><Title level={2} style={{ margin: 0, color: '#1890ff' }}>{historyData.length}</Title><Text type="secondary">Total Penilaian</Text></div></Card>
+          <Card>
+            <div style={{ textAlign: 'center' }}>
+              <Title level={2} style={{ margin: 0, color: '#1890ff' }}>{stats.total}</Title>
+              <Text type="secondary">Total Penilaian</Text>
+            </div>
+          </Card>
         </Col>
         <Col xs={24} sm={8}>
-          <Card><div style={{ textAlign: 'center' }}><Title level={2} style={{ margin: 0, color: '#52c41a' }}>{Math.round(historyData.reduce((sum, item) => sum + item.total, 0) / historyData.length)}</Title><Text type="secondary">Rata-rata Nilai</Text></div></Card>
+          <Card>
+            <div style={{ textAlign: 'center' }}>
+              <Title level={2} style={{ margin: 0, color: '#52c41a' }}>{stats.rataRata}</Title>
+              <Text type="secondary">Rata-rata Nilai</Text>
+            </div>
+          </Card>
         </Col>
         <Col xs={24} sm={8}>
-          <Card><div style={{ textAlign: 'center' }}><Title level={2} style={{ margin: 0, color: '#722ed1' }}>{Math.max(...historyData.map(item => item.total))}</Title><Text type="secondary">Nilai Tertinggi</Text></div></Card>
+          <Card>
+            <div style={{ textAlign: 'center' }}>
+              <Title level={2} style={{ margin: 0, color: '#722ed1' }}>{stats.tertinggi}</Title>
+              <Text type="secondary">Nilai Tertinggi</Text>
+            </div>
+          </Card>
         </Col>
       </Row>
 
@@ -189,17 +198,34 @@ const JuriPenilaianHistory = () => {
       <Card style={{ marginBottom: 24 }}>
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12}>
-            <Input placeholder="Cari nama desa atau kelompok..." prefix={<SearchOutlined />} value={searchText} onChange={(e) => setSearchText(e.target.value)} allowClear />
+            <Input
+              placeholder="Cari nama desa atau kelompok..."
+              prefix={<SearchOutlined />}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              allowClear
+            />
           </Col>
           <Col xs={24} sm={12}>
-            <Button icon={<FilterOutlined />}>Filter Lanjutan</Button>
+            <Button icon={<FilterOutlined />} onClick={() => setSearchText('')}>
+              Reset Filter
+            </Button>
           </Col>
         </Row>
       </Card>
 
       {/* Table */}
       <Card>
-        <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 10 }} size="middle" scroll={{ x: 1000 }} />
+        <Spin spinning={loading}>
+          <Table
+            columns={columns}
+            dataSource={filteredData}
+            rowKey="id"
+            pagination={{ pageSize: 10 }}
+            size="middle"
+            scroll={{ x: 1000 }}
+          />
+        </Spin>
       </Card>
 
       {/* Detail Modal */}

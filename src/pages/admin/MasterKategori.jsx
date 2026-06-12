@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   Table,
@@ -12,81 +12,126 @@ import {
   Popconfirm,
   message,
   Tag,
+  Spin,
 } from 'antd';
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
+import masterService from '../../services/masterService';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-// Dummy data - will be replaced with API calls
-const initialData = [
-  { key: '1', nama: 'UMKM', pilar_id: '1', pilar_nama: 'Pilar Ekonomi', status: 'active' },
-  { key: '2', nama: 'Koperasi', pilar_id: '1', pilar_nama: 'Pilar Ekonomi', status: 'active' },
-  { key: '3', nama: 'Kewirausahaan', pilar_id: '1', pilar_nama: 'Pilar Ekonomi', status: 'active' },
-  { key: '4', nama: 'Pendidikan', pilar_id: '2', pilar_nama: 'Pilar Sosial', status: 'active' },
-  { key: '5', nama: 'Kesehatan', pilar_id: '2', pilar_nama: 'Pilar Sosial', status: 'active' },
-  { key: '6', nama: 'Konservasi', pilar_id: '3', pilar_nama: 'Pilar Lingkungan', status: 'active' },
-];
+/**
+ * Mapping data dari API ke format UI.
+ */
+const mapFromApi = (item) => ({
+  id: item.id,
+  nama: item.name,
+  pilar_id: item.pillarId || item.pillar?.id || '',
+  pilar_nama: item.pillar?.name || '',
+});
 
-const pilarOptions = [
-  { id: '1', nama: 'Pilar Ekonomi' },
-  { id: '2', nama: 'Pilar Sosial' },
-  { id: '3', nama: 'Pilar Lingkungan' },
-  { id: '4', nama: 'Pilar Infrastruktur' },
-];
+/**
+ * Mapping form values ke payload API.
+ */
+const mapToApi = (values) => ({
+  name: values.nama,
+  pillarId: values.pilar_id,
+});
 
 const MasterKategori = () => {
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState([]);
+  const [pilarOptions, setPilarOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [form] = Form.useForm();
 
+  /** Fetch kategori dari API */
+  const fetchCategories = useCallback(async () => {
+    setLoading(true);
+    try {
+      const result = await masterService.getCategories();
+      const list = Array.isArray(result) ? result : [];
+      setData(list.map(mapFromApi));
+    } catch (error) {
+      message.error('Gagal memuat data kategori');
+      console.error('Fetch kategori error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  /** Fetch pilar untuk dropdown */
+  const fetchPillars = useCallback(async () => {
+    try {
+      const result = await masterService.getPillars();
+      const list = Array.isArray(result) ? result : [];
+      setPilarOptions(list.map((item) => ({ id: item.id, name: item.name })));
+    } catch (error) {
+      console.error('Fetch pilar error:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCategories();
+    fetchPillars();
+  }, [fetchCategories, fetchPillars]);
+
+  /** Buka modal tambah/edit */
   const showModal = (record = null) => {
     setEditingRecord(record);
     if (record) {
-      form.setFieldsValue(record);
+      form.setFieldsValue({
+        nama: record.nama,
+        pilar_id: record.pilar_id,
+      });
     } else {
       form.resetFields();
     }
     setModalVisible(true);
   };
 
+  /** Submit form (create / update) */
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
-      const pilar = pilarOptions.find((p) => p.id === values.pilar_id);
+      setSubmitting(true);
 
       if (editingRecord) {
-        setData(data.map((item) =>
-          item.key === editingRecord.key
-            ? { ...item, ...values, pilar_nama: pilar?.nama }
-            : item
-        ));
+        await masterService.updateCategory(editingRecord.id, mapToApi(values));
         message.success('Data berhasil diperbarui');
       } else {
-        const newItem = {
-          key: String(data.length + 1),
-          ...values,
-          pilar_nama: pilar?.nama,
-          status: 'active',
-        };
-        setData([...data, newItem]);
+        await masterService.createCategory(mapToApi(values));
         message.success('Data berhasil ditambahkan');
       }
+
       setModalVisible(false);
       form.resetFields();
+      setEditingRecord(null);
+      fetchCategories();
     } catch (error) {
-      console.log('Validation failed:', error);
+      if (error.response) {
+        message.error(error.response.data?.message || 'Gagal menyimpan data');
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleDelete = (key) => {
-    setData(data.filter((item) => item.key !== key));
-    message.success('Data berhasil dihapus');
+  /** Hapus kategori */
+  const handleDelete = async (id) => {
+    try {
+      await masterService.deleteCategory(id);
+      message.success('Data berhasil dihapus');
+      fetchCategories();
+    } catch (error) {
+      message.error(error.response?.data?.message || 'Gagal menghapus data');
+    }
   };
 
   const columns = [
@@ -105,20 +150,12 @@ const MasterKategori = () => {
       title: 'Pilar',
       dataIndex: 'pilar_nama',
       key: 'pilar_nama',
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status) => (
-        <Tag color={status === 'active' ? 'green' : 'red'}>
-          {status === 'active' ? 'Aktif' : 'Nonaktif'}
-        </Tag>
-      ),
+      render: (text) => text || '-',
     },
     {
       title: 'Aksi',
       key: 'action',
+      width: 180,
       render: (_, record) => (
         <Space>
           <Button
@@ -130,7 +167,8 @@ const MasterKategori = () => {
           </Button>
           <Popconfirm
             title="Yakin ingin menghapus?"
-            onConfirm={() => handleDelete(record.key)}
+            description="Data yang dihapus tidak dapat dikembalikan."
+            onConfirm={() => handleDelete(record.id)}
           >
             <Button type="link" danger icon={<DeleteOutlined />}>
               Hapus
@@ -148,20 +186,32 @@ const MasterKategori = () => {
           <Title level={3} style={{ margin: 0 }}>Master Kategori</Title>
           <Text type="secondary">Kelola data kategori program</Text>
         </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>Tambah Kategori</Button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
+          Tambah Kategori
+        </Button>
       </div>
 
       <Card>
-        <Table columns={columns} dataSource={data} pagination={false} scroll={{ x: 500 }} />
+        <Spin spinning={loading}>
+          <Table
+            columns={columns}
+            dataSource={data}
+            rowKey="id"
+            pagination={false}
+            scroll={{ x: 500 }}
+          />
+        </Spin>
       </Card>
 
       <Modal
         title={editingRecord ? 'Edit Kategori' : 'Tambah Kategori'}
         open={modalVisible}
         onOk={handleOk}
+        confirmLoading={submitting}
         onCancel={() => {
           setModalVisible(false);
           form.resetFields();
+          setEditingRecord(null);
         }}
       >
         <Form form={form} layout="vertical">
@@ -173,7 +223,7 @@ const MasterKategori = () => {
             <Select placeholder="Pilih Pilar">
               {pilarOptions.map((pilar) => (
                 <Option key={pilar.id} value={pilar.id}>
-                  {pilar.nama}
+                  {pilar.name}
                 </Option>
               ))}
             </Select>

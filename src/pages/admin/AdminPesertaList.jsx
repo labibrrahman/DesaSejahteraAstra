@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   Table,
@@ -12,102 +12,146 @@ import {
   Typography,
   Modal,
   Descriptions,
+  Spin,
+  message,
 } from 'antd';
 import {
   SearchOutlined,
   EyeOutlined,
-  FilterOutlined,
   ExportOutlined,
 } from '@ant-design/icons';
+import adminService from '../../services/adminService';
+import masterService from '../../services/masterService';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-// Dummy data - will be replaced with API calls
-const pesertaData = [
-  {
-    key: '1',
-    nama_desa: 'Desa Sukamaju',
-    nama_kelompok: 'Kelompok Tani Makmur',
-    pilar: 'Pilar Ekonomi',
-    kategori: 'UMKM',
-    wilayah: 'Jawa Barat - Bandung',
-    status: 2,
-    tanggal_daftar: '2026-01-15',
-    juri: '-',
-  },
-  {
-    key: '2',
-    nama_desa: 'Desa Makmur',
-    nama_kelompok: 'Kelompok Wanita Sejahtera',
-    pilar: 'Pilar Sosial',
-    kategori: 'Pendidikan',
-    wilayah: 'Jawa Tengah - Semarang',
-    status: 3,
-    tanggal_daftar: '2026-01-14',
-    juri: 'Juri 1',
-  },
-  {
-    key: '3',
-    nama_desa: 'Desa Sejahtera',
-    nama_kelompok: 'Kelompok Tani Hijau',
-    pilar: 'Pilar Lingkungan',
-    kategori: 'Konservasi',
-    wilayah: 'Jawa Timur - Surabaya',
-    status: 4,
-    tanggal_daftar: '2026-01-13',
-    juri: 'Juri 2',
-  },
-  {
-    key: '4',
-    nama_desa: 'Desa Damai',
-    nama_kelompok: 'Kelompok Pembangunan',
-    pilar: 'Pilar Infrastruktur',
-    kategori: 'Jalan & Jembatan',
-    wilayah: 'Bali - Denpasar',
-    status: 2,
-    tanggal_daftar: '2026-01-12',
-    juri: '-',
-  },
-  {
-    key: '5',
-    nama_desa: 'Desa Sentosa',
-    nama_kelompok: 'Koperasi Desa Sentosa',
-    pilar: 'Pilar Ekonomi',
-    kategori: 'Koperasi',
-    wilayah: 'Sumatera Utara - Medan',
-    status: 3,
-    tanggal_daftar: '2026-01-11',
-    juri: 'Juri 1',
-  },
-];
-
-const statusMap = {
-  1: { label: 'Draft', color: 'default' },
-  2: { label: 'Menunggu Screening', color: 'processing' },
-  3: { label: 'Sedang Dinilai', color: 'warning' },
-  4: { label: 'Selesai Dinilai', color: 'success' },
-  5: { label: 'Finalis', color: 'purple' },
+/** Mapping status dari backend */
+const STATUS_MAP = {
+  draft: { label: 'Draft', color: 'default' },
+  waiting_screening: { label: 'Menunggu Screening', color: 'processing' },
+  being_assessed: { label: 'Sedang Dinilai', color: 'warning' },
+  assessed: { label: 'Selesai Dinilai', color: 'success' },
+  finalist: { label: 'Finalis', color: 'purple' },
 };
 
+/**
+ * Mapping data registration dari API ke format UI.
+ */
+const mapFromApi = (item) => ({
+  id: item.id,
+  nama_desa: item.villageName || '-',
+  nama_kelompok: item.groupName || '-',
+  pilar: item.pillar?.name || '-',
+  pilar_id: item.pillarId,
+  kategori: item.category?.name || '-',
+  wilayah: [item.province?.name, item.city?.name].filter(Boolean).join(' - ') || '-',
+  status: item.status,
+  tanggal_daftar: item.submittedAt
+    ? new Date(item.submittedAt).toLocaleDateString('id-ID')
+    : item.createdAt
+      ? new Date(item.createdAt).toLocaleDateString('id-ID')
+      : '-',
+  juri: item.assignedJuror?.name || '-',
+  // Detail fields
+  alamat: item.address || '-',
+  grup_astra: item.astraGroup?.name || '-',
+  latar_belakang: item.background || '-',
+  dampak_program: item.programImpact || '-',
+  kecamatan: item.district?.name || '-',
+  desa: item.villageRegion?.name || '-',
+});
+
 const AdminPesertaList = () => {
+  const [data, setData] = useState([]);
+  const [pilarOptions, setPilarOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState(null);
   const [pilarFilter, setPilarFilter] = useState(null);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedPeserta, setSelectedPeserta] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
-  const filteredData = pesertaData.filter((item) => {
-    const matchSearch = item.nama_desa.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.nama_kelompok.toLowerCase().includes(searchText.toLowerCase());
-    const matchStatus = !statusFilter || item.status === statusFilter;
-    const matchPilar = !pilarFilter || item.pilar === pilarFilter;
-    return matchSearch && matchStatus && matchPilar;
-  });
+  /** Fetch registrations dari API */
+  const fetchRegistrations = useCallback(async (page = 1, limit = 10) => {
+    setLoading(true);
+    try {
+      const params = { page, limit };
+      if (searchText) params.search = searchText;
+      if (statusFilter) params.status = statusFilter;
+      if (pilarFilter) params.pillar_id = pilarFilter;
 
-  const showDetail = (record) => {
-    setSelectedPeserta(record);
+      const result = await adminService.getRegistrations(params);
+
+      // Handle paginated response
+      const list = Array.isArray(result) ? result : result?.data || [];
+      const meta = result?.meta || {};
+
+      setData(list.map(mapFromApi));
+      setPagination((prev) => ({
+        ...prev,
+        current: meta.page || page,
+        total: meta.total || list.length,
+        pageSize: meta.limit || limit,
+      }));
+    } catch (error) {
+      message.error('Gagal memuat data peserta');
+      console.error('Fetch registrations error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchText, statusFilter, pilarFilter]);
+
+  /** Fetch pilar options untuk filter */
+  const fetchPillars = useCallback(async () => {
+    try {
+      const result = await masterService.getPillars();
+      const list = Array.isArray(result) ? result : [];
+      setPilarOptions(list.map((item) => ({ id: item.id, name: item.name })));
+    } catch (error) {
+      console.error('Fetch pilar error:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchPillars();
+  }, [fetchPillars]);
+
+  useEffect(() => {
+    fetchRegistrations(1, pagination.pageSize);
+  }, [fetchRegistrations, pagination.pageSize]);
+
+  /** Fetch detail peserta */
+  const showDetail = async (record) => {
+    setDetailLoading(true);
     setDetailModalVisible(true);
+    try {
+      const detail = await adminService.getRegistrationDetail(record.id);
+      setSelectedPeserta(mapFromApi(detail));
+    } catch (error) {
+      message.error('Gagal memuat detail peserta');
+      setSelectedPeserta(record);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  /** Handle perubahan halaman */
+  const handleTableChange = (pag) => {
+    fetchRegistrations(pag.current, pag.pageSize);
+  };
+
+  /** Reset semua filter */
+  const handleReset = () => {
+    setSearchText('');
+    setStatusFilter(null);
+    setPilarFilter(null);
   };
 
   const columns = [
@@ -121,55 +165,27 @@ const AdminPesertaList = () => {
         </Button>
       ),
     },
-    {
-      title: 'Kelompok/Individu',
-      dataIndex: 'nama_kelompok',
-      key: 'nama_kelompok',
-    },
-    {
-      title: 'Pilar',
-      dataIndex: 'pilar',
-      key: 'pilar',
-    },
-    {
-      title: 'Kategori',
-      dataIndex: 'kategori',
-      key: 'kategori',
-    },
-    {
-      title: 'Wilayah',
-      dataIndex: 'wilayah',
-      key: 'wilayah',
-    },
+    { title: 'Kelompok/Individu', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
+    { title: 'Pilar', dataIndex: 'pilar', key: 'pilar' },
+    { title: 'Kategori', dataIndex: 'kategori', key: 'kategori' },
+    { title: 'Wilayah', dataIndex: 'wilayah', key: 'wilayah' },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
       render: (status) => (
-        <Tag color={statusMap[status]?.color}>
-          {statusMap[status]?.label}
+        <Tag color={STATUS_MAP[status]?.color || 'default'}>
+          {STATUS_MAP[status]?.label || status}
         </Tag>
       ),
     },
-    {
-      title: 'Juri',
-      dataIndex: 'juri',
-      key: 'juri',
-    },
-    {
-      title: 'Tanggal',
-      dataIndex: 'tanggal_daftar',
-      key: 'tanggal_daftar',
-    },
+    { title: 'Juri', dataIndex: 'juri', key: 'juri' },
+    { title: 'Tanggal', dataIndex: 'tanggal_daftar', key: 'tanggal_daftar' },
     {
       title: 'Aksi',
       key: 'action',
       render: (_, record) => (
-        <Button
-          type="link"
-          icon={<EyeOutlined />}
-          onClick={() => showDetail(record)}
-        >
+        <Button type="link" icon={<EyeOutlined />} onClick={() => showDetail(record)}>
           Detail
         </Button>
       ),
@@ -190,25 +206,43 @@ const AdminPesertaList = () => {
       <Card style={{ marginBottom: 24 }}>
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12} lg={8}>
-            <Input placeholder="Cari nama desa atau kelompok..." prefix={<SearchOutlined />} value={searchText} onChange={(e) => setSearchText(e.target.value)} allowClear />
+            <Input
+              placeholder="Cari nama desa atau kelompok..."
+              prefix={<SearchOutlined />}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              allowClear
+            />
           </Col>
           <Col xs={24} sm={12} lg={5}>
-            <Select placeholder="Filter Status" style={{ width: '100%' }} allowClear onChange={(value) => setStatusFilter(value)}>
-              {Object.entries(statusMap).map(([key, value]) => (<Option key={key} value={parseInt(key)}>{value.label}</Option>))}
+            <Select
+              placeholder="Filter Status"
+              style={{ width: '100%' }}
+              allowClear
+              value={statusFilter}
+              onChange={(value) => setStatusFilter(value)}
+            >
+              {Object.entries(STATUS_MAP).map(([key, val]) => (
+                <Option key={key} value={key}>{val.label}</Option>
+              ))}
             </Select>
           </Col>
           <Col xs={24} sm={12} lg={5}>
-            <Select placeholder="Filter Pilar" style={{ width: '100%' }} allowClear onChange={(value) => setPilarFilter(value)}>
-              <Option value="Pilar Ekonomi">Pilar Ekonomi</Option>
-              <Option value="Pilar Sosial">Pilar Sosial</Option>
-              <Option value="Pilar Lingkungan">Pilar Lingkungan</Option>
-              <Option value="Pilar Infrastruktur">Pilar Infrastruktur</Option>
+            <Select
+              placeholder="Filter Pilar"
+              style={{ width: '100%' }}
+              allowClear
+              value={pilarFilter}
+              onChange={(value) => setPilarFilter(value)}
+            >
+              {pilarOptions.map((pilar) => (
+                <Option key={pilar.id} value={pilar.id}>{pilar.name}</Option>
+              ))}
             </Select>
           </Col>
           <Col xs={24} sm={12} lg={6}>
             <Space wrap>
-              <Button icon={<FilterOutlined />}>Filter Lanjutan</Button>
-              <Button onClick={() => { setSearchText(''); setStatusFilter(null); setPilarFilter(null); }}>Reset</Button>
+              <Button onClick={handleReset}>Reset</Button>
             </Space>
           </Col>
         </Row>
@@ -216,14 +250,31 @@ const AdminPesertaList = () => {
 
       {/* Table */}
       <Card>
-        <Table columns={columns} dataSource={filteredData} pagination={{ pageSize: 10 }} size="middle" scroll={{ x: 900 }} />
+        <Spin spinning={loading}>
+          <Table
+            columns={columns}
+            dataSource={data}
+            rowKey="id"
+            pagination={{
+              ...pagination,
+              showSizeChanger: true,
+              showTotal: (total) => `Total ${total} peserta`,
+            }}
+            onChange={handleTableChange}
+            size="middle"
+            scroll={{ x: 900 }}
+          />
+        </Spin>
       </Card>
 
       {/* Detail Modal */}
       <Modal
         title="Detail Peserta"
         open={detailModalVisible}
-        onCancel={() => setDetailModalVisible(false)}
+        onCancel={() => {
+          setDetailModalVisible(false);
+          setSelectedPeserta(null);
+        }}
         footer={[
           <Button key="close" onClick={() => setDetailModalVisible(false)}>
             Tutup
@@ -231,22 +282,30 @@ const AdminPesertaList = () => {
         ]}
         width={700}
       >
-        {selectedPeserta && (
-          <Descriptions bordered column={2}>
-            <Descriptions.Item label="Nama Desa">{selectedPeserta.nama_desa}</Descriptions.Item>
-            <Descriptions.Item label="Kelompok/Individu">{selectedPeserta.nama_kelompok}</Descriptions.Item>
-            <Descriptions.Item label="Pilar">{selectedPeserta.pilar}</Descriptions.Item>
-            <Descriptions.Item label="Kategori">{selectedPeserta.kategori}</Descriptions.Item>
-            <Descriptions.Item label="Wilayah" span={2}>{selectedPeserta.wilayah}</Descriptions.Item>
-            <Descriptions.Item label="Status">
-              <Tag color={statusMap[selectedPeserta.status]?.color}>
-                {statusMap[selectedPeserta.status]?.label}
-              </Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label="Juri">{selectedPeserta.juri}</Descriptions.Item>
-            <Descriptions.Item label="Tanggal Daftar">{selectedPeserta.tanggal_daftar}</Descriptions.Item>
-          </Descriptions>
-        )}
+        <Spin spinning={detailLoading}>
+          {selectedPeserta && (
+            <Descriptions bordered column={2}>
+              <Descriptions.Item label="Nama Desa">{selectedPeserta.nama_desa}</Descriptions.Item>
+              <Descriptions.Item label="Kelompok/Individu">{selectedPeserta.nama_kelompok}</Descriptions.Item>
+              <Descriptions.Item label="Pilar">{selectedPeserta.pilar}</Descriptions.Item>
+              <Descriptions.Item label="Kategori">{selectedPeserta.kategori}</Descriptions.Item>
+              <Descriptions.Item label="Grup Astra">{selectedPeserta.grup_astra}</Descriptions.Item>
+              <Descriptions.Item label="Status">
+                <Tag color={STATUS_MAP[selectedPeserta.status]?.color || 'default'}>
+                  {STATUS_MAP[selectedPeserta.status]?.label || selectedPeserta.status}
+                </Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label="Provinsi" span={1}>{selectedPeserta.wilayah}</Descriptions.Item>
+              <Descriptions.Item label="Kecamatan">{selectedPeserta.kecamatan}</Descriptions.Item>
+              <Descriptions.Item label="Desa">{selectedPeserta.desa}</Descriptions.Item>
+              <Descriptions.Item label="Alamat" span={2}>{selectedPeserta.alamat}</Descriptions.Item>
+              <Descriptions.Item label="Juri">{selectedPeserta.juri}</Descriptions.Item>
+              <Descriptions.Item label="Tanggal Daftar">{selectedPeserta.tanggal_daftar}</Descriptions.Item>
+              <Descriptions.Item label="Latar Belakang" span={2}>{selectedPeserta.latar_belakang}</Descriptions.Item>
+              <Descriptions.Item label="Dampak Program" span={2}>{selectedPeserta.dampak_program}</Descriptions.Item>
+            </Descriptions>
+          )}
+        </Spin>
       </Modal>
     </div>
   );

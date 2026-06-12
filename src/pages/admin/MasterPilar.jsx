@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   Table,
@@ -11,29 +11,66 @@ import {
   Popconfirm,
   message,
   Tag,
+  Spin,
 } from 'antd';
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
+import masterService from '../../services/masterService';
 
 const { Title, Text } = Typography;
 
-// Dummy data - will be replaced with API calls
-const initialData = [
-  { key: '1', nama: 'Pilar Ekonomi', deskripsi: 'Program pemberdayaan ekonomi masyarakat desa', status: 'active' },
-  { key: '2', nama: 'Pilar Sosial', deskripsi: 'Program peningkatan kualitas hidup masyarakat', status: 'active' },
-  { key: '3', nama: 'Pilar Lingkungan', deskripsi: 'Program pelestarian lingkungan hidup', status: 'active' },
-  { key: '4', nama: 'Pilar Infrastruktur', deskripsi: 'Program pembangunan infrastruktur dasar desa', status: 'active' },
-];
+/**
+ * Mapping data dari API (name, description) ke format UI (nama, deskripsi).
+ * @param {object} item - data dari backend
+ * @returns {object} - data untuk UI
+ */
+const mapFromApi = (item) => ({
+  id: item.id,
+  nama: item.name,
+  deskripsi: item.description || '',
+});
+
+/**
+ * Mapping data dari form UI ke format API.
+ * @param {object} values - form values
+ * @returns {object} - payload untuk backend
+ */
+const mapToApi = (values) => ({
+  name: values.nama,
+  description: values.deskripsi,
+});
 
 const MasterPilar = () => {
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [form] = Form.useForm();
 
+  /** Fetch semua pilar dari API */
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const result = await masterService.getPillars();
+      const list = Array.isArray(result) ? result : [];
+      setData(list.map(mapFromApi));
+    } catch (error) {
+      message.error('Gagal memuat data pilar');
+      console.error('Fetch pilar error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  /** Buka modal tambah/edit */
   const showModal = (record = null) => {
     setEditingRecord(record);
     if (record) {
@@ -44,35 +81,42 @@ const MasterPilar = () => {
     setModalVisible(true);
   };
 
+  /** Submit form (create / update) */
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
+      setSubmitting(true);
+
       if (editingRecord) {
-        // Update
-        setData(data.map((item) =>
-          item.key === editingRecord.key ? { ...item, ...values } : item
-        ));
+        await masterService.updatePillar(editingRecord.id, mapToApi(values));
         message.success('Data berhasil diperbarui');
       } else {
-        // Add new
-        const newItem = {
-          key: String(data.length + 1),
-          ...values,
-          status: 'active',
-        };
-        setData([...data, newItem]);
+        await masterService.createPillar(mapToApi(values));
         message.success('Data berhasil ditambahkan');
       }
+
       setModalVisible(false);
       form.resetFields();
+      setEditingRecord(null);
+      fetchData();
     } catch (error) {
-      console.log('Validation failed:', error);
+      if (error.response) {
+        message.error(error.response.data?.message || 'Gagal menyimpan data');
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleDelete = (key) => {
-    setData(data.filter((item) => item.key !== key));
-    message.success('Data berhasil dihapus');
+  /** Hapus pilar */
+  const handleDelete = async (id) => {
+    try {
+      await masterService.deletePillar(id);
+      message.success('Data berhasil dihapus');
+      fetchData();
+    } catch (error) {
+      message.error(error.response?.data?.message || 'Gagal menghapus data');
+    }
   };
 
   const columns = [
@@ -93,18 +137,9 @@ const MasterPilar = () => {
       key: 'deskripsi',
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status) => (
-        <Tag color={status === 'active' ? 'green' : 'red'}>
-          {status === 'active' ? 'Aktif' : 'Nonaktif'}
-        </Tag>
-      ),
-    },
-    {
       title: 'Aksi',
       key: 'action',
+      width: 180,
       render: (_, record) => (
         <Space>
           <Button
@@ -116,7 +151,8 @@ const MasterPilar = () => {
           </Button>
           <Popconfirm
             title="Yakin ingin menghapus?"
-            onConfirm={() => handleDelete(record.key)}
+            description="Data yang dihapus tidak dapat dikembalikan."
+            onConfirm={() => handleDelete(record.id)}
           >
             <Button type="link" danger icon={<DeleteOutlined />}>
               Hapus
@@ -134,20 +170,32 @@ const MasterPilar = () => {
           <Title level={3} style={{ margin: 0 }}>Master Pilar</Title>
           <Text type="secondary">Kelola data pilar program</Text>
         </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>Tambah Pilar</Button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
+          Tambah Pilar
+        </Button>
       </div>
 
       <Card>
-        <Table columns={columns} dataSource={data} pagination={false} scroll={{ x: 500 }} />
+        <Spin spinning={loading}>
+          <Table
+            columns={columns}
+            dataSource={data}
+            rowKey="id"
+            pagination={false}
+            scroll={{ x: 500 }}
+          />
+        </Spin>
       </Card>
 
       <Modal
         title={editingRecord ? 'Edit Pilar' : 'Tambah Pilar'}
         open={modalVisible}
         onOk={handleOk}
+        confirmLoading={submitting}
         onCancel={() => {
           setModalVisible(false);
           form.resetFields();
+          setEditingRecord(null);
         }}
       >
         <Form form={form} layout="vertical">

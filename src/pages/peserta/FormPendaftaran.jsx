@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Button, Select, Input, Row, Col, message, Modal, Spin } from 'antd';
+import { Typography, Button, Select, Input, Row, Col, message, Modal, Spin, Radio, Card } from 'antd';
 import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
@@ -97,7 +97,7 @@ const FormPendaftaran = () => {
   const [selectedKategoriId, setSelectedKategoriId] = useState(null);
   const [formData, setFormData] = useState({});
   const [pillars, setPillars] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [allCategories, setAllCategories] = useState([]);
   const [astraGroups, setAstraGroups] = useState([]);
   const [loadingMaster, setLoadingMaster] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -117,6 +117,20 @@ const FormPendaftaran = () => {
         setPillars(pillarsData || []);
         setAstraGroups(groupsData || []);
 
+        // Fetch semua kategori dari semua pilar
+        const allCats = [];
+        for (const pilar of (pillarsData || [])) {
+          try {
+            const cats = await masterService.getCategories(pilar.id);
+            if (Array.isArray(cats)) {
+              allCats.push(...cats);
+            }
+          } catch {
+            // skip pilar yang gagal fetch
+          }
+        }
+        setAllCategories(allCats);
+
         // Cek apakah sudah punya registrasi
         try {
           const { data } = await api.get('/registrations/my');
@@ -132,14 +146,7 @@ const FormPendaftaran = () => {
               dampak_program: reg.programImpact || '',
               grup_astra_id: reg.astraGroup?.id || null,
             });
-            // Set kategori ID dari registrasi yang sudah ada
             if (reg.categoryId) setSelectedKategoriId(reg.categoryId);
-
-            // Fetch kategori untuk pilar yang dipilih
-            if (reg.pillarId) {
-              const cats = await masterService.getCategories(reg.pillarId);
-              setCategories(Array.isArray(cats) ? cats : []);
-            }
           }
         } catch {
           // Belum ada registrasi, form tetap kosong
@@ -158,17 +165,15 @@ const FormPendaftaran = () => {
   const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 4));
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
 
-  // ── Fetch kategori dari API saat pilar berubah ─────────────────────────────
+  // ── Handle pemilihan kategori — otomatis set pilar parent ──────────────────
 
-  const handlePilarSelect = async (pilarId) => {
-    setSelectedPilarId(pilarId);
-    setSelectedKategoriId(null);
-    setCategories([]);
-    try {
-      const cats = await masterService.getCategories(pilarId);
-      setCategories(Array.isArray(cats) ? cats : []);
-    } catch (error) {
-      console.error('Fetch categories error:', error);
+  const handleKategoriSelect = (categoryId) => {
+    setSelectedKategoriId(categoryId);
+    // Cari kategori → pillar id
+    const cat = allCategories.find(c => c.id === categoryId);
+    if (cat) {
+      const pilarId = cat.pillarId || cat.pillar?.id;
+      if (pilarId) setSelectedPilarId(pilarId);
     }
   };
 
@@ -234,59 +239,91 @@ const FormPendaftaran = () => {
     );
   }
 
-  // ── Step 1: Pilar & Kategori ────────────────────────────────────────────────
+  // ── Step 1: Pilih Kategori dari Pilar ──────────────────────────────────────
 
   const renderStep1 = () => {
-    const pilarKey = getPilarKey(selectedPilar?.name);
-    const pilarCfg = PILAR_CONFIG[pilarKey];
-
     return (
       <div style={{ width: '100%', maxWidth: 800, marginBottom: 32 }}>
-        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <div style={{ marginBottom: 20 }}>
+          <Text style={{ ...labelStyle, fontSize: 16 }}>
+            Pilih Pilar & Kategori Lombanya <Text type="danger">*</Text>
+          </Text>
+        </div>
+
+        <Row gutter={[20, 20]}>
           {pillars.map((pilar) => {
             const pk = getPilarKey(pilar.name);
-            const { Icon, color, bgLight, bgActive, desc } = PILAR_CONFIG[pk];
-            const isActive = selectedPilarId === pilar.id;
+            const { color, desc } = PILAR_CONFIG[pk];
+            const pilarCategories = allCategories.filter(
+              c => c.pillarId === pilar.id || c.pillar?.id === pilar.id
+            );
+            const hasSelected = pilarCategories.some(c => c.id === selectedKategoriId);
+
             return (
-              <Col xs={12} sm={6} key={pilar.id}>
+              <Col xs={24} sm={12} key={pilar.id}>
                 <div
-                  onClick={() => handlePilarSelect(pilar.id)}
                   style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    textAlign: 'center', padding: '24px 16px', borderRadius: 12, minHeight: 160,
-                    border: `2px solid ${isActive ? color : '#e2e8f0'}`,
-                    background: isActive ? bgActive : '#fff',
-                    cursor: 'pointer', transition: 'all 0.25s ease',
-                    boxShadow: isActive ? `0 4px 12px ${color}20` : '0 1px 3px rgba(0,0,0,0.04)',
-                    transform: isActive ? 'translateY(-2px)' : 'none',
+                    border: `1.5px solid ${hasSelected ? color : '#e2e8f0'}`,
+                    borderRadius: 12,
+                    background: hasSelected ? `${color}08` : '#fff',
+                    overflow: 'hidden',
+                    transition: 'all 0.25s ease',
                   }}
-                  onMouseEnter={e => { if (!isActive) { e.currentTarget.style.borderColor = `${color}60`; e.currentTarget.style.boxShadow = `0 4px 12px ${color}15`; } }}
-                  onMouseLeave={e => { if (!isActive) { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'; } }}
                 >
-                  <div style={{ width: 52, height: 52, borderRadius: 14, marginBottom: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', background: isActive ? color : bgLight, transition: 'all 0.25s ease' }}>
-                    <Icon style={{ fontSize: 24, color: isActive ? '#fff' : color }} />
+                  {/* Pilar Header */}
+                  <div style={{ padding: '20px 20px 12px' }}>
+                    <Text strong style={{ fontSize: 16, color: '#1e293b', display: 'block', marginBottom: 4 }}>
+                      {pilar.name}
+                    </Text>
+                    <Text style={{ fontSize: 13, color: '#64748b', lineHeight: 1.5 }}>
+                      {pilar.description || desc}
+                    </Text>
                   </div>
-                  <Text strong style={{ color: '#002444', display: 'block', marginBottom: 6, fontSize: 14 }}>{pilar.name}</Text>
-                  <Text style={{ fontSize: 12, color: isActive ? color : '#64748b', lineHeight: 1.5 }}>{pilar.description || desc}</Text>
+
+                  {/* Kategori Radio Buttons */}
+                  <div style={{ padding: '0 20px 20px' }}>
+                    <Radio.Group
+                      value={selectedKategoriId}
+                      onChange={(e) => handleKategoriSelect(e.target.value)}
+                      style={{ width: '100%' }}
+                    >
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {pilarCategories.map((cat) => {
+                          const isSelected = selectedKategoriId === cat.id;
+                          return (
+                            <div
+                              key={cat.id}
+                              style={{
+                                border: `1px solid ${isSelected ? `${color}60` : '#e2e8f0'}`,
+                                borderRadius: 8,
+                                padding: '10px 14px',
+                                background: isSelected ? `${color}10` : '#fafbfc',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                              }}
+                              onClick={() => handleKategoriSelect(cat.id)}
+                              onMouseEnter={e => { if (!isSelected) { e.currentTarget.style.borderColor = `${color}40`; } }}
+                              onMouseLeave={e => { if (!isSelected) { e.currentTarget.style.borderColor = '#e2e8f0'; } }}
+                            >
+                              <Radio value={cat.id} style={{ width: '100%' }}>
+                                <Text style={{ fontSize: 14, color: '#1e293b' }}>{cat.name}</Text>
+                              </Radio>
+                            </div>
+                          );
+                        })}
+                        {pilarCategories.length === 0 && (
+                          <Text type="secondary" style={{ fontSize: 13, fontStyle: 'italic' }}>
+                            Belum ada kategori tersedia
+                          </Text>
+                        )}
+                      </div>
+                    </Radio.Group>
+                  </div>
                 </div>
               </Col>
             );
           })}
         </Row>
-
-        {selectedPilarId && (
-          <div style={{ background: pilarCfg?.bgLight || '#eff4ff', borderRadius: 12, padding: 24, maxWidth: 600, margin: '0 auto', border: `1px solid ${pilarCfg?.color}30` }}>
-            <Text style={labelStyle}>Pilih Kategori Spesifik</Text>
-            <Select value={selectedKategoriId} onChange={setSelectedKategoriId} placeholder="Pilih sub-kategori pilar..." style={{ width: '100%' }} size="large" loading={categories.length === 0}>
-              {categories.map(cat => (
-                <Option key={cat.id} value={cat.id}>{cat.name}</Option>
-              ))}
-            </Select>
-            <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 12 }}>
-              Kategori ini akan menentukan kriteria penilaian program Anda.
-            </Text>
-          </div>
-        )}
       </div>
     );
   };
@@ -432,7 +469,7 @@ const FormPendaftaran = () => {
   );
 
   const grupLabel = astraGroups.find(g => g.id === formData.grup_astra_id)?.name;
-  const kategoriLabel = categories.find(c => c.id === selectedKategoriId)?.name;
+  const kategoriLabel = allCategories.find(c => c.id === selectedKategoriId)?.name;
 
   const renderStep4 = () => (
     <div style={{ width: '100%', maxWidth: 800, marginBottom: 32 }}>

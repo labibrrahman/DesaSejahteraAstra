@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Row, Col, Typography, Space, Layout, Collapse, Drawer } from 'antd';
+import { Button, Row, Col, Typography, Space, Layout, Collapse, Drawer, Dropdown, Avatar } from 'antd';
 import {
   HeartOutlined,
   ReadOutlined,
@@ -14,11 +14,15 @@ import {
   EnvironmentOutlined,
   MenuOutlined,
   CloseOutlined,
+  DashboardOutlined,
+  LogoutOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import astraLogo from '../../assets/images/astra-logo.png';
 import satuIndoLogo from '../../assets/images/satu-indonesia-logo.png';
 import useIsMobile from '../../hooks/useIsMobile';
+import useAuthStore from '../../stores/authStore';
 
 const { Title, Paragraph, Text, Link } = Typography;
 const { Header, Content, Footer } = Layout;
@@ -77,8 +81,31 @@ const LandingPage = () => {
   const isMobile = useIsMobile();
   const [activeFaq, setActiveFaq] = useState([0]);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const { isAuthenticated, user, logout } = useAuthStore();
 
   const px = isMobile ? 20 : 60;
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
+
+  const userMenuItems = [
+    {
+      key: 'dashboard',
+      icon: <DashboardOutlined />,
+      label: 'Dashboard',
+      onClick: () => navigate('/peserta/dashboard'),
+    },
+    { type: 'divider' },
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: 'Keluar',
+      danger: true,
+      onClick: handleLogout,
+    },
+  ];
 
   const faqItems = faqData.map((item, index) => ({
     key: index,
@@ -143,13 +170,27 @@ const LandingPage = () => {
             <Link style={{ fontSize: 15, color: '#333' }} onClick={() => scrollTo('kontak-section')}>
               Kontak
             </Link>
-            <Button
-              type="primary"
-              style={{ background: '#1890ff', borderColor: '#1890ff', borderRadius: 6, height: 38, paddingInline: 24 }}
-              onClick={() => navigate('/login')}
-            >
-              Masuk
-            </Button>
+            {isAuthenticated ? (
+              <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
+                <Button
+                  type="text"
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, height: 40, paddingInline: 12, borderRadius: 8 }}
+                >
+                  <Avatar size="small" icon={<UserOutlined />} style={{ background: '#1890ff' }} />
+                  <span style={{ fontSize: 14, fontWeight: 500, color: '#333', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {user?.name || 'Peserta'}
+                  </span>
+                </Button>
+              </Dropdown>
+            ) : (
+              <Button
+                type="primary"
+                style={{ background: '#1890ff', borderColor: '#1890ff', borderRadius: 6, height: 38, paddingInline: 24 }}
+                onClick={() => navigate('/login')}
+              >
+                Masuk
+              </Button>
+            )}
           </Space>
         )}
       </Header>
@@ -170,14 +211,40 @@ const LandingPage = () => {
           <Link style={{ fontSize: 15, color: '#333' }} onClick={() => scrollTo('kontak-section')}>
             Kontak
           </Link>
-          <Button
-            type="primary"
-            block
-            style={{ background: '#1890ff', borderColor: '#1890ff', borderRadius: 6 }}
-            onClick={() => { setDrawerOpen(false); navigate('/login'); }}
-          >
-            Masuk
-          </Button>
+          {isAuthenticated ? (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderTop: '1px solid #f0f0f0', borderBottom: '1px solid #f0f0f0' }}>
+                <Avatar size={32} icon={<UserOutlined />} style={{ background: '#1890ff' }} />
+                <Text strong style={{ fontSize: 14 }}>{user?.name || 'Peserta'}</Text>
+              </div>
+              <Button
+                block
+                icon={<DashboardOutlined />}
+                style={{ borderRadius: 6, textAlign: 'left', height: 40 }}
+                onClick={() => { setDrawerOpen(false); navigate('/peserta/dashboard'); }}
+              >
+                Dashboard
+              </Button>
+              <Button
+                block
+                danger
+                icon={<LogoutOutlined />}
+                style={{ borderRadius: 6, textAlign: 'left', height: 40 }}
+                onClick={() => { setDrawerOpen(false); handleLogout(); }}
+              >
+                Keluar
+              </Button>
+            </>
+          ) : (
+            <Button
+              type="primary"
+              block
+              style={{ background: '#1890ff', borderColor: '#1890ff', borderRadius: 6 }}
+              onClick={() => { setDrawerOpen(false); navigate('/login'); }}
+            >
+              Masuk
+            </Button>
+          )}
         </Space>
       </Drawer>
 

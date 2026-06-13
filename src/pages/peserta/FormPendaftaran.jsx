@@ -10,7 +10,9 @@ import {
   ShopOutlined,
   ExclamationCircleOutlined,
   CheckOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons';
+import useAuthStore from '../../stores/authStore';
 import { useNavigate } from 'react-router-dom';
 import api from '../../lib/api';
 import masterService from '../../services/masterService';
@@ -82,6 +84,12 @@ const fieldWrapper = { marginBottom: 20 };
 
 const FormPendaftaran = () => {
   const navigate = useNavigate();
+  const { logout } = useAuthStore();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   const [currentStep, setCurrentStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
@@ -473,15 +481,23 @@ const FormPendaftaran = () => {
     <>
       {/* Header */}
       {!registrationId && (
-      <div style={{ position: 'sticky', top: 0, zIndex: 100, background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', gap: 12 }}>
-          <>
+        <div style={{ position: 'sticky', top: 0, zIndex: 100, background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} style={{ fontWeight: 600, color: '#64748b' }}>
               Kembali
             </Button>
             <div style={{ height: 20, width: 1, background: '#e2e8f0' }} />
-          </>
-        <Text strong style={{ fontSize: 14, color: '#1e293b' }}>Formulir Pendaftaran</Text>
-      </div>
+            <Text strong style={{ fontSize: 14, color: '#1e293b' }}>Formulir Pendaftaran</Text>
+          </div>
+          <Button
+            type="text"
+            icon={<LogoutOutlined />}
+            onClick={handleLogout}
+            style={{ fontWeight: 600, color: '#ef4444' }}
+          >
+            Keluar
+          </Button>
+        </div>
       )}
 
       <div style={{ background: '#f8faff', minHeight: 'calc(100vh - 56px)' }}>

@@ -38,14 +38,6 @@ const STEP_SUBTITLES = [
   'Periksa kembali data yang telah Anda isi sebelum mengirimkan pendaftaran.',
 ];
 
-// Kategori statis per pilar (dummy data)
-const kategoriByPilar = {
-  kesehatan: ['Posyandu & Gizi', 'Sanitasi & Air Bersih', 'Kesehatan Ibu & Anak'],
-  pendidikan: ['Beasiswa & Pendidikan', 'Perpustakaan Desa', 'Pelatihan Vokasi'],
-  lingkungan: ['Konservasi Hutan', 'Pertanian Berkelanjutan', 'Energi Terbarukan'],
-  kewirausahaan: ['Inovasi Kelompok', 'Tokoh Penggerak Individu'],
-};
-
 // Wilayah statis (dummy data)
 const wilayahData = {
   'Jawa Barat': {
@@ -94,9 +86,10 @@ const FormPendaftaran = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [selectedPilarId, setSelectedPilarId] = useState(null);
-  const [selectedKategori, setSelectedKategori] = useState(null);
+  const [selectedKategoriId, setSelectedKategoriId] = useState(null);
   const [formData, setFormData] = useState({});
   const [pillars, setPillars] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [astraGroups, setAstraGroups] = useState([]);
   const [loadingMaster, setLoadingMaster] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -122,7 +115,6 @@ const FormPendaftaran = () => {
           const reg = data?.data ?? data;
           if (reg && reg.id) {
             setRegistrationId(reg.id);
-            // Load data ke form
             setSelectedPilarId(reg.pillarId || null);
             setFormData({
               nama_desa: reg.villageName || '',
@@ -132,8 +124,14 @@ const FormPendaftaran = () => {
               dampak_program: reg.programImpact || '',
               grup_astra_id: reg.astraGroup?.id || null,
             });
-            // Set kategori dari nama pilar
-            if (reg.category?.name) setSelectedKategori(reg.category.name);
+            // Set kategori ID dari registrasi yang sudah ada
+            if (reg.categoryId) setSelectedKategoriId(reg.categoryId);
+
+            // Fetch kategori untuk pilar yang dipilih
+            if (reg.pillarId) {
+              const cats = await masterService.getCategories(reg.pillarId);
+              setCategories(Array.isArray(cats) ? cats : []);
+            }
           }
         } catch {
           // Belum ada registrasi, form tetap kosong
@@ -152,6 +150,20 @@ const FormPendaftaran = () => {
   const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 4));
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
 
+  // ── Fetch kategori dari API saat pilar berubah ─────────────────────────────
+
+  const handlePilarSelect = async (pilarId) => {
+    setSelectedPilarId(pilarId);
+    setSelectedKategoriId(null);
+    setCategories([]);
+    try {
+      const cats = await masterService.getCategories(pilarId);
+      setCategories(Array.isArray(cats) ? cats : []);
+    } catch (error) {
+      console.error('Fetch categories error:', error);
+    }
+  };
+
   // ── Submit ──────────────────────────────────────────────────────────────────
 
   const handleSubmit = () => setShowConfirmModal(true);
@@ -162,6 +174,7 @@ const FormPendaftaran = () => {
     try {
       const payload = {
         pillarId: selectedPilarId,
+        categoryId: selectedKategoriId,
         villageName: formData.nama_desa,
         groupName: formData.nama_kelompok,
         address: formData.alamat,
@@ -229,7 +242,7 @@ const FormPendaftaran = () => {
             return (
               <Col xs={12} sm={6} key={pilar.id}>
                 <div
-                  onClick={() => { setSelectedPilarId(pilar.id); setSelectedKategori(null); }}
+                  onClick={() => handlePilarSelect(pilar.id)}
                   style={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                     textAlign: 'center', padding: '24px 16px', borderRadius: 12, minHeight: 160,
@@ -256,9 +269,9 @@ const FormPendaftaran = () => {
         {selectedPilarId && (
           <div style={{ background: pilarCfg?.bgLight || '#eff4ff', borderRadius: 12, padding: 24, maxWidth: 600, margin: '0 auto', border: `1px solid ${pilarCfg?.color}30` }}>
             <Text style={labelStyle}>Pilih Kategori Spesifik</Text>
-            <Select value={selectedKategori} onChange={setSelectedKategori} placeholder="Pilih sub-kategori pilar..." style={{ width: '100%' }} size="large">
-              {(kategoriByPilar[pilarKey] || []).map(kat => (
-                <Option key={kat} value={kat}>{kat}</Option>
+            <Select value={selectedKategoriId} onChange={setSelectedKategoriId} placeholder="Pilih sub-kategori pilar..." style={{ width: '100%' }} size="large" loading={categories.length === 0}>
+              {categories.map(cat => (
+                <Option key={cat.id} value={cat.id}>{cat.name}</Option>
               ))}
             </Select>
             <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 12 }}>
@@ -411,13 +424,14 @@ const FormPendaftaran = () => {
   );
 
   const grupLabel = astraGroups.find(g => g.id === formData.grup_astra_id)?.name;
+  const kategoriLabel = categories.find(c => c.id === selectedKategoriId)?.name;
 
   const renderStep4 = () => (
     <div style={{ width: '100%', maxWidth: 800, marginBottom: 32 }}>
       <ReviewCard title="Kategori Spesifik" icon={<CheckCircleOutlined style={{ color: '#1890ff', fontSize: 16 }} />}>
         <Row gutter={[16, 12]}>
           <ReviewField label="Pilar Terpilih" value={selectedPilar?.name} />
-          <ReviewField label="Sub-kategori" value={selectedKategori} />
+          <ReviewField label="Sub-kategori" value={kategoriLabel} />
         </Row>
       </ReviewCard>
 
@@ -545,8 +559,8 @@ const FormPendaftaran = () => {
             <Text style={{ fontSize: 13, color: '#64748b' }}>Ringkasan:</Text>
             <div style={{ marginTop: 8 }}>
               <Text style={{ fontSize: 13 }}><Text type="secondary">Pilar:</Text> <Text strong>{selectedPilar?.name}</Text></Text>
-              {selectedKategori && (
-                <Text style={{ fontSize: 13, display: 'block', marginTop: 4 }}><Text type="secondary">Kategori:</Text> <Text strong>{selectedKategori}</Text></Text>
+              {kategoriLabel && (
+                <Text style={{ fontSize: 13, display: 'block', marginTop: 4 }}><Text type="secondary">Kategori:</Text> <Text strong>{kategoriLabel}</Text></Text>
               )}
               {formData.nama_desa && (
                 <Text style={{ fontSize: 13, display: 'block', marginTop: 4 }}><Text type="secondary">Desa:</Text> <Text strong>{formData.nama_desa}</Text></Text>

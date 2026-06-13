@@ -38,6 +38,8 @@ const STATUS_MAP = {
 
 /**
  * Mapping data task dari API ke format UI.
+ * Backend findTasks hanya load: pillar, category, user, astraGroup.
+ * Relasi province/city/district TIDAK di-load, jadi gunakan ID atau '-'
  */
 const mapFromApi = (item) => ({
   id: item.id,
@@ -45,7 +47,10 @@ const mapFromApi = (item) => ({
   nama_kelompok: item.groupName || '-',
   pilar: item.pillar?.name || '-',
   kategori: item.category?.name || '-',
-  wilayah: [item.province?.name, item.city?.name].filter(Boolean).join(' - ') || '-',
+  // Region relations tidak di-load oleh findTasks, tampilkan '-' atau ID
+  wilayah: item.province?.name
+    ? [item.province?.name, item.city?.name].filter(Boolean).join(' - ')
+    : '-',
   status: item.status,
   tanggal_daftar: item.submittedAt
     ? new Date(item.submittedAt).toLocaleDateString('id-ID')
@@ -69,8 +74,20 @@ const JuriPesertaList = () => {
       const list = Array.isArray(result) ? result : [];
       setData(list.map(mapFromApi));
     } catch (error) {
-      message.error('Gagal memuat data peserta');
-      console.error('Fetch tasks error:', error);
+      const status = error.response?.status;
+      const backendMsg = error.response?.data?.message;
+
+      if (status === 403) {
+        message.error('Akses ditolak. Pastikan Anda login sebagai Juri.');
+      } else if (status === 422) {
+        message.error(backendMsg || 'Juri belum ditugaskan ke pilar. Hubungi admin.');
+      } else if (status === 401) {
+        message.error('Sesi habis. Silakan login kembali.');
+      } else {
+        message.error(backendMsg || 'Gagal memuat data peserta');
+      }
+
+      console.error('Fetch tasks error:', error.response?.data || error.message);
     } finally {
       setLoading(false);
     }

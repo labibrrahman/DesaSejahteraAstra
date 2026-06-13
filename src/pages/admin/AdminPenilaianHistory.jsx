@@ -76,8 +76,16 @@ const AdminPenilaianHistory = () => {
         pageSize: meta.limit || limit,
       }));
     } catch (error) {
-      message.error('Gagal memuat data penilaian');
-      console.error('Fetch assessments error:', error);
+      const status = error.response?.status;
+      const backendMsg = error.response?.data?.message;
+
+      if (status === 401) {
+        message.error('Sesi habis. Silakan login kembali.');
+      } else {
+        message.error(backendMsg || 'Gagal memuat data penilaian');
+      }
+
+      console.error('Fetch assessments error:', error.response?.data || error.message);
     } finally {
       setLoading(false);
     }

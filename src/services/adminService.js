@@ -115,18 +115,22 @@ const adminService = {
 
   /**
    * GET /api/assessments/tasks — daftar peserta yang siap dinilai juri
+   * Response: { success, message, data: Registration[] }
    */
   getAssessmentTasks: async () => {
     const { data } = await api.get('/assessments/tasks');
-    return data.data || data;
+    // Backend wraps: { success, message, data: [...] }
+    // data.data = array of registrations
+    return Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
   },
 
   /**
    * GET /api/assessments/history — riwayat penilaian juri sendiri
+   * Response: { success, message, data: Assessment[] }
    */
   getMyAssessmentHistory: async () => {
     const { data } = await api.get('/assessments/history');
-    return data.data || data;
+    return Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
   },
 
   /**

@@ -37,6 +37,8 @@ const STATUS_MAP = {
 
 /**
  * Mapping data registration dari API ke format UI.
+ * findAll hanya load: user, pillar, category, assignedJuror.
+ * Relasi province/city/district/villageRegion/astraGroup TIDAK di-load di list.
  */
 const mapFromApi = (item) => ({
   id: item.id,
@@ -45,7 +47,10 @@ const mapFromApi = (item) => ({
   pilar: item.pillar?.name || '-',
   pilar_id: item.pillarId,
   kategori: item.category?.name || '-',
-  wilayah: [item.province?.name, item.city?.name].filter(Boolean).join(' - ') || '-',
+  // Region relations tidak di-load di findAll list, tampilkan '-'
+  wilayah: item.province?.name
+    ? [item.province?.name, item.city?.name].filter(Boolean).join(' - ')
+    : '-',
   status: item.status,
   tanggal_daftar: item.submittedAt
     ? new Date(item.submittedAt).toLocaleDateString('id-ID')
@@ -53,7 +58,7 @@ const mapFromApi = (item) => ({
       ? new Date(item.createdAt).toLocaleDateString('id-ID')
       : '-',
   juri: item.assignedJuror?.name || '-',
-  // Detail fields
+  // Detail fields (hanya tersedia saat fetch detail via findOne)
   alamat: item.address || '-',
   grup_astra: item.astraGroup?.name || '-',
   latar_belakang: item.background || '-',
@@ -101,8 +106,16 @@ const AdminPesertaList = () => {
         pageSize: meta.limit || limit,
       }));
     } catch (error) {
-      message.error('Gagal memuat data peserta');
-      console.error('Fetch registrations error:', error);
+      const status = error.response?.status;
+      const backendMsg = error.response?.data?.message;
+
+      if (status === 401) {
+        message.error('Sesi habis. Silakan login kembali.');
+      } else {
+        message.error(backendMsg || 'Gagal memuat data peserta');
+      }
+
+      console.error('Fetch registrations error:', error.response?.data || error.message);
     } finally {
       setLoading(false);
     }

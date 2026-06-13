@@ -56,8 +56,18 @@ const JuriPenilaianHistory = () => {
       const list = Array.isArray(result) ? result : [];
       setData(list.map(mapFromApi));
     } catch (error) {
-      message.error('Gagal memuat riwayat penilaian');
-      console.error('Fetch history error:', error);
+      const status = error.response?.status;
+      const backendMsg = error.response?.data?.message;
+
+      if (status === 403) {
+        message.error('Akses ditolak. Pastikan Anda login sebagai Juri.');
+      } else if (status === 401) {
+        message.error('Sesi habis. Silakan login kembali.');
+      } else {
+        message.error(backendMsg || 'Gagal memuat riwayat penilaian');
+      }
+
+      console.error('Fetch history error:', error.response?.data || error.message);
     } finally {
       setLoading(false);
     }

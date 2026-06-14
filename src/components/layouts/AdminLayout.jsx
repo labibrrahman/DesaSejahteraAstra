@@ -193,13 +193,13 @@ const AdminLayout = () => {
             {!collapsed && <span>Support</span>}
           </div>
           <div
-            style={bottomItemStyle}
+            style={{ ...bottomItemStyle, color: '#dc2626' }}
             onClick={handleLogout}
-            onMouseEnter={e => (e.currentTarget.style.background = '#f1f5f9')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            onMouseEnter={e => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.color = '#dc2626'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#dc2626'; }}
           >
             <LogoutOutlined style={{ fontSize: 16 }} />
-            {!collapsed && <span>Sign Out</span>}
+            {!collapsed && <span>Keluar</span>}
           </div>
         </div>
       )}

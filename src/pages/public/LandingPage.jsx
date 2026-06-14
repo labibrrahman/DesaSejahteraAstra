@@ -298,7 +298,7 @@ const LandingPage = () => {
                 marginBottom: isMobile ? 14 : 20,
               }}
             >
-              Pemberdayaan Desa Menuju Sejahtera
+              Lomba 4 Pilar
             </Title>
             <Paragraph
               style={{
@@ -308,7 +308,7 @@ const LandingPage = () => {
                 marginBottom: isMobile ? 24 : 32,
               }}
             >
-              Platform pendaftaran dan penilaian program CSR Astra dalam empat pilar utama guna mewujudkan kemandirian ekonomi masyarakat desa.
+              Apresiasi untuk program binaan yang memberikan dampak sosial terbaik bagi masyarakat.
             </Paragraph>
             <Space size={12} direction={isMobile ? 'vertical' : 'horizontal'} style={{ width: isMobile ? '100%' : 'auto' }}>
               <Button

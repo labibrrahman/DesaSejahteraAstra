@@ -120,22 +120,22 @@ const PesertaDashboard = () => {
           }}
         />
 
-        <Row justify="space-between" align="middle">
-          <Col>
-            <Title level={3} style={{ color: '#fff', margin: 0, marginBottom: 10, fontWeight: 600 }}>
+        <Row gutter={[16, 16]} justify="space-between" align="middle">
+          <Col xs={24} sm={24} md={16}>
+            <Title level={3} style={{ color: '#fff', margin: 0, marginBottom: 8, fontWeight: 600, fontSize: 22 }}>
               Selamat Datang, {nama}!
             </Title>
             <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, lineHeight: 1.6 }}>
               Pantau kemajuan pendaftaran dan kelola informasi program desa Anda di sini.
             </Text>
           </Col>
-          <Col>
+          <Col xs={24} sm={24} md={8}>
             <div
               style={{
                 background: 'rgba(255,255,255,0.1)',
                 backdropFilter: 'blur(12px)',
                 borderRadius: 12,
-                padding: '16px 24px',
+                padding: '14px 20px',
                 textAlign: 'center',
                 border: '1px solid rgba(255,255,255,0.15)',
               }}
@@ -534,7 +534,7 @@ const PesertaDashboard = () => {
             </Card>
 
             {/* Aktivitas Terakhir */}
-            <Card
+            {/* <Card
               title={
                 <Text strong style={{ fontSize: 13, letterSpacing: 0.5, textTransform: 'uppercase' }}>
                   Aktivitas Terakhir
@@ -597,7 +597,7 @@ const PesertaDashboard = () => {
                   </div>
                 ))}
               </div>
-            </Card>
+            </Card> */}
           </Col>
         </Row>
       </div>

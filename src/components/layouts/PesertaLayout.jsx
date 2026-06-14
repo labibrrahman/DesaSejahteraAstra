@@ -87,14 +87,14 @@ const PesertaLayout = () => {
           <div style={{ ...bottomItemStyle, marginBottom: 4 }} onMouseEnter={e => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#1e293b'; }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#64748b'; }}>
             <QuestionCircleOutlined style={{ fontSize: 16 }} />{!collapsed && <span>Support</span>}
           </div>
-          <div style={bottomItemStyle} onClick={handleLogout} onMouseEnter={e => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.color = '#dc2626'; }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#64748b'; }}>
-            <LogoutOutlined style={{ fontSize: 16 }} />{!collapsed && <span>Sign Out</span>}
+          <div style={{ ...bottomItemStyle, color: '#dc2626' }} onClick={handleLogout} onMouseEnter={e => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.color = '#dc2626'; }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#dc2626'; }}>
+            <LogoutOutlined style={{ fontSize: 16 }} />{!collapsed && <span>Keluar</span>}
           </div>
         </div>
       )}
     </>
   );
-
+  
   return (
     <Layout style={{ minHeight: '100vh' }}>
       {isMobile ? (

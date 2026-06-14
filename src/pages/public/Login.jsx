@@ -161,7 +161,7 @@ const Login = ({ role }) => {
               }}
             >
               <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
-              <Text
+              {/* <Text
                 type="secondary"
                 style={{
                   fontSize: 11,
@@ -174,7 +174,7 @@ const Login = ({ role }) => {
               >
                 INFO
               </Text>
-              <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
+              <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} /> */}
             </div>
 
             {/* Info Alert */}

@@ -99,6 +99,8 @@ const FormPendaftaran = () => {
   const [pillars, setPillars] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
   const [astraGroups, setAstraGroups] = useState([]);
+  const [desaOptions, setDesaOptions] = useState([]);
+  const [loadingDesa, setLoadingDesa] = useState(false);
   const [loadingMaster, setLoadingMaster] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [registrationId, setRegistrationId] = useState(null);
@@ -337,6 +339,33 @@ const FormPendaftaran = () => {
     const kabupatenList = selectedProvinsi ? Object.keys(wilayahData[selectedProvinsi] || {}) : [];
     const kecamatanList = selectedProvinsi && selectedKabupaten ? (wilayahData[selectedProvinsi]?.[selectedKabupaten] || []) : [];
 
+    /** Fetch desa dari API saat kecamatan dipilih */
+    const handleKecamatanChange = async (kecamatanName) => {
+      updateField('kecamatan', kecamatanName);
+      updateField('desa', null);
+      setDesaOptions([]);
+
+      if (!kecamatanName) return;
+
+      setLoadingDesa(true);
+      try {
+        // Cari kecamatan ID berdasarkan nama
+        const districts = await masterService.getRegions({ type: 'district', search: kecamatanName });
+        const district = Array.isArray(districts)
+          ? districts.find(d => d.name === kecamatanName)
+          : null;
+
+        if (district) {
+          const villages = await masterService.getVillages(district.id);
+          setDesaOptions(Array.isArray(villages) ? villages.map(v => ({ id: v.id, name: v.name })) : []);
+        }
+      } catch {
+        // Gagal fetch desa, biarkan kosong
+      } finally {
+        setLoadingDesa(false);
+      }
+    };
+
     return (
       <div style={{ width: '100%', maxWidth: 800, marginBottom: 32, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 32 }}>
         <div style={{ marginBottom: 24 }}>
@@ -396,7 +425,7 @@ const FormPendaftaran = () => {
             <div style={fieldWrapper}>
               <Text style={labelStyle}>Kecamatan *</Text>
               <Select placeholder="Pilih Kecamatan" style={{ width: '100%' }} size="large" showSearch optionFilterProp="children"
-                value={formData.kecamatan} onChange={val => updateField('kecamatan', val)}
+                value={formData.kecamatan} onChange={handleKecamatanChange}
                 disabled={!selectedKabupaten}>
                 {kecamatanList.map(kec => <Option key={kec} value={kec}>{kec}</Option>)}
               </Select>
@@ -406,7 +435,22 @@ const FormPendaftaran = () => {
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
               <Text style={labelStyle}>Desa / Kelurahan *</Text>
-              <Input placeholder="Contoh: Desa Sukamaju" style={inputStyle} value={formData.desa} onChange={e => updateField('desa', e.target.value)} />
+              <Select
+                placeholder="Pilih Desa / Kelurahan"
+                style={{ width: '100%' }}
+                size="large"
+                showSearch
+                optionFilterProp="children"
+                value={formData.desa}
+                onChange={val => updateField('desa', val)}
+                disabled={!formData.kecamatan}
+                loading={loadingDesa}
+                notFoundContent={loadingDesa ? 'Memuat data...' : 'Tidak ada data desa'}
+              >
+                {desaOptions.map(d => (
+                  <Option key={d.id} value={d.name}>{d.name}</Option>
+                ))}
+              </Select>
             </div>
           </Col>
         </Row>

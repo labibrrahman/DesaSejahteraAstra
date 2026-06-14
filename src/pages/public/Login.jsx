@@ -178,7 +178,7 @@ const Login = ({ role }) => {
             </div>
 
             {/* Info Alert */}
-            <Alert
+            {/* <Alert
               message="Hanya peserta yang telah terverifikasi oleh tim Astra yang dapat masuk ke sistem ini."
               type="info"
               showIcon
@@ -188,7 +188,7 @@ const Login = ({ role }) => {
                 backgroundColor: '#eff6ff',
                 border: '1px solid #bfdbfe',
               }}
-            />
+            /> */}
           </Card>
         </Content>
       </Layout>

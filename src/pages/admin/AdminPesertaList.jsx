@@ -48,7 +48,13 @@ const mapFromApi = (item) => ({
   pilar: item.pillar?.name || '-',
   pilar_id: item.pillarId,
   kategori: item.category?.name || '-',
-  // Region relations tidak di-load di findAll list, tampilkan '-'
+  // Region — gabungkan semua level wilayah
+  wilayah: [
+    item.province?.name,
+    item.city?.name,
+    item.district?.name,
+    item.villageRegion?.name,
+  ].filter(Boolean).join(', ') || '-',
   provinsi: item.province?.name || '-',
   kota: item.city?.name || '-',
   status: item.status,
@@ -57,7 +63,7 @@ const mapFromApi = (item) => ({
     : item.createdAt
       ? new Date(item.createdAt).toLocaleDateString('id-ID')
       : '-',
-  juri: item.assignedJuror?.name || '-',
+  juri: item.assessments?.[0]?.juror?.name || item.assignedJuror?.name || '-',
   // Detail fields (hanya tersedia saat fetch detail via findOne)
   jenis_dsa: item.dsaType || '-',
   nama_ketua: item.leaderName || '-',
@@ -339,55 +345,29 @@ const AdminPesertaList = () => {
                 borderRadius: '12px 12px 0 0',
                 position: 'relative',
               }}>
-                {/* Close Button */}
-                <Button
-                  type="text"
-                  icon={<CloseOutlined style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)' }} />}
-                  onClick={() => {
-                    setDetailModalVisible(false);
-                    setSelectedPeserta(null);
-                  }}
-                  style={{
-                    position: 'absolute',
-                    top: 12,
-                    right: 12,
-                    width: 32,
-                    height: 32,
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: '1px solid rgba(255,255,255,0.15)',
-                    background: 'rgba(255,255,255,0.05)',
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
-                  }}
-                />
-
-                <Row justify="space-between" align="middle" gutter={[12, 12]} style={{ paddingRight: 32 }}>
-                  <Col xs={18} sm={20}>
-                    <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
-                      Detail Peserta
-                    </Text>
-                    <Title level={4} style={{ color: '#fff', margin: 0, fontWeight: 600, fontSize: 20, lineHeight: 1.3 }}>
-                      {selectedPeserta.nama_desa}
-                    </Title>
-                    <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13, marginTop: 6, display: 'block' }}>
-                      {selectedPeserta.nama_kelompok}
-                    </Text>
-                  </Col>
-                  <Col xs={6} sm={4} style={{ textAlign: 'right' }}>
-                    <Tag color={STATUS_MAP[selectedPeserta.status]?.color || 'default'} style={{ fontSize: 12, padding: '4px 12px', borderRadius: 16, margin: 0, whiteSpace: 'nowrap' }}>
-                      {STATUS_MAP[selectedPeserta.status]?.label || selectedPeserta.status}
-                    </Tag>
-                  </Col>
-                </Row>
+                <div style={{
+                  position: 'absolute',
+                  right: -30,
+                  top: -30,
+                  width: 120,
+                  height: 120,
+                  borderRadius: '50%',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                }} />
+                <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
+                  Detail Peserta
+                </Text>
+                <Title level={4} style={{ color: '#fff', margin: 0, fontWeight: 600, fontSize: 20 }}>
+                  {selectedPeserta.nama_desa}
+                </Title>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
+                  <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13 }}>
+                    {selectedPeserta.nama_kelompok}
+                  </Text>
+                  <Tag color={STATUS_MAP[selectedPeserta.status]?.color || 'default'} style={{ margin: 0, fontSize: 11 }}>
+                    {STATUS_MAP[selectedPeserta.status]?.label || selectedPeserta.status}
+                  </Tag>
+                </div>
               </div>
 
               {/* Content */}

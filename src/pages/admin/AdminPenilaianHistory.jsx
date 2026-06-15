@@ -314,8 +314,8 @@ const AdminPenilaianHistory = () => {
 
       {/* Detail Modal */}
       <Modal
-        title="Detail Penilaian"
         open={detailModalVisible}
+        closable={false}
         onCancel={() => {
           setDetailModalVisible(false);
           setSelectedRecord(null);
@@ -325,67 +325,172 @@ const AdminPenilaianHistory = () => {
             Tutup
           </Button>,
         ]}
-        width={700}
+        width={720}
+        styles={{ body: { padding: 0 } }}
       >
         <Spin spinning={detailLoading}>
           {selectedRecord && (
-            <>
-              <Descriptions bordered column={2} style={{ marginBottom: 24 }}>
-                <Descriptions.Item label="Nama Desa">{selectedRecord.nama_desa}</Descriptions.Item>
-                <Descriptions.Item label="Kelompok">{selectedRecord.nama_kelompok}</Descriptions.Item>
-                <Descriptions.Item label="Pilar">{selectedRecord.pilar}</Descriptions.Item>
-                <Descriptions.Item label="Kategori">{selectedRecord.kategori}</Descriptions.Item>
-                <Descriptions.Item label="Juri">{selectedRecord.juri}</Descriptions.Item>
-                <Descriptions.Item label="Tanggal Penilaian">{selectedRecord.tanggal_nilai}</Descriptions.Item>
-              </Descriptions>
+            <div>
+              {/* Header */}
+              <div style={{
+                background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+                padding: '24px 28px',
+                borderRadius: '12px 12px 0 0',
+                position: 'relative',
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  right: -30,
+                  top: -30,
+                  width: 120,
+                  height: 120,
+                  borderRadius: '50%',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                }} />
+                <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
+                  Detail Penilaian
+                </Text>
+                <Title level={4} style={{ color: '#fff', margin: 0, fontWeight: 600, fontSize: 20 }}>
+                  {selectedRecord.nama_desa}
+                </Title>
+                <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13, marginTop: 4, display: 'block' }}>
+                  {selectedRecord.nama_kelompok}
+                </Text>
+              </div>
 
-              <Card title="Rincian Nilai" style={{ marginBottom: 16 }}>
-                <Row gutter={16}>
-                  <Col span={8}>
-                    <div style={{ textAlign: 'center' }}>
-                      <Text type="secondary">Kriteria 1</Text>
-                      <br />
-                      <Title level={2} style={{ margin: 0, color: getScoreColor(selectedRecord.kriteria1) }}>
-                        {selectedRecord.kriteria1}
-                      </Title>
-                      <Text type="secondary">/ 100</Text>
-                    </div>
-                  </Col>
-                  <Col span={8}>
-                    <div style={{ textAlign: 'center' }}>
-                      <Text type="secondary">Kriteria 2</Text>
-                      <br />
-                      <Title level={2} style={{ margin: 0, color: getScoreColor(selectedRecord.kriteria2) }}>
-                        {selectedRecord.kriteria2}
-                      </Title>
-                      <Text type="secondary">/ 100</Text>
-                    </div>
-                  </Col>
-                  <Col span={8}>
-                    <div style={{ textAlign: 'center' }}>
-                      <Text type="secondary">Kriteria 3</Text>
-                      <br />
-                      <Title level={2} style={{ margin: 0, color: getScoreColor(selectedRecord.kriteria3) }}>
-                        {selectedRecord.kriteria3}
-                      </Title>
-                      <Text type="secondary">/ 100</Text>
-                    </div>
-                  </Col>
-                </Row>
-                <div style={{ textAlign: 'center', marginTop: 16, padding: '16px', background: '#f5f5f5', borderRadius: 8 }}>
-                  <Text type="secondary">Total Nilai</Text>
-                  <br />
-                  <Title level={1} style={{ margin: 0, color: getScoreColor(selectedRecord.total / 3) }}>
-                    {selectedRecord.total}
-                  </Title>
-                  <Text type="secondary">/ 300</Text>
+              {/* Content */}
+              <div style={{ padding: '24px 28px 28px' }}>
+                {/* Info Section */}
+                <div style={{ marginBottom: 24 }}>
+                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
+                    📋 Informasi Penilaian
+                  </Text>
+                  <Row gutter={[20, 12]}>
+                    {[
+                      { label: 'Pilar', value: selectedRecord.pilar },
+                      { label: 'Kategori', value: selectedRecord.kategori },
+                      { label: 'Juri', value: selectedRecord.juri },
+                      { label: 'Tanggal', value: selectedRecord.tanggal_nilai },
+                    ].map((item, idx) => (
+                      <Col xs={12} sm={6} key={idx}>
+                        <Text style={{ fontSize: 11, color: '#94a3b8', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                          {item.label}
+                        </Text>
+                        <Text strong style={{ fontSize: 13, color: '#1e293b' }}>
+                          {item.value || '-'}
+                        </Text>
+                      </Col>
+                    ))}
+                  </Row>
                 </div>
-              </Card>
 
-              <Card title="Catatan Juri">
-                <Paragraph>{selectedRecord.catatan || '-'}</Paragraph>
-              </Card>
-            </>
+                {/* Score Section */}
+                <div style={{ marginBottom: 24 }}>
+                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
+                    ⭐ Rincian Nilai
+                  </Text>
+
+                  {/* Criteria Scores */}
+                  <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+                    {[
+                      { label: 'Inovasi & Kreativitas', score: selectedRecord.kriteria1, color: '#8b5cf6', bg: '#f5f3ff' },
+                      { label: 'Dampak & Keberlanjutan', score: selectedRecord.kriteria2, color: '#10b981', bg: '#ecfdf5' },
+                      { label: 'Kelayakan & Implementasi', score: selectedRecord.kriteria3, color: '#f59e0b', bg: '#fffbeb' },
+                    ].map((item, idx) => (
+                      <Col xs={24} sm={8} key={idx}>
+                        <div
+                          style={{
+                            background: '#fff',
+                            border: `1px solid ${item.color}20`,
+                            borderRadius: 12,
+                            padding: '20px 16px',
+                            textAlign: 'center',
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: 10,
+                              background: item.bg,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              margin: '0 auto 12px',
+                            }}
+                          >
+                            <span style={{ fontSize: 18, fontWeight: 800, color: item.color, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                              {idx + 1}
+                            </span>
+                          </div>
+                          <Text style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 8, lineHeight: 1.4 }}>
+                            {item.label}
+                          </Text>
+                          <div style={{ fontSize: 32, fontWeight: 800, color: item.color, fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1 }}>
+                            {item.score}
+                          </div>
+                          <Text style={{ fontSize: 12, color: '#94a3b8' }}>/ 100</Text>
+                          {/* Progress bar */}
+                          <div style={{ marginTop: 10, height: 4, borderRadius: 2, background: '#f1f5f9', overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${item.score}%`, background: item.color, borderRadius: 2, transition: 'width 0.3s' }} />
+                          </div>
+                        </div>
+                      </Col>
+                    ))}
+                  </Row>
+
+                  {/* Total Score */}
+                  <div
+                    style={{
+                      background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                      borderRadius: 12,
+                      padding: '20px 24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      border: '1px solid #e2e8f0',
+                    }}
+                  >
+                    <div>
+                      <Text style={{ fontSize: 12, color: '#64748b', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                        Total Nilai
+                      </Text>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
+                        <span style={{ fontSize: 36, fontWeight: 800, color: getScoreColor(selectedRecord.total / 3), fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1 }}>
+                          {selectedRecord.total}
+                        </span>
+                        <Text style={{ fontSize: 14, color: '#94a3b8' }}>/ 300</Text>
+                      </div>
+                    </div>
+                    <Tag
+                      color={selectedRecord.total >= 240 ? 'success' : selectedRecord.total >= 150 ? 'blue' : 'warning'}
+                      style={{ fontSize: 13, padding: '4px 14px', borderRadius: 16, margin: 0 }}
+                    >
+                      {selectedRecord.total >= 270 ? 'Sangat Baik' : selectedRecord.total >= 240 ? 'Baik' : selectedRecord.total >= 180 ? 'Cukup' : 'Perlu Perbaikan'}
+                    </Tag>
+                  </div>
+                </div>
+
+                {/* Catatan */}
+                <div>
+                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
+                    📝 Catatan Juri
+                  </Text>
+                  <div
+                    style={{
+                      background: '#f8fafc',
+                      borderRadius: 8,
+                      padding: '14px 16px',
+                      borderLeft: '3px solid #1890ff',
+                    }}
+                  >
+                    <Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>
+                      {selectedRecord.catatan || 'Tidak ada catatan'}
+                    </Paragraph>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
         </Spin>
       </Modal>

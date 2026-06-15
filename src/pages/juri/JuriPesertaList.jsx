@@ -219,8 +219,8 @@ const JuriPesertaList = () => {
 
       {/* Detail Modal */}
       <Modal
-        title="Detail Peserta"
         open={detailModalVisible}
+        closable={false}
         onCancel={() => setDetailModalVisible(false)}
         footer={[
           <Button key="close" onClick={() => setDetailModalVisible(false)}>
@@ -234,31 +234,116 @@ const JuriPesertaList = () => {
               setDetailModalVisible(false);
               handleScore(selectedPeserta);
             }}
+            style={{ background: '#1890ff', borderColor: '#1890ff', fontWeight: 600 }}
           >
             Beri Nilai
           </Button>,
         ]}
-        width={700}
+        width={720}
+        styles={{ body: { padding: 0 } }}
       >
         {selectedPeserta && (
-          <Descriptions bordered column={2}>
-            <Descriptions.Item label="Nama Desa">{selectedPeserta.nama_desa}</Descriptions.Item>
-            <Descriptions.Item label="Jenis DSA">{selectedPeserta.jenis_dsa}</Descriptions.Item>
-            <Descriptions.Item label="Kelompok/Individu">{selectedPeserta.nama_kelompok}</Descriptions.Item>
-            {selectedPeserta.jenis_dsa === 'Kelompok' && (
-              <Descriptions.Item label="Nama Ketua">{selectedPeserta.nama_ketua}</Descriptions.Item>
-            )}
-            <Descriptions.Item label="Nomor HP">{selectedPeserta.phone_number}</Descriptions.Item>
-            <Descriptions.Item label="Pilar">{selectedPeserta.pilar}</Descriptions.Item>
-            <Descriptions.Item label="Kategori">{selectedPeserta.kategori}</Descriptions.Item>
-            <Descriptions.Item label="Wilayah" span={2}>{selectedPeserta.wilayah}</Descriptions.Item>
-            <Descriptions.Item label="Status">
-              <Tag color={STATUS_MAP[selectedPeserta.status]?.color || 'default'}>
-                {STATUS_MAP[selectedPeserta.status]?.label || selectedPeserta.status}
-              </Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label="Tanggal Daftar">{selectedPeserta.tanggal_daftar}</Descriptions.Item>
-          </Descriptions>
+          <div>
+            {/* Header */}
+            <div style={{
+              background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+              padding: '24px 28px',
+              borderRadius: '12px 12px 0 0',
+              position: 'relative',
+            }}>
+              <div style={{
+                position: 'absolute',
+                right: -30,
+                top: -30,
+                width: 120,
+                height: 120,
+                borderRadius: '50%',
+                border: '1px solid rgba(255,255,255,0.08)',
+              }} />
+              <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
+                Detail Peserta
+              </Text>
+              <Title level={4} style={{ color: '#fff', margin: 0, fontWeight: 600, fontSize: 20 }}>
+                {selectedPeserta.nama_desa}
+              </Title>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
+                <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13 }}>
+                  {selectedPeserta.nama_kelompok}
+                </Text>
+                <Tag color={STATUS_MAP[selectedPeserta.status]?.color || 'default'} style={{ margin: 0, fontSize: 11 }}>
+                  {STATUS_MAP[selectedPeserta.status]?.label || selectedPeserta.status}
+                </Tag>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div style={{ padding: '24px 28px 28px' }}>
+              {/* Identitas Pendaftar */}
+              <div style={{ marginBottom: 24 }}>
+                <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
+                  🏷️ Identitas Pendaftar
+                </Text>
+                <Row gutter={[20, 12]}>
+                  {[
+                    { label: 'Jenis DSA', value: selectedPeserta.jenis_dsa },
+                    { label: 'Nama Ketua', value: selectedPeserta.jenis_dsa === 'Kelompok' ? selectedPeserta.nama_ketua : null },
+                    { label: 'Nomor HP', value: selectedPeserta.phone_number },
+                  ].filter(item => item.value).map((item, idx) => (
+                    <Col xs={12} sm={8} key={idx}>
+                      <Text style={{ fontSize: 11, color: '#94a3b8', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                        {item.label}
+                      </Text>
+                      <Text strong style={{ fontSize: 13, color: '#1e293b' }}>
+                        {item.value || '-'}
+                      </Text>
+                    </Col>
+                  ))}
+                </Row>
+              </div>
+
+              {/* Informasi Program */}
+              <div style={{ marginBottom: 24 }}>
+                <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
+                  📋 Informasi Program
+                </Text>
+                <Row gutter={[20, 12]}>
+                  {[
+                    { label: 'Pilar', value: selectedPeserta.pilar },
+                    { label: 'Kategori', value: selectedPeserta.kategori },
+                    { label: 'Tanggal Daftar', value: selectedPeserta.tanggal_daftar },
+                  ].map((item, idx) => (
+                    <Col xs={12} sm={8} key={idx}>
+                      <Text style={{ fontSize: 11, color: '#94a3b8', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                        {item.label}
+                      </Text>
+                      <Text strong style={{ fontSize: 13, color: '#1e293b' }}>
+                        {item.value || '-'}
+                      </Text>
+                    </Col>
+                  ))}
+                </Row>
+              </div>
+
+              {/* Wilayah */}
+              <div>
+                <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
+                  📍 Wilayah
+                </Text>
+                <div
+                  style={{
+                    background: '#f8fafc',
+                    borderRadius: 8,
+                    padding: '12px 16px',
+                    borderLeft: '3px solid #1890ff',
+                  }}
+                >
+                  <Text style={{ fontSize: 13, color: '#475569', lineHeight: 1.6 }}>
+                    {selectedPeserta.wilayah}
+                  </Text>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </Modal>
     </div>

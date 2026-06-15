@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Button, Card, Form, Input, Typography, Layout, Alert } from 'antd';
+import { Button, Card, Form, Input, Typography, Layout, Alert, message } from 'antd';
 import {
   UserOutlined,
   LockOutlined,
@@ -36,7 +36,7 @@ const Login = ({ role }) => {
   // Tampilkan error dari store
   useEffect(() => {
     if (error) {
-      // error handled by store
+      message.error(error);
       clearError();
     }
   }, [error, clearError]);

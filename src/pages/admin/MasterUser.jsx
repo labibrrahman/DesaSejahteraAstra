@@ -218,8 +218,8 @@ const MasterUser = () => {
       dataIndex: 'role',
       key: 'role',
       render: (role) => (
-        <Tag color={role === 'admin' ? 'blue' : 'green'}>
-          {role === 'admin' ? 'Admin' : 'Juri'}
+        <Tag color={role === 'admin' ? 'blue' : role === 'juri' ? 'green' : 'orange'}>
+          {role === 'admin' ? 'Admin' : role === 'juri' ? 'Juri' : 'Peserta'}
         </Tag>
       ),
     },
@@ -247,6 +247,7 @@ const MasterUser = () => {
             Edit
           </Button>
           <Button
+            disabled={record.role === 'peserta'}
             type="link"
             icon={<KeyOutlined />}
             onClick={() => showPasswordModal(record)}
@@ -328,6 +329,7 @@ const MasterUser = () => {
             <Select placeholder="Pilih Role">
               <Option value="admin">Admin</Option>
               <Option value="juri">Juri</Option>
+              <Option value="peserta">Peserta</Option>
             </Select>
           </Form.Item>
 

@@ -147,7 +147,7 @@ const JuriFormPenilaian = () => {
                 <div style={{ padding: 20 }}>
                   <Text style={{ fontSize: 13, color: '#64748b', display: 'block', marginBottom: 16, lineHeight: 1.6 }}>{k.desc}</Text>
                   <Form.Item name={k.key} rules={[{ required: true, message: 'Masukkan nilai' }, { type: 'number', min: 0, max: 100, message: 'Nilai 0-100' }]} style={{ marginBottom: 0 }}>
-                    <InputNumber min={0} max={100} style={{ width: '100%', height: 48, borderRadius: 10, fontSize: 16, fontWeight: 600 }} placeholder="Masukkan nilai (0-100)" addonAfter={<span style={{ color: '#94a3b8' }}>/ 100</span>} />
+                    <InputNumber min={0} max={100} controls={false} keyboard={true} style={{ width: '100%', height: 48, borderRadius: 10, fontSize: 16, fontWeight: 600 }} placeholder="Masukkan nilai (0-100)" addonAfter={<span style={{ color: '#94a3b8' }}>/ 100</span>} />
                   </Form.Item>
                 </div>
               </div>

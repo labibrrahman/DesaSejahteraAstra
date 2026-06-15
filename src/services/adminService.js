@@ -21,6 +21,9 @@ const adminService = {
    */
   getRegistrations: async (params = {}) => {
     const { data } = await api.get('/registrations', { params });
+        console.log('data')
+    console.log(data)
+    console.log('data')
     return data;
   },
 

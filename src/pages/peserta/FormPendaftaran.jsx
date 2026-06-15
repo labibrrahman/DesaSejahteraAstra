@@ -100,6 +100,12 @@ const FormPendaftaran = () => {
 
   const updateField = (key, value) => setFormData(prev => ({ ...prev, [key]: value }));
 
+  // Hanya izinkan angka untuk nomor HP
+  const handlePhoneChange = (e) => {
+    const onlyNums = e.target.value.replace(/[^0-9]/g, '');
+    updateField('phone_number', onlyNums);
+  };
+
   // ── Auto-save draft ke localStorage ────────────────────────────────────────
   const saveDraft = () => {
     try {
@@ -280,7 +286,12 @@ const FormPendaftaran = () => {
         if (!formData.jenis_dsa) missing.push('Jenis DSA');
         if (!formData.nama_kelompok) missing.push('Nama Kelompok/Individu');
         if (formData.jenis_dsa === 'kelompok' && !formData.nama_ketua) missing.push('Nama Ketua');
-        if (!formData.phone_number) missing.push('Nomor HP');
+        if (!formData.phone_number) {
+          missing.push('Nomor HP');
+        } else if (formData.phone_number.length < 8) {
+          message.warning('Nomor HP minimal 8 digit');
+          return false;
+        }
         if (!formData.alamat) missing.push('Alamat Lengkap');
         if (!formData.provinceId) missing.push('Provinsi');
         if (!formData.cityId) missing.push('Kabupaten / Kota');
@@ -583,7 +594,7 @@ const FormPendaftaran = () => {
             <Col xs={24} sm={12}>
               <div style={fieldWrapper}>
                 <Text style={labelStyle}>Nomor HP (WhatsApp) *</Text>
-                <Input placeholder="Contoh: 08123456789" style={inputStyle} value={formData.phone_number} onChange={e => updateField('phone_number', e.target.value)} />
+                <Input placeholder="Contoh: 08123456789" style={inputStyle} value={formData.phone_number} onChange={handlePhoneChange} maxLength={15} />
               </div>
             </Col>
           )}
@@ -594,7 +605,7 @@ const FormPendaftaran = () => {
             <Col xs={24} sm={12}>
               <div style={fieldWrapper}>
                 <Text style={labelStyle}>Nomor HP (WhatsApp) *</Text>
-                <Input placeholder="Contoh: 08123456789" style={inputStyle} value={formData.phone_number} onChange={e => updateField('phone_number', e.target.value)} />
+                <Input placeholder="Contoh: 08123456789" style={inputStyle} value={formData.phone_number} onChange={handlePhoneChange} maxLength={15} />
               </div>
             </Col>
           </Row>

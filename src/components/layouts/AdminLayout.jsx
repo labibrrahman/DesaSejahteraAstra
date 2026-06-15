@@ -185,7 +185,8 @@ const AdminLayout = () => {
           }}
         >
           <div
-            style={{ ...bottomItemStyle, marginBottom: 4 }}
+            style={{ ...bottomItemStyle, marginBottom: 4, cursor: 'pointer' }}
+            onClick={() => window.open('https://wa.me/6281234567890', '_blank')}
             onMouseEnter={e => (e.currentTarget.style.background = '#f1f5f9')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >

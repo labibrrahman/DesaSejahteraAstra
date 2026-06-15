@@ -120,13 +120,13 @@ const JuriLayout = () => {
           <div onClick={() => isMobile ? setDrawerOpen(true) : setCollapsed(!collapsed)} style={{ cursor: 'pointer', fontSize: 18, color: '#64748b' }}>
             {isMobile || collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </div>
-          <Space size={16}>
+          {/* <Space size={16}>
             <BellOutlined style={{ fontSize: 18, color: '#64748b', cursor: 'pointer' }} />
             {!isMobile && <QuestionCircleOutlined style={{ fontSize: 18, color: '#64748b', cursor: 'pointer' }} />}
             <Dropdown menu={{ items: userMenuItems, onClick: handleUserMenuClick }} placement="bottomRight">
               <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#1e293b', cursor: 'pointer' }} />
             </Dropdown>
-          </Space>
+          </Space> */}
         </Header>
         <Content style={{ margin: isMobile ? 12 : 24, padding: isMobile ? 12 : 24, background: '#fff', borderRadius: 8, minHeight: 280, overflow: 'auto' }}>
           <Outlet />

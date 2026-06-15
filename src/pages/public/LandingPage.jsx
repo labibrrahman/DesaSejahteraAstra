@@ -256,6 +256,7 @@ const LandingPage = () => {
             minHeight: isMobile ? 400 : 480,
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'center',
             overflow: 'hidden',
           }}
         >
@@ -287,7 +288,7 @@ const LandingPage = () => {
               zIndex: 1,
             }}
           />
-          <div style={{ position: 'relative', zIndex: 2, padding: `${isMobile ? 40 : 0}px ${px}px`, maxWidth: 600 }}>
+          <div style={{ position: 'relative', zIndex: 2, padding: `${isMobile ? 40 : 0}px ${px}px`, maxWidth: 600, textAlign: 'center', width: '100%' }}>
             <Title
               level={1}
               style={{

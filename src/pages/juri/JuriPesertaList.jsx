@@ -51,6 +51,9 @@ const mapFromApi = (item) => ({
   wilayah: item.province?.name
     ? [item.province?.name, item.city?.name].filter(Boolean).join(' - ')
     : '-',
+  jenis_dsa: item.dsaType || '-',
+  nama_ketua: item.leaderName || '-',
+  phone_number: item.phoneNumber || '-',
   status: item.status,
   tanggal_daftar: item.submittedAt
     ? new Date(item.submittedAt).toLocaleDateString('id-ID')
@@ -240,7 +243,12 @@ const JuriPesertaList = () => {
         {selectedPeserta && (
           <Descriptions bordered column={2}>
             <Descriptions.Item label="Nama Desa">{selectedPeserta.nama_desa}</Descriptions.Item>
+            <Descriptions.Item label="Jenis DSA">{selectedPeserta.jenis_dsa}</Descriptions.Item>
             <Descriptions.Item label="Kelompok/Individu">{selectedPeserta.nama_kelompok}</Descriptions.Item>
+            {selectedPeserta.jenis_dsa === 'Kelompok' && (
+              <Descriptions.Item label="Nama Ketua">{selectedPeserta.nama_ketua}</Descriptions.Item>
+            )}
+            <Descriptions.Item label="Nomor HP">{selectedPeserta.phone_number}</Descriptions.Item>
             <Descriptions.Item label="Pilar">{selectedPeserta.pilar}</Descriptions.Item>
             <Descriptions.Item label="Kategori">{selectedPeserta.kategori}</Descriptions.Item>
             <Descriptions.Item label="Wilayah" span={2}>{selectedPeserta.wilayah}</Descriptions.Item>

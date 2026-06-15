@@ -49,9 +49,8 @@ const mapFromApi = (item) => ({
   pilar_id: item.pillarId,
   kategori: item.category?.name || '-',
   // Region relations tidak di-load di findAll list, tampilkan '-'
-  wilayah: item.province?.name
-    ? [item.province?.name, item.city?.name].filter(Boolean).join(' - ')
-    : '-',
+  provinsi: item.province?.name || '-',
+  kota: item.city?.name || '-',
   status: item.status,
   tanggal_daftar: item.submittedAt
     ? new Date(item.submittedAt).toLocaleDateString('id-ID')
@@ -60,6 +59,9 @@ const mapFromApi = (item) => ({
       : '-',
   juri: item.assignedJuror?.name || '-',
   // Detail fields (hanya tersedia saat fetch detail via findOne)
+  jenis_dsa: item.dsaType || '-',
+  nama_ketua: item.leaderName || '-',
+  phone_number: item.phoneNumber || '-',
   alamat: item.address || '-',
   grup_astra: item.astraGroup?.name || '-',
   latar_belakang: item.background || '-',
@@ -390,6 +392,29 @@ const AdminPesertaList = () => {
 
               {/* Content */}
               <div style={{ padding: '24px 32px 28px' }}>
+                {/* Section: Identitas Pendaftar */}
+                <div style={{ marginBottom: 24 }}>
+                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
+                    🏷️ Identitas Pendaftar
+                  </Text>
+                  <Row gutter={[20, 16]}>
+                    <Col xs={12} sm={8}>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Jenis DSA</Text>
+                      <Text strong style={{ fontSize: 13 }}>{selectedPeserta.jenis_dsa}</Text>
+                    </Col>
+                    {selectedPeserta.jenis_dsa === 'Kelompok' && (
+                      <Col xs={12} sm={8}>
+                        <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nama Ketua</Text>
+                        <Text strong style={{ fontSize: 13 }}>{selectedPeserta.nama_ketua}</Text>
+                      </Col>
+                    )}
+                    <Col xs={12} sm={8}>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nomor HP</Text>
+                      <Text strong style={{ fontSize: 13 }}>{selectedPeserta.phone_number}</Text>
+                    </Col>
+                  </Row>
+                </div>
+
                 {/* Section: Program */}
                 <div style={{ marginBottom: 24 }}>
                   <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
@@ -419,14 +444,18 @@ const AdminPesertaList = () => {
                   <Row gutter={[20, 16]}>
                     <Col xs={12} sm={8}>
                       <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Provinsi</Text>
-                      <Text strong style={{ fontSize: 13 }}>{selectedPeserta.wilayah}</Text>
+                      <Text strong style={{ fontSize: 13 }}>{selectedPeserta.provinsi}</Text>
+                    </Col>
+                    <Col xs={12} sm={8}>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Kabupaten / Kota</Text>
+                      <Text strong style={{ fontSize: 13 }}>{selectedPeserta.kota}</Text>
                     </Col>
                     <Col xs={12} sm={8}>
                       <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Kecamatan</Text>
                       <Text strong style={{ fontSize: 13 }}>{selectedPeserta.kecamatan}</Text>
                     </Col>
                     <Col xs={12} sm={8}>
-                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Desa</Text>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Desa / Kelurahan</Text>
                       <Text strong style={{ fontSize: 13 }}>{selectedPeserta.desa}</Text>
                     </Col>
                     <Col span={24}>

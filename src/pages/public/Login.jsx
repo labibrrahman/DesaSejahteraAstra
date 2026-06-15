@@ -27,7 +27,7 @@ const Login = ({ role }) => {
       const redirectMap = {
         admin: '/admin/dashboard',
         juri: '/juri/peserta',
-        peserta: '/peserta/pendaftaran',
+        peserta: '/peserta/dashboard',
       };
       navigate(redirectMap[currentRole] || '/', { replace: true });
     }

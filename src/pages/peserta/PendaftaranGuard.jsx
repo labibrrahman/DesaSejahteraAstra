@@ -1,13 +1,12 @@
 import React from 'react';
 import { Spin } from 'antd';
-import { Outlet } from 'react-router-dom';
+import { Outlet, Navigate } from 'react-router-dom';
 import useRegistration from '../../hooks/useRegistration';
-import PesertaLayout from '../../components/layouts/PesertaLayout';
 
 /**
  * Wrapper untuk route /peserta/pendaftaran.
  * - Belum daftar: tampilkan FormPendaftaran tanpa sidebar
- * - Sudah daftar: tampilkan FormPendaftaran dengan sidebar ( PesertaLayout )
+ * - Sudah daftar: redirect ke /peserta/dashboard (tidak boleh akses form lagi)
  */
 const PendaftaranGuard = () => {
   const { loading, hasRegistration } = useRegistration();
@@ -20,9 +19,9 @@ const PendaftaranGuard = () => {
     );
   }
 
-  // Sudah daftar → tampilkan dengan sidebar
+  // Sudah daftar → redirect ke dashboard, tidak boleh akses form pendaftaran lagi
   if (hasRegistration) {
-    return <PesertaLayout />;
+    return <Navigate to="/peserta/dashboard" replace />;
   }
 
   // Belum daftar → tampilkan tanpa sidebar (FormPendaftaran punya header sendiri)

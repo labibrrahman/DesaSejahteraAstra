@@ -65,11 +65,24 @@ const FormPendaftaran = () => {
     navigate('/login');
   };
 
-  const [currentStep, setCurrentStep] = useState(1);
+  const DRAFT_KEY = 'form_pendaftaran_draft';
+
+  // ── Load draft dari localStorage ───────────────────────────────────────────
+  const loadDraft = () => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch { /* ignore corrupt data */ }
+    return null;
+  };
+
+  const savedDraft = loadDraft();
+
+  const [currentStep, setCurrentStep] = useState(savedDraft?.currentStep || 1);
   const [submitting, setSubmitting] = useState(false);
-  const [selectedPilarId, setSelectedPilarId] = useState(null);
-  const [selectedKategoriId, setSelectedKategoriId] = useState(null);
-  const [formData, setFormData] = useState({});
+  const [selectedPilarId, setSelectedPilarId] = useState(savedDraft?.selectedPilarId || null);
+  const [selectedKategoriId, setSelectedKategoriId] = useState(savedDraft?.selectedKategoriId || null);
+  const [formData, setFormData] = useState(savedDraft?.formData || {});
   const [pillars, setPillars] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
   const [astraGroups, setAstraGroups] = useState([]);
@@ -86,6 +99,23 @@ const FormPendaftaran = () => {
   const [registrationId, setRegistrationId] = useState(null);
 
   const updateField = (key, value) => setFormData(prev => ({ ...prev, [key]: value }));
+
+  // ── Auto-save draft ke localStorage ────────────────────────────────────────
+  const saveDraft = () => {
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({
+        currentStep,
+        selectedPilarId,
+        selectedKategoriId,
+        formData,
+      }));
+    } catch { /* quota exceeded, ignore */ }
+  };
+
+  // Save setiap kali step atau formData berubah
+  useEffect(() => {
+    saveDraft();
+  }, [currentStep, selectedPilarId, selectedKategoriId, formData]);
 
   // ── Fetch master data + existing registration on mount ──────────────────────
 
@@ -176,6 +206,8 @@ const FormPendaftaran = () => {
           const { data } = await api.get('/registrations/my');
           const reg = data?.data ?? data;
           if (reg && reg.id) {
+            // Sudah punya registrasi, hapus draft lama
+            localStorage.removeItem(DRAFT_KEY);
             setRegistrationId(reg.id);
             setSelectedPilarId(reg.pillarId || null);
 
@@ -212,7 +244,13 @@ const FormPendaftaran = () => {
             if (reg.categoryId) setSelectedKategoriId(reg.categoryId);
           }
         } catch {
-          // Belum ada registrasi, form tetap kosong
+          // Belum ada registrasi dari API — jika ada draft, restore dependent dropdowns
+          if (savedDraft?.formData) {
+            const d = savedDraft.formData;
+            if (d.provinceId) await fetchCities(d.provinceId);
+            if (d.cityId) await fetchDistricts(d.cityId);
+            if (d.districtId) await fetchVillages(d.districtId);
+          }
         }
       } catch {
         message.error('Gagal memuat data master');
@@ -327,6 +365,7 @@ const FormPendaftaran = () => {
         await registrationService.submitRegistration(reg.id);
         message.success('Pendaftaran berhasil dikirim!');
       }
+      localStorage.removeItem(DRAFT_KEY);
       navigate('/peserta/dashboard');
     } catch (err) {
       const msg = err.response?.data?.message || err.response?.data?.data?.message || 'Gagal mengirim pendaftaran';
@@ -723,22 +762,22 @@ const FormPendaftaran = () => {
 
   const renderStep4 = () => (
     <div style={{ width: '100%', maxWidth: 800, marginBottom: 32 }}>
-      <ReviewCard title="Kategori Spesifik" icon={<CheckCircleOutlined style={{ color: '#1890ff', fontSize: 16 }} />}>
+      <ReviewCard title="Pilar & Kategori" icon={<CheckCircleOutlined style={{ color: '#1890ff', fontSize: 16 }} />}>
         <Row gutter={[16, 12]}>
           <ReviewField label="Pilar Terpilih" value={selectedPilar?.name} />
           <ReviewField label="Sub-kategori" value={kategoriLabel} />
         </Row>
       </ReviewCard>
 
-      <ReviewCard title="Identitas Pendaftar" icon={<MedicineBoxOutlined style={{ color: '#1890ff', fontSize: 16 }} />}>
+      <ReviewCard title="Data Peserta" icon={<MedicineBoxOutlined style={{ color: '#1890ff', fontSize: 16 }} />}>
         <Row gutter={[16, 12]}>
-          <ReviewField label="Nama DSA" value={formData.nama_desa} />
+          <ReviewField label="Nama DSA (Desa Sejahtera Astra)" value={formData.nama_desa} />
           <ReviewField label="Jenis DSA" value={formData.jenis_dsa === 'kelompok' ? 'Kelompok' : formData.jenis_dsa === 'individu' ? 'Individu' : '-'} />
           <ReviewField label="Nama Kelompok / Individu" value={formData.nama_kelompok} />
           {formData.jenis_dsa === 'kelompok' && (
             <ReviewField label="Nama Ketua" value={formData.nama_ketua} />
           )}
-          <ReviewField label="Nomor HP" value={formData.phone_number} />
+          <ReviewField label="Nomor HP (WhatsApp)" value={formData.phone_number} />
           <ReviewField label="Alamat Lengkap" value={formData.alamat} span={24} />
           <ReviewField label="Provinsi" value={formData.provinceName} />
           <ReviewField label="Kabupaten / Kota" value={formData.cityName} />
@@ -863,7 +902,7 @@ const FormPendaftaran = () => {
           <Paragraph style={{ marginBottom: 16, fontSize: 14 }}>
             Pastikan semua data yang Anda isi sudah benar. Setelah dikirim, pendaftaran akan masuk ke tahap <Text strong>Screening</Text> oleh tim admin.
           </Paragraph>
-          <div style={{ background: '#f6f8fa', borderRadius: 8, padding: 16, border: '1px solid #e8e8e8' }}>
+          {/* <div style={{ background: '#f6f8fa', borderRadius: 8, padding: 16, border: '1px solid #e8e8e8' }}>
             <Text style={{ fontSize: 13, color: '#64748b' }}>Ringkasan:</Text>
             <div style={{ marginTop: 8 }}>
               <Text style={{ fontSize: 13 }}><Text type="secondary">Pilar:</Text> <Text strong>{selectedPilar?.name}</Text></Text>
@@ -874,7 +913,7 @@ const FormPendaftaran = () => {
                 <Text style={{ fontSize: 13, display: 'block', marginTop: 4 }}><Text type="secondary">Desa:</Text> <Text strong>{formData.nama_desa}</Text></Text>
               )}
             </div>
-          </div>
+          </div> */}
         </div>
       </Modal>
     </>

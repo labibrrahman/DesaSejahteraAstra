@@ -28,7 +28,7 @@ const AuthCallback = () => {
       try {
         const role = await handleGoogleCallback(accessToken, refreshToken);
         if (role === 'peserta') {
-          navigate('/peserta/pendaftaran', { replace: true });
+          navigate('/peserta/dashboard', { replace: true });
         } else {
           navigate('/', { replace: true });
         }

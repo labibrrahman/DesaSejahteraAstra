@@ -30,7 +30,7 @@ const PesertaLayout = () => {
 
   const menuItems = [
     { key: '/peserta/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
-    { key: '/peserta/pendaftaran', icon: <FormOutlined />, label: 'Pendaftaran' },
+    // { key: '/peserta/pendaftaran', icon: <FormOutlined />, label: 'Pendaftaran' },
   ];
 
   const userMenuItems = [
@@ -117,7 +117,7 @@ const PesertaLayout = () => {
             {!isMobile && <Text style={{ fontSize: 14, color: '#64748b' }}>{isFormPage ? 'Formulir Pendaftaran' : 'Dashboard'}</Text>}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {!isMobile && (
+            {/* {!isMobile && (
               <Tooltip title="Notifikasi">
                 <Badge count={2} size="small" offset={[-2, 4]}>
                   <div style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, cursor: 'pointer' }}>
@@ -125,7 +125,7 @@ const PesertaLayout = () => {
                   </div>
                 </Badge>
               </Tooltip>
-            )}
+            )} */}
             <Dropdown menu={{ items: userMenuItems, onClick: handleLogout }} placement="bottomRight">
               <Avatar icon={<UserOutlined />} style={{ background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', cursor: 'pointer' }} />
             </Dropdown>

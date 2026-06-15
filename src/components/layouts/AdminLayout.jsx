@@ -263,7 +263,7 @@ const AdminLayout = () => {
             {isMobile || collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </div>
           <Space size={16}>
-            <BellOutlined style={{ fontSize: 18, color: '#64748b', cursor: 'pointer' }} />
+            {/* <BellOutlined style={{ fontSize: 18, color: '#64748b', cursor: 'pointer' }} />
             {!isMobile && <QuestionCircleOutlined style={{ fontSize: 18, color: '#64748b', cursor: 'pointer' }} />}
             <Dropdown
               menu={{ items: userMenuItems, onClick: handleUserMenuClick }}
@@ -273,7 +273,7 @@ const AdminLayout = () => {
                 icon={<UserOutlined />}
                 style={{ backgroundColor: '#1e293b', cursor: 'pointer' }}
               />
-            </Dropdown>
+            </Dropdown> */}
           </Space>
         </Header>
         <Content

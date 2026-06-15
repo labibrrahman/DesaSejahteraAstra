@@ -19,6 +19,7 @@ import {
   EditOutlined,
   DeleteOutlined,
   UserOutlined,
+  KeyOutlined,
 } from '@ant-design/icons';
 import adminService from '../../services/adminService';
 import masterService from '../../services/masterService';
@@ -72,6 +73,10 @@ const MasterUser = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [form] = Form.useForm();
+  const [passwordModalVisible, setPasswordModalVisible] = useState(false);
+  const [passwordSubmitting, setPasswordSubmitting] = useState(false);
+  const [selectedUserForPassword, setSelectedUserForPassword] = useState(null);
+  const [passwordForm] = Form.useForm();
 
   /** Fetch users dari API */
   const fetchUsers = useCallback(async () => {
@@ -158,6 +163,36 @@ const MasterUser = () => {
     }
   };
 
+  /** Buka modal ganti password */
+  const showPasswordModal = (record) => {
+    setSelectedUserForPassword(record);
+    passwordForm.resetFields();
+    setPasswordModalVisible(true);
+  };
+
+  /** Submit ganti password */
+  const handlePasswordSubmit = async () => {
+    try {
+      const values = await passwordForm.validateFields();
+      setPasswordSubmitting(true);
+
+      await adminService.updateUser(selectedUserForPassword.id, {
+        password: values.newPassword,
+      });
+
+      message.success(`Password ${selectedUserForPassword.nama} berhasil diubah`);
+      setPasswordModalVisible(false);
+      passwordForm.resetFields();
+      setSelectedUserForPassword(null);
+    } catch (error) {
+      if (error.response) {
+        message.error(error.response.data?.message || 'Gagal mengubah password');
+      }
+    } finally {
+      setPasswordSubmitting(false);
+    }
+  };
+
   /** Pantau perubahan role di form untuk show/hide pillar field */
   const selectedRole = Form.useWatch('role', form);
 
@@ -201,7 +236,7 @@ const MasterUser = () => {
     {
       title: 'Aksi',
       key: 'action',
-      width: 180,
+      width: 260,
       render: (_, record) => (
         <Space>
           <Button
@@ -210,6 +245,13 @@ const MasterUser = () => {
             onClick={() => showModal(record)}
           >
             Edit
+          </Button>
+          <Button
+            type="link"
+            icon={<KeyOutlined />}
+            onClick={() => showPasswordModal(record)}
+          >
+            Password
           </Button>
           <Popconfirm
             title="Yakin ingin menonaktifkan user ini?"
@@ -317,6 +359,65 @@ const MasterUser = () => {
               <Input.Password placeholder="Masukkan password" />
             </Form.Item>
           )}
+        </Form>
+      </Modal>
+
+      {/* Modal Ganti Password */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <KeyOutlined />
+            <span>Ganti Password</span>
+          </div>
+        }
+        open={passwordModalVisible}
+        onOk={handlePasswordSubmit}
+        confirmLoading={passwordSubmitting}
+        onCancel={() => {
+          setPasswordModalVisible(false);
+          passwordForm.resetFields();
+          setSelectedUserForPassword(null);
+        }}
+        okText="Simpan Password"
+        cancelText="Batal"
+      >
+        {selectedUserForPassword && (
+          <div style={{ marginBottom: 16, padding: 12, background: '#f6f8fa', borderRadius: 8 }}>
+            <Text type="secondary">Mengubah password untuk:</Text>
+            <br />
+            <Text strong>{selectedUserForPassword.nama}</Text>
+            <Text type="secondary" style={{ marginLeft: 8 }}>({selectedUserForPassword.username})</Text>
+          </div>
+        )}
+        <Form form={passwordForm} layout="vertical">
+          <Form.Item
+            name="newPassword"
+            label="Password Baru"
+            rules={[
+              { required: true, message: 'Masukkan password baru' },
+              { min: 6, message: 'Password minimal 6 karakter' },
+            ]}
+          >
+            <Input.Password placeholder="Masukkan password baru" />
+          </Form.Item>
+          <Form.Item
+            name="confirmPassword"
+            label="Konfirmasi Password"
+            dependencies={['newPassword']}
+            rules={[
+              { required: true, message: 'Konfirmasi password' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('newPassword') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('Password tidak cocok'));
+                },
+              }),
+            ]}
+          >
+            <Input.Password placeholder="Ulangi password baru" />
+          </Form.Item>
         </Form>
       </Modal>
     </div>

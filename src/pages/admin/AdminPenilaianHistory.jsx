@@ -115,6 +115,34 @@ const AdminPenilaianHistory = () => {
     fetchAssessments(pag.current, pag.pageSize);
   };
 
+  /** Helper: download blob sebagai file */
+  const downloadBlob = (blob, filename) => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+
+  /** Export data penilaian ke Excel */
+  const handleExport = async () => {
+    try {
+      const filters = {};
+      if (searchText) filters.search = searchText;
+
+      const blob = await adminService.exportAssessments(filters);
+      const today = new Date().toISOString().split('T')[0];
+      downloadBlob(blob, `export-penilaian-${today}.xlsx`);
+      message.success('Berhasil mengunduh file export');
+    } catch (error) {
+      message.error('Gagal mengexport data');
+      console.error('Export error:', error);
+    }
+  };
+
   const getScoreColor = (score) => {
     if (score >= 90) return '#52c41a';
     if (score >= 80) return '#1890ff';
@@ -208,7 +236,7 @@ const AdminPenilaianHistory = () => {
           <Title level={3} style={{ margin: 0 }}>Riwayat Penilaian</Title>
           <Text type="secondary">Daftar seluruh penilaian dari semua juri</Text>
         </div>
-        <Button icon={<ExportOutlined />}>Export Data</Button>
+        <Button icon={<ExportOutlined />} onClick={handleExport}>Export Data</Button>
       </div>
 
       {/* Summary Cards */}

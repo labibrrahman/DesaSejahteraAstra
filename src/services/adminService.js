@@ -141,6 +141,32 @@ const adminService = {
     const { data } = await api.post('/assessments', dto);
     return data.data || data;
   },
+
+  // ─── Export ────────────────────────────────────────────────────
+
+  /**
+   * Export data peserta ke Excel
+   * @param {{ status?, pillar_id?, search? }} filters
+   */
+  exportRegistrations: async (filters = {}) => {
+    const { data } = await api.get('/registrations/export', {
+      params: filters,
+      responseType: 'blob',
+    });
+    return data;
+  },
+
+  /**
+   * Export data penilaian ke Excel
+   * @param {{ pillar_id?, juror_id? }} filters
+   */
+  exportAssessments: async (filters = {}) => {
+    const { data } = await api.get('/assessments/export', {
+      params: filters,
+      responseType: 'blob',
+    });
+    return data;
+  },
 };
 
 export default adminService;

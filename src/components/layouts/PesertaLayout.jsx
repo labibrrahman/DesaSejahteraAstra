@@ -44,7 +44,7 @@ const PesertaLayout = () => {
     navigate(key);
   };
 
-  const { logout } = useAuthStore();
+  const { logout, user, role } = useAuthStore();
 
   const handleLogout = async () => {
     await logout();
@@ -116,16 +116,13 @@ const PesertaLayout = () => {
             {!isMobile && <div style={{ height: 24, width: 1, background: '#e2e8f0' }} />}
             {!isMobile && <Text style={{ fontSize: 14, color: '#64748b' }}>{isFormPage ? 'Formulir Pendaftaran' : 'Dashboard'}</Text>}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {/* {!isMobile && (
-              <Tooltip title="Notifikasi">
-                <Badge count={2} size="small" offset={[-2, 4]}>
-                  <div style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 8, cursor: 'pointer' }}>
-                    <BellOutlined style={{ fontSize: 18, color: '#64748b' }} />
-                  </div>
-                </Badge>
-              </Tooltip>
-            )} */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {!isMobile && (
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontWeight: 600, fontSize: 13, color: '#1e293b', lineHeight: 1.3 }}>{user?.name || 'Peserta'}</div>
+                <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'capitalize', lineHeight: 1.3 }}>{role || 'peserta'}</div>
+              </div>
+            )}
             <Dropdown menu={{ items: userMenuItems, onClick: handleLogout }} placement="bottomRight">
               <Avatar icon={<UserOutlined />} style={{ background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)', cursor: 'pointer' }} />
             </Dropdown>

@@ -18,6 +18,7 @@ const mapFromApi = (i) => ({
   pilar: i.pillar?.name || '-', kategori: i.category?.name || '-',
   wilayah: [i.province?.name, i.city?.name, i.district?.name, i.villageRegion?.name].filter(Boolean).join(' - ') || '-',
   grup_astra: i.astraGroup?.name || '-', latar_belakang: i.background || '-', dampak_program: i.programImpact || '-',
+  jenis_dsa: i.dsaType || '-', nama_ketua: i.leaderName || '-', phone_number: i.phoneNumber || '-',
 });
 
 const JuriFormPenilaian = () => {
@@ -93,8 +94,18 @@ const JuriFormPenilaian = () => {
               <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Informasi Peserta</Text>
             </div>
             <div style={{ padding: 20 }}>
-              {[{ l: 'Nama Desa', v: peserta.nama_desa }, { l: 'Kelompok', v: peserta.nama_kelompok }, { l: 'Pilar', v: peserta.pilar, tag: true }, { l: 'Kategori', v: peserta.kategori }, { l: 'Wilayah', v: peserta.wilayah }, { l: 'Grup Astra', v: peserta.grup_astra }].map((item, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', padding: '10px 0', borderBottom: idx < 5 ? '1px solid #f5f5f5' : 'none' }}>
+              {[
+                { l: 'Nama DSA (Desa Sejahtera Astra)', v: peserta.nama_desa },
+                { l: 'Jenis DSA', v: peserta.jenis_dsa },
+                { l: 'Nama Kelompok / Individu', v: peserta.nama_kelompok },
+                ...(peserta.jenis_dsa === 'Kelompok' ? [{ l: 'Nama Ketua', v: peserta.nama_ketua }] : []),
+                { l: 'Nomor HP (WhatsApp)', v: peserta.phone_number },
+                { l: 'Pilar', v: peserta.pilar, tag: true },
+                { l: 'Kategori', v: peserta.kategori },
+                { l: 'Wilayah', v: peserta.wilayah },
+                { l: 'Grup Astra', v: peserta.grup_astra },
+              ].map((item, idx, arr) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', padding: '10px 0', borderBottom: idx < arr.length - 1 ? '1px solid #f5f5f5' : 'none' }}>
                   <Text style={{ fontSize: 13, color: '#64748b', width: '40%', flexShrink: 0 }}>{item.l}</Text>
                   {item.tag ? <Tag color="blue" style={{ margin: 0 }}>{item.v}</Tag> : <Text strong style={{ fontSize: 13, color: '#1e293b', flex: 1 }}>{item.v}</Text>}
                 </div>

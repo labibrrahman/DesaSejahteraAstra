@@ -72,7 +72,7 @@ const AdminLayout = () => {
     navigate(key);
   };
 
-  const { logout } = useAuthStore();
+  const { logout, user, role } = useAuthStore();
 
   const handleLogout = async () => {
     await logout();
@@ -264,17 +264,13 @@ const AdminLayout = () => {
             {isMobile || collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </div>
           <Space size={16}>
-            {/* <BellOutlined style={{ fontSize: 18, color: '#64748b', cursor: 'pointer' }} />
-            {!isMobile && <QuestionCircleOutlined style={{ fontSize: 18, color: '#64748b', cursor: 'pointer' }} />}
-            <Dropdown
-              menu={{ items: userMenuItems, onClick: handleUserMenuClick }}
-              placement="bottomRight"
-            >
-              <Avatar
-                icon={<UserOutlined />}
-                style={{ backgroundColor: '#1e293b', cursor: 'pointer' }}
-              />
-            </Dropdown> */}
+            {!isMobile && (
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontWeight: 600, fontSize: 13, color: '#1e293b', lineHeight: 1.3 }}>{user?.name || 'Admin'}</div>
+                <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'capitalize', lineHeight: 1.3 }}>{role || 'admin'}</div>
+              </div>
+            )}
+            <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#1e293b', cursor: 'pointer' }} />
           </Space>
         </Header>
         <Content

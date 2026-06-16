@@ -1,39 +1,30 @@
 import React, { useEffect } from 'react';
-import { Button, Card, Form, Input, Typography, Layout, Alert, message } from 'antd';
+import { Button, Form, Input, Typography, Layout, message } from 'antd';
 import {
   UserOutlined,
   LockOutlined,
   GoogleOutlined,
-  ArrowLeftOutlined,
-  InfoCircleOutlined,
   BankOutlined,
 } from '@ant-design/icons';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../stores/authStore';
+import astraLogo from '../../assets/images/astra-logo.png';
 
 const { Title, Text } = Typography;
 const { Content } = Layout;
 
-const Login = ({ role }) => {
+const Login = ({ adminMode = false }) => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const loginRole = role || searchParams.get('role') || 'peserta';
-
   const { login, loginWithGoogle, isAuthenticated, role: currentRole, loading, error, clearError } = useAuthStore();
+  const [form] = Form.useForm();
 
-  // Kalau sudah login, redirect ke dashboard sesuai role
   useEffect(() => {
     if (isAuthenticated && currentRole) {
-      const redirectMap = {
-        admin: '/admin/dashboard',
-        juri: '/juri/peserta',
-        peserta: '/peserta/dashboard',
-      };
+      const redirectMap = { admin: '/admin/dashboard', juri: '/juri/peserta', peserta: '/peserta/dashboard' };
       navigate(redirectMap[currentRole] || '/', { replace: true });
     }
   }, [isAuthenticated, currentRole, navigate]);
 
-  // Tampilkan error dari store
   useEffect(() => {
     if (error) {
       message.error(error);
@@ -43,216 +34,135 @@ const Login = ({ role }) => {
 
   const onFinish = async (values) => {
     try {
-      if (loginRole === 'peserta') {
-        // Peserta hanya bisa login via Google OAuth
-        loginWithGoogle();
-      } else {
-        // Admin / Juri login via email + password
-        const role = await login({ email: values.email, password: values.password });
-        if (role === 'admin') {
-          navigate('/admin/dashboard');
-        } else if (role === 'juri') {
-          navigate('/juri/peserta');
-        }
-      }
-    } catch {
-      // Error sudah ditangani oleh store
-    }
+      const role = await login({ email: values.email, password: values.password });
+      if (role === 'admin') navigate('/admin/dashboard');
+      else if (role === 'juri') navigate('/juri/peserta');
+    } catch { /* handled by store */ }
   };
 
-  const handleGoogleLogin = () => {
-    loginWithGoogle();
-  };
-
-  // ── Tampilan Khusus Peserta ────────────────────────────────
-  if (loginRole === 'peserta') {
+  // ── Admin / Juri Login ─────────────────────────────────────────────
+  if (adminMode) {
     return (
       <Layout style={{ minHeight: '100vh', background: '#f8fafc' }}>
-        <Content
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '40px 20px',
-          }}
-        >
-          {/* Logo & Header */}
-          <div style={{ textAlign: 'center', marginBottom: 32 }}>
-            <div
-              style={{
-                width: 56,
-                height: 56,
-                background: '#1e293b',
-                borderRadius: 12,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 20,
-                boxShadow: '0 2px 8px rgba(30,41,59,0.15)',
-              }}
-            >
-              <BankOutlined style={{ color: '#fff', fontSize: 24 }} />
+        <Content style={{ display: 'flex', minHeight: '100vh' }}>
+          {/* Left: Branding */}
+          <div style={{
+            flex: 1,
+            background: 'linear-gradient(135deg, #005BAA 0%, #003d7a 50%, #001c3b 100%)',
+            display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+            padding: '60px 48px', position: 'relative', overflow: 'hidden',
+          }}>
+            <div style={{ position: 'absolute', right: -80, top: -80, width: 300, height: 300, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)' }} />
+            <div style={{ position: 'absolute', right: 40, top: -120, width: 400, height: 400, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.05)' }} />
+            <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 400 }}>
+              <img src={astraLogo} alt="Astra" style={{ height: 48, marginBottom: 32, filter: 'brightness(0) invert(1)' }} />
+              <Title level={2} style={{ color: '#fff', fontWeight: 700, fontSize: 32, lineHeight: 1.2, marginBottom: 16 }}>
+                Lomba 4 Pilar
+              </Title>
+              <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 15, lineHeight: 1.7, display: 'block' }}>
+              Apresiasi untuk program binaan yang memberikan dampak sosial terbaik bagi masyarakat.
+                {/* Akses sistem pengelolaan dan penilaian program Desa Sejahtera Astra. */}
+              </Text>
             </div>
-            <Title level={2} style={{ margin: '0 0 8px', fontWeight: 700, color: '#1e293b' }}>
-              Selamat Datang
-            </Title>
-            <Text type="secondary" style={{ fontSize: 15 }}>
-              Masuk ke portal pengembangan masyarakat Desa Sejahtera
-              <br />
-              Astra.
-            </Text>
           </div>
 
-          {/* Card Login Peserta */}
-          <Card
-            style={{
-              width: '100%',
-              maxWidth: 420,
-              borderRadius: 12,
-              boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)',
-              border: '1px solid #e2e8f0',
-            }}
-            bodyStyle={{ padding: '32px 28px' }}
-          >
-            <Title level={4} style={{ margin: '0 0 8px', fontWeight: 600, color: '#1e293b' }}>
-              Masuk sebagai Peserta
-            </Title>
-            <Text type="secondary" style={{ display: 'block', marginBottom: 24, fontSize: 14, lineHeight: 1.6 }}>
-              Gunakan akun Google yang terdaftar untuk mengakses
-              dashboard peserta dan mengirimkan laporan.
-            </Text>
+          {/* Right: Form */}
+          <div style={{ width: 480, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '48px 40px', background: '#fff' }}>
+            <div style={{ width: '100%', maxWidth: 360 }}>
+              <Button type="text" icon={<BankOutlined />} onClick={() => navigate('/')} style={{ marginBottom: 32, color: '#64748b', padding: 0 }}>
+                Kembali ke Beranda
+              </Button>
 
-            {/* Google Login Button */}
-            <Button
-              type="default"
-              icon={
-                <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <GoogleOutlined style={{ color: '#4285f4', fontSize: 16 }} />
-                </span>
-              }
-              size="large"
-              block
-              onClick={handleGoogleLogin}
-              loading={loading}
-              style={{
-                height: 48,
-                borderRadius: 8,
-                border: '1px solid #e2e8f0',
-                fontWeight: 500,
-                fontSize: 14,
-                color: '#1e293b',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-              }}
-            >
-              Masuk dengan Google (Mulai Daftar)
-            </Button>
-
-            {/* Divider INFO */}
-            <div
-              style={{
-                margin: '24px 0 16px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-              }}
-            >
-              <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} />
-              {/* <Text
-                type="secondary"
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  letterSpacing: 1,
-                  textTransform: 'uppercase',
-                  color: '#94a3b8',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                INFO
+              <Title level={3} style={{ margin: '0 0 8px', fontWeight: 700, color: '#1e293b' }}>Masuk</Title>
+              <Text type="secondary" style={{ display: 'block', marginBottom: 32, fontSize: 14 }}>
+                Gunakan akun Admin atau Juri yang telah terdaftar
               </Text>
-              <div style={{ flex: 1, height: 1, background: '#e2e8f0' }} /> */}
-            </div>
 
-            {/* Info Alert */}
-            {/* <Alert
-              message="Hanya peserta yang telah terverifikasi oleh tim Astra yang dapat masuk ke sistem ini."
-              type="info"
-              showIcon
-              icon={<InfoCircleOutlined style={{ color: '#2563eb' }} />}
-              style={{
-                borderRadius: 8,
-                backgroundColor: '#eff6ff',
-                border: '1px solid #bfdbfe',
-              }}
-            /> */}
-          </Card>
+              <Form form={form} layout="vertical" onFinish={onFinish} size="large">
+                <Form.Item name="email" rules={[{ required: true, message: 'Masukkan email Anda' }, { type: 'email', message: 'Email tidak valid' }]}>
+                  <Input prefix={<UserOutlined style={{ color: '#94a3b8' }} />} placeholder="Email" style={{ height: 48, borderRadius: 10, borderColor: '#e2e8f0' }} />
+                </Form.Item>
+                <Form.Item name="password" rules={[{ required: true, message: 'Masukkan password Anda' }]}>
+                  <Input.Password prefix={<LockOutlined style={{ color: '#94a3b8' }} />} placeholder="Password" style={{ height: 48, borderRadius: 10, borderColor: '#e2e8f0' }} />
+                </Form.Item>
+                <Form.Item style={{ marginBottom: 0 }}>
+                  <Button type="primary" htmlType="submit" block loading={loading} style={{ height: 48, borderRadius: 10, fontWeight: 600, fontSize: 15, background: 'linear-gradient(135deg, #005BAA, #1870F0)', border: 'none', boxShadow: '0 4px 12px rgba(0,91,170,0.3)' }}>
+                    Masuk
+                  </Button>
+                </Form.Item>
+              </Form>
+
+              <div style={{ textAlign: 'center', marginTop: 24 }}>
+                <Text type="secondary" style={{ fontSize: 12 }}>© 2024 Astra International. All Rights Reserved.</Text>
+              </div>
+            </div>
+          </div>
         </Content>
       </Layout>
     );
   }
 
-  // ── Tampilan Admin / Juri (tetap sama) ─────────────────────
+  // ── Peserta Login (Google OAuth) ───────────────────────────────────
   return (
-    <Layout style={{ minHeight: '100vh', background: '#f0f2f5' }}>
-      <Content
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          padding: 50,
-        }}
-      >
-        <Card
-          style={{
-            width: 400,
-            borderRadius: 8,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-          }}
-        >
-          <div style={{ marginBottom: 24 }}>
-            <Button
-              type="text"
-              icon={<ArrowLeftOutlined />}
-              onClick={() => navigate('/')}
-              style={{ marginBottom: 16 }}
-            >
-              Kembali
-            </Button>
-            <Title level={3} style={{ margin: 0, textAlign: 'center' }}>
-              {loginRole === 'admin' ? 'Login Admin' : 'Login Juri'}
-            </Title>
-            <Text type="secondary" style={{ display: 'block', textAlign: 'center' }}>
+    <Layout style={{ minHeight: '100vh', background: '#f8fafc' }}>
+      <Content style={{ display: 'flex', minHeight: '100vh' }}>
+        {/* Left: Branding */}
+        <div style={{
+          flex: 1,
+          background: 'linear-gradient(135deg, #005BAA 0%, #003d7a 50%, #001c3b 100%)',
+          display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+          padding: '60px 48px', position: 'relative', overflow: 'hidden',
+        }}>
+          <div style={{ position: 'absolute', right: -80, top: -80, width: 300, height: 300, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)' }} />
+          <div style={{ position: 'absolute', right: 40, top: -120, width: 400, height: 400, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.05)' }} />
+          <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 400 }}>
+            <img src={astraLogo} alt="Astra" style={{ height: 48, marginBottom: 32, filter: 'brightness(0) invert(1)' }} />
+            <Title level={2} style={{ color: '#fff', fontWeight: 700, fontSize: 32, lineHeight: 1.2, marginBottom: 16 }}>
               Desa Sejahtera Astra
+            </Title>
+            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 15, lineHeight: 1.7, display: 'block' }}>
+              Apresiasi untuk program binaan yang memberikan dampak sosial terbaik bagi masyarakat.
             </Text>
+            <div style={{ marginTop: 48, display: 'flex', gap: 32, justifyContent: 'center' }}>
+              {/* {[{ num: '900+', label: 'Desa' }, { num: '4.5M', label: 'Manfaat' }, { num: '34', label: 'Provinsi' }].map((s, i) => (
+                <div key={i} style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: '#fff', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{s.num}</div>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginTop: 4 }}>{s.label}</div>
+                </div>
+              ))} */}
+            </div>
           </div>
+        </div>
 
-          <Form layout="vertical" onFinish={onFinish}>
-            <Form.Item
-              name="email"
-              rules={[
-                { required: true, message: 'Masukkan email Anda' },
-                { type: 'email', message: 'Email tidak valid' },
-              ]}
+        {/* Right: Form */}
+        <div style={{ width: 480, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '48px 40px', background: '#fff' }}>
+          <div style={{ width: '100%', maxWidth: 360 }}>
+            <Button type="text" icon={<BankOutlined />} onClick={() => navigate('/')} style={{ marginBottom: 32, color: '#64748b', padding: 0 }}>
+              Kembali ke Beranda
+            </Button>
+
+            <Title level={3} style={{ margin: '0 0 8px', fontWeight: 700, color: '#1e293b' }}>Masuk sebagai Peserta</Title>
+            <Text type="secondary" style={{ display: 'block', marginBottom: 32, fontSize: 14 }}>
+              Gunakan akun Google yang terdaftar untuk mengakses dashboard peserta.
+            </Text>
+
+            <Button
+              type="default"
+              icon={<GoogleOutlined style={{ color: '#4285f4' }} />}
+              size="large"
+              block
+              onClick={loginWithGoogle}
+              loading={loading}
+              style={{ height: 52, borderRadius: 10, border: '1px solid #e2e8f0', fontWeight: 500, fontSize: 15, color: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}
             >
-              <Input prefix={<UserOutlined />} placeholder="Email" size="large" />
-            </Form.Item>
-            <Form.Item
-              name="password"
-              rules={[{ required: true, message: 'Masukkan password Anda' }]}
-            >
-              <Input.Password prefix={<LockOutlined />} placeholder="Password" size="large" />
-            </Form.Item>
-            <Form.Item>
-              <Button type="primary" htmlType="submit" size="large" block loading={loading}>
-                Masuk
-              </Button>
-            </Form.Item>
-          </Form>
-        </Card>
+              Masuk dengan Google
+            </Button>
+
+            <div style={{ textAlign: 'center', marginTop: 48 }}>
+              <Text type="secondary" style={{ fontSize: 12 }}>© 2024 Astra International. All Rights Reserved.</Text>
+            </div>
+          </div>
+        </div>
       </Content>
     </Layout>
   );

@@ -61,8 +61,7 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/login/admin" element={<Login role="admin" />} />
-          <Route path="/login/juri" element={<Login role="juri" />} />
+          <Route path="/login/admin" element={<Login adminMode />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
 
           {/* Peserta Routes — dengan sidebar */}

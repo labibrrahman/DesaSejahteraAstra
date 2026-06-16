@@ -53,7 +53,7 @@ const JuriLayout = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login/juri');
+    navigate('/login/admin');
   };
 
   const handleUserMenuClick = ({ key }) => {

@@ -126,10 +126,10 @@ const AdminLayout = () => {
         {(!collapsed || isMobile) && (
           <div>
             <div style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', lineHeight: 1.3 }}>
-              Astra CSR
+              DSA Platform
             </div>
             <div style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.3 }}>
-              Rural Development
+              Desa Sejahtera Astra
             </div>
           </div>
         )}

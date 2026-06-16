@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ConfigProvider } from 'antd';
 import idID from 'antd/locale/id_ID';
@@ -46,6 +46,14 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 };
 
 function App() {
+  const { fetchProfile, accessToken } = useAuthStore();
+
+  useEffect(() => {
+    if (accessToken) {
+      fetchProfile();
+    }
+  }, []);
+
   return (
     <ConfigProvider locale={idID}>
       <Router>

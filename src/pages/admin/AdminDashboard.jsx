@@ -7,6 +7,7 @@ import {
   CheckCircleOutlined,
 } from '@ant-design/icons';
 import adminService from '../../services/adminService';
+import masterService from '../../services/masterService';
 
 const { Title, Text } = Typography;
 
@@ -36,7 +37,7 @@ const mapDashboardFromApi = (data) => {
       selesai_dinilai: byStatus.assessed || 0,
     },
     pilarStats: (data.by_pillar || []).map((item, index) => ({
-      name: item.pillar_name || item.name || `Pilar ${index + 1}`,
+      name: item.pillar || `Pilar ${index + 1}`,
       count: item.count || 0,
       color: PILAR_COLORS[index % PILAR_COLORS.length],
     })),
@@ -69,8 +70,29 @@ const AdminDashboard = () => {
     try {
       const result = await adminService.getDashboard();
       const mapped = mapDashboardFromApi(result);
+
+      // Fetch master pilar (independen, tidak block dashboard)
+      let pillarsData = [];
+      try {
+        pillarsData = await masterService.getPillars();
+      } catch {
+        // Gagal fetch pilar, gunakan data dari dashboard saja
+      }
+
+      // Merge: semua pilar dari master data, count dari dashboard
+      const allPillars = Array.isArray(pillarsData) && pillarsData.length > 0
+        ? pillarsData.map((p, index) => {
+            const found = mapped.pilarStats.find(s => s.name === p.name);
+            return {
+              name: p.name,
+              count: found ? found.count : 0,
+              color: PILAR_COLORS[index % PILAR_COLORS.length],
+            };
+          })
+        : mapped.pilarStats; // fallback ke data dari dashboard
+
       setStatistics(mapped.statistics);
-      setPilarStats(mapped.pilarStats);
+      setPilarStats(allPillars);
       setRecentRegistrations(mapped.recentRegistrations);
     } catch (error) {
       message.error('Gagal memuat data dashboard');

@@ -54,6 +54,7 @@ const mapFromApi = (item) => ({
   jenis_dsa: item.dsaType || '-',
   nama_ketua: item.leaderName || '-',
   phone_number: item.phoneNumber || '-',
+  durasi_program: item.programDuration || '-',
   status: item.status,
   tanggal_daftar: item.submittedAt
     ? new Date(item.submittedAt).toLocaleDateString('id-ID')
@@ -310,6 +311,7 @@ const JuriPesertaList = () => {
                   {[
                     { label: 'Pilar', value: selectedPeserta.pilar },
                     { label: 'Kategori', value: selectedPeserta.kategori },
+                    { label: 'Durasi Program', value: selectedPeserta.durasi_program },
                     { label: 'Tanggal Daftar', value: selectedPeserta.tanggal_daftar },
                   ].map((item, idx) => (
                     <Col xs={12} sm={8} key={idx}>

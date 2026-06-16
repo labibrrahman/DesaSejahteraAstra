@@ -70,6 +70,7 @@ const mapFromApi = (item) => ({
   phone_number: item.phoneNumber || '-',
   alamat: item.address || '-',
   grup_astra: item.astraGroup?.name || '-',
+  durasi_program: item.programDuration || '-',
   latar_belakang: item.background || '-',
   dampak_program: item.programImpact || '-',
   kecamatan: item.district?.name || '-',
@@ -412,6 +413,10 @@ const AdminPesertaList = () => {
                     <Col xs={12} sm={8}>
                       <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Grup Astra</Text>
                       <Text strong style={{ fontSize: 13 }}>{selectedPeserta.grup_astra}</Text>
+                    </Col>
+                    <Col xs={12} sm={8}>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Durasi Program</Text>
+                      <Text strong style={{ fontSize: 13 }}>{selectedPeserta.durasi_program}</Text>
                     </Col>
                   </Row>
                 </div>

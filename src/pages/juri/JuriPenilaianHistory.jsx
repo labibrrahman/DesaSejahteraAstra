@@ -39,6 +39,7 @@ const mapFromApi = (item) => ({
     ? new Date(item.createdAt).toLocaleDateString('id-ID')
     : '-',
   catatan: item.notes || '-',
+  durasi_program: item.registration?.programDuration || '-',
 });
 
 const JuriPenilaianHistory = () => {
@@ -291,6 +292,7 @@ const JuriPenilaianHistory = () => {
                   {[
                     { label: 'Pilar', value: selectedRecord.pilar },
                     { label: 'Kategori', value: selectedRecord.kategori },
+                    { label: 'Durasi Program', value: selectedRecord.durasi_program },
                     { label: 'Tanggal', value: selectedRecord.tanggal_nilai },
                   ].map((item, idx) => (
                     <Col xs={12} sm={8} key={idx}>

@@ -708,6 +708,10 @@ const PesertaDashboard = () => {
                   <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Grup Astra</Text>
                   <Text strong style={{ fontSize: 13 }}>{reg?.astraGroup?.name || '—'}</Text>
                 </Col>
+                <Col xs={12} sm={8}>
+                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Durasi Program</Text>
+                  <Text strong style={{ fontSize: 13 }}>{reg?.programDuration || '—'}</Text>
+                </Col>
               </Row>
             </div>
 

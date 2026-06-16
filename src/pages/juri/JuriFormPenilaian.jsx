@@ -17,7 +17,7 @@ const mapFromApi = (i) => ({
   id: i.id, nama_desa: i.villageName || '-', nama_kelompok: i.groupName || '-',
   pilar: i.pillar?.name || '-', kategori: i.category?.name || '-',
   wilayah: [i.province?.name, i.city?.name, i.district?.name, i.villageRegion?.name].filter(Boolean).join(' - ') || '-',
-  grup_astra: i.astraGroup?.name || '-', latar_belakang: i.background || '-', dampak_program: i.programImpact || '-',
+  grup_astra: i.astraGroup?.name || '-', durasi_program: i.programDuration || '-', latar_belakang: i.background || '-', dampak_program: i.programImpact || '-',
   jenis_dsa: i.dsaType || '-', nama_ketua: i.leaderName || '-', phone_number: i.phoneNumber || '-',
 });
 
@@ -104,6 +104,7 @@ const JuriFormPenilaian = () => {
                 { l: 'Kategori', v: peserta.kategori },
                 { l: 'Wilayah', v: peserta.wilayah },
                 { l: 'Grup Astra', v: peserta.grup_astra },
+                { l: 'Durasi Program', v: peserta.durasi_program },
               ].map((item, idx, arr) => (
                 <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', padding: '10px 0', borderBottom: idx < arr.length - 1 ? '1px solid #f5f5f5' : 'none' }}>
                   <Text style={{ fontSize: 13, color: '#64748b', width: '40%', flexShrink: 0 }}>{item.l}</Text>

@@ -234,6 +234,7 @@ const FormPendaftaran = () => {
               alamat: reg.address || '',
               latar_belakang: reg.background || '',
               dampak_program: reg.programImpact || '',
+              durasi_program: reg.programDuration || '',
               grup_astra_id: reg.astraGroup?.id || null,
               jenis_dsa: reg.dsaType ? reg.dsaType.toLowerCase() : null,
               nama_ketua: reg.leaderName || '',
@@ -306,6 +307,7 @@ const FormPendaftaran = () => {
 
       case 3: {
         const missing = [];
+        if (!formData.durasi_program) missing.push('Durasi Program');
         if (!formData.latar_belakang) missing.push('Latar Belakang');
         if (!formData.dampak_program) missing.push('Dampak Program');
         if (missing.length > 0) {
@@ -355,6 +357,7 @@ const FormPendaftaran = () => {
         address: formData.alamat,
         background: formData.latar_belakang,
         programImpact: formData.dampak_program,
+        programDuration: formData.durasi_program,
       };
       if (formData.jenis_dsa) payload.dsaType = formData.jenis_dsa.charAt(0).toUpperCase() + formData.jenis_dsa.slice(1);
       if (formData.nama_ketua) payload.leaderName = formData.nama_ketua;
@@ -379,8 +382,13 @@ const FormPendaftaran = () => {
       localStorage.removeItem(DRAFT_KEY);
       navigate('/peserta/dashboard');
     } catch (err) {
-      const msg = err.response?.data?.message || err.response?.data?.data?.message || 'Gagal mengirim pendaftaran';
-      message.error(msg);
+      const errors = err.response?.data?.errors;
+      if (Array.isArray(errors) && errors.length > 0) {
+        errors.forEach(e => message.error(e));
+      } else {
+        const msg = err.response?.data?.message || err.response?.data?.data?.message || 'Gagal mengirim pendaftaran';
+        message.error(msg);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -732,6 +740,17 @@ const FormPendaftaran = () => {
       </div>
 
       <div style={fieldWrapper}>
+        <Text style={labelStyle}>Durasi Program *</Text>
+        <Select placeholder="Pilih durasi program..." style={{ width: '100%' }} size="large"
+          value={formData.durasi_program} onChange={val => updateField('durasi_program', val)}>
+          <Option value="<1 Tahun">&lt;1 Tahun</Option>
+          <Option value="1-3 Tahun">1-3 Tahun</Option>
+          <Option value="3-5 Tahun">3-5 Tahun</Option>
+          <Option value=">5 Tahun">&gt;5 Tahun</Option>
+        </Select>
+      </div>
+
+      <div style={fieldWrapper}>
         <Text style={labelStyle}>Latar Belakang / Rasionalisasi *</Text>
         <TextArea rows={5} placeholder="Jelaskan alasan dan latar belakang inisiatif program ini..." style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.latar_belakang} onChange={e => updateField('latar_belakang', e.target.value)} />
         <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Untuk menjelaskan latar belakang program</Text>
@@ -800,6 +819,7 @@ const FormPendaftaran = () => {
       <ReviewCard title="Detail Program" icon={<EnvironmentOutlined style={{ color: '#1890ff', fontSize: 16 }} />}>
         <Row gutter={[16, 12]}>
           <ReviewField label="Group Astra (Pembina)" value={grupLabel || 'Belum dipilih'} span={24} />
+          <ReviewField label="Durasi Program" value={formData.durasi_program || 'Belum dipilih'} />
           <ReviewField label="Latar Belakang / Rasionalisasi" value={formData.latar_belakang} span={24} />
           <ReviewField label="Dampak Program yang Diharapkan" value={formData.dampak_program} span={24} />
         </Row>

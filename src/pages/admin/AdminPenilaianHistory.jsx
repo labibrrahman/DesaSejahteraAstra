@@ -41,6 +41,7 @@ const mapFromApi = (item) => ({
     ? new Date(item.createdAt).toLocaleDateString('id-ID')
     : '-',
   catatan: item.notes || '-',
+  durasi_program: item.registration?.programDuration || '-',
 });
 
 const AdminPenilaianHistory = () => {
@@ -369,6 +370,7 @@ const AdminPenilaianHistory = () => {
                     {[
                       { label: 'Pilar', value: selectedRecord.pilar },
                       { label: 'Kategori', value: selectedRecord.kategori },
+                      { label: 'Durasi Program', value: selectedRecord.durasi_program },
                       { label: 'Juri', value: selectedRecord.juri },
                       { label: 'Tanggal', value: selectedRecord.tanggal_nilai },
                     ].map((item, idx) => (

@@ -18,7 +18,9 @@ const mapFromApi = (i) => ({
   pilar: i.pillar?.name || '-', kategori: i.category?.name || '-',
   wilayah: [i.province?.name, i.city?.name, i.district?.name, i.villageRegion?.name].filter(Boolean).join(' - ') || '-',
   grup_astra: i.astraGroup?.name || '-', durasi_program: i.programDuration || '-', latar_belakang: i.background || '-', dampak_program: i.programImpact || '-',
-  jenis_dsa: i.dsaType || '-', nama_ketua: i.leaderName || '-', phone_number: i.phoneNumber || '-',
+  rencana_pengembangan: i.developmentPlan || '-',
+  jenis_dsa: i.dsaType || '-', phone_number: i.phoneNumber || '-',
+  nama_kontak_darurat: i.emergencyContactName || '-', no_hp_kontak_darurat: i.emergencyContactPhone || '-',
 });
 
 const JuriFormPenilaian = () => {
@@ -97,9 +99,10 @@ const JuriFormPenilaian = () => {
               {[
                 { l: 'Nama DSA (Desa Sejahtera Astra)', v: peserta.nama_desa },
                 { l: 'Jenis DSA', v: peserta.jenis_dsa },
-                { l: 'Nama Kelompok / Individu', v: peserta.nama_kelompok },
-                ...(peserta.jenis_dsa === 'Kelompok' ? [{ l: 'Nama Ketua', v: peserta.nama_ketua }] : []),
+                { l: peserta.jenis_dsa === 'Individu' ? 'Nama Peserta' : 'Nama Penanggung Jawab', v: peserta.nama_kelompok },
                 { l: 'Nomor HP (WhatsApp)', v: peserta.phone_number },
+                { l: 'Nama Kontak Darurat', v: peserta.nama_kontak_darurat },
+                { l: 'Nomor HP Kontak Darurat', v: peserta.no_hp_kontak_darurat },
                 { l: 'Pilar', v: peserta.pilar, tag: true },
                 { l: 'Kategori', v: peserta.kategori },
                 { l: 'Wilayah', v: peserta.wilayah },
@@ -127,9 +130,18 @@ const JuriFormPenilaian = () => {
           <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ width: 32, height: 32, borderRadius: 8, background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ThunderboltOutlined style={{ color: '#10b981', fontSize: 14 }} /></div>
-              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Dampak Program</Text>
+              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Dampak Yang Sudah Terealisasi</Text>
             </div>
             <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #10b981' }}><Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>{peserta.dampak_program}</Paragraph></div></div>
+          </div>
+
+          {/* Rencana Pengembangan */}
+          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#f5f3ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ToolOutlined style={{ color: '#722ed1', fontSize: 14 }} /></div>
+              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Rencana Pengembangan</Text>
+            </div>
+            <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #722ed1' }}><Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>{peserta.rencana_pengembangan}</Paragraph></div></div>
           </div>
         </Col>
 

@@ -51,6 +51,7 @@ const PesertaDashboard = () => {
   const nama = reg?.user?.name || 'Peserta';
   const namaDesa = reg?.villageName || '—';
   const namaKelompok = reg?.groupName || '—';
+  const namaLabel = reg?.dsaType === 'Individu' ? 'Nama Peserta' : 'Nama Penanggung Jawab';
   const pilar = reg?.pillar?.name || '—';
   const status = reg?.status || 'draft';
 
@@ -354,7 +355,7 @@ const PesertaDashboard = () => {
                         letterSpacing: 0.5,
                       }}
                     >
-                      Nama Kelompok
+                      {namaLabel}
                     </Text>
                     <Text strong style={{ fontSize: 15, color: '#1e293b' }}>
                       {namaKelompok}
@@ -677,15 +678,17 @@ const PesertaDashboard = () => {
                   <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Jenis DSA</Text>
                   <Text strong style={{ fontSize: 13 }}>{reg?.dsaType || '—'}</Text>
                 </Col>
-                {reg?.dsaType === 'Kelompok' && (
-                  <Col xs={12} sm={8}>
-                    <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nama Ketua</Text>
-                    <Text strong style={{ fontSize: 13 }}>{reg?.leaderName || '—'}</Text>
-                  </Col>
-                )}
                 <Col xs={12} sm={8}>
                   <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nomor HP</Text>
                   <Text strong style={{ fontSize: 13 }}>{reg?.phoneNumber || '—'}</Text>
+                </Col>
+                <Col xs={12} sm={8}>
+                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nama Kontak Darurat</Text>
+                  <Text strong style={{ fontSize: 13 }}>{reg?.emergencyContactName || '—'}</Text>
+                </Col>
+                <Col xs={12} sm={8}>
+                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>No HP Kontak Darurat</Text>
+                  <Text strong style={{ fontSize: 13 }}>{reg?.emergencyContactPhone || '—'}</Text>
                 </Col>
               </Row>
             </div>
@@ -756,9 +759,15 @@ const PesertaDashboard = () => {
                 </div>
               </div>
               <div>
-                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Dampak Program</Text>
+                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Dampak Yang Sudah Terealisasi</Text>
                 <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #52c41a' }}>
                   <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{reg?.programImpact || '—'}</Text>
+                </div>
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Rencana Pengembangan</Text>
+                <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #722ed1' }}>
+                  <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{reg?.developmentPlan || '—'}</Text>
                 </div>
               </div>
             </div>

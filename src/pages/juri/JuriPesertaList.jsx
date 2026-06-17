@@ -47,14 +47,17 @@ const mapFromApi = (item) => ({
   nama_kelompok: item.groupName || '-',
   pilar: item.pillar?.name || '-',
   kategori: item.category?.name || '-',
-  // Region relations tidak di-load oleh findTasks, tampilkan '-' atau ID
   wilayah: item.province?.name
     ? [item.province?.name, item.city?.name].filter(Boolean).join(' - ')
     : '-',
   jenis_dsa: item.dsaType || '-',
-  nama_ketua: item.leaderName || '-',
   phone_number: item.phoneNumber || '-',
+  nama_kontak_darurat: item.emergencyContactName || '-',
+  no_hp_kontak_darurat: item.emergencyContactPhone || '-',
   durasi_program: item.programDuration || '-',
+  latar_belakang: item.background || '-',
+  dampak_program: item.programImpact || '-',
+  rencana_pengembangan: item.developmentPlan || '-',
   status: item.status,
   tanggal_daftar: item.submittedAt
     ? new Date(item.submittedAt).toLocaleDateString('id-ID')
@@ -296,8 +299,9 @@ const JuriPesertaList = () => {
                 <Row gutter={[20, 12]}>
                   {[
                     { label: 'Jenis DSA', value: selectedPeserta.jenis_dsa },
-                    { label: 'Nama Ketua', value: selectedPeserta.jenis_dsa === 'Kelompok' ? selectedPeserta.nama_ketua : null },
                     { label: 'Nomor HP', value: selectedPeserta.phone_number },
+                    { label: 'Nama Kontak Darurat', value: selectedPeserta.nama_kontak_darurat },
+                    { label: 'No HP Kontak Darurat', value: selectedPeserta.no_hp_kontak_darurat },
                   ].filter(item => item.value).map((item, idx) => (
                     <Col xs={12} sm={8} key={idx}>
                       <Text style={{ fontSize: 11, color: '#94a3b8', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
@@ -351,6 +355,31 @@ const JuriPesertaList = () => {
                   <Text style={{ fontSize: 13, color: '#475569', lineHeight: 1.6 }}>
                     {selectedPeserta.wilayah}
                   </Text>
+                </div>
+              </div>
+
+              {/* Deskripsi Program */}
+              <div>
+                <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
+                  📝 Deskripsi Program
+                </Text>
+                <div style={{ marginBottom: 16 }}>
+                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Latar Belakang</Text>
+                  <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #1890ff' }}>
+                    <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.latar_belakang}</Text>
+                  </div>
+                </div>
+                <div style={{ marginBottom: 16 }}>
+                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Dampak Yang Sudah Terealisasi</Text>
+                  <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #52c41a' }}>
+                    <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.dampak_program}</Text>
+                  </div>
+                </div>
+                <div>
+                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Rencana Pengembangan</Text>
+                  <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #722ed1' }}>
+                    <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.rencana_pengembangan}</Text>
+                  </div>
                 </div>
               </div>
             </div>

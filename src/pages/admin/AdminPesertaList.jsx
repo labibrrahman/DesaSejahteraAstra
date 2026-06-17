@@ -66,13 +66,15 @@ const mapFromApi = (item) => ({
   juri: item.assessments?.[0]?.juror?.name || item.assignedJuror?.name || '-',
   // Detail fields (hanya tersedia saat fetch detail via findOne)
   jenis_dsa: item.dsaType || '-',
-  nama_ketua: item.leaderName || '-',
   phone_number: item.phoneNumber || '-',
+  nama_kontak_darurat: item.emergencyContactName || '-',
+  no_hp_kontak_darurat: item.emergencyContactPhone || '-',
   alamat: item.address || '-',
   grup_astra: item.astraGroup?.name || '-',
   durasi_program: item.programDuration || '-',
   latar_belakang: item.background || '-',
   dampak_program: item.programImpact || '-',
+  rencana_pengembangan: item.developmentPlan || '-',
   kecamatan: item.district?.name || '-',
   desa: item.villageRegion?.name || '-',
 });
@@ -389,15 +391,17 @@ const AdminPesertaList = () => {
                       <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Jenis DSA</Text>
                       <Text strong style={{ fontSize: 13 }}>{selectedPeserta.jenis_dsa}</Text>
                     </Col>
-                    {selectedPeserta.jenis_dsa === 'Kelompok' && (
-                      <Col xs={12} sm={8}>
-                        <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nama Ketua</Text>
-                        <Text strong style={{ fontSize: 13 }}>{selectedPeserta.nama_ketua}</Text>
-                      </Col>
-                    )}
                     <Col xs={12} sm={8}>
                       <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nomor HP</Text>
                       <Text strong style={{ fontSize: 13 }}>{selectedPeserta.phone_number}</Text>
+                    </Col>
+                    <Col xs={12} sm={8}>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nama Kontak Darurat</Text>
+                      <Text strong style={{ fontSize: 13 }}>{selectedPeserta.nama_kontak_darurat}</Text>
+                    </Col>
+                    <Col xs={12} sm={8}>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>No HP Kontak Darurat</Text>
+                      <Text strong style={{ fontSize: 13 }}>{selectedPeserta.no_hp_kontak_darurat}</Text>
                     </Col>
                   </Row>
                 </div>
@@ -485,9 +489,15 @@ const AdminPesertaList = () => {
                     </div>
                   </div>
                   <div>
-                    <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Dampak Program</Text>
+                    <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Dampak Yang Sudah Terealisasi</Text>
                     <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #52c41a' }}>
                       <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.dampak_program}</Text>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: 12 }}>
+                    <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Rencana Pengembangan</Text>
+                    <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #722ed1' }}>
+                      <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.rencana_pengembangan}</Text>
                     </div>
                   </div>
                 </div>

@@ -91,7 +91,7 @@ const JuriLayout = () => {
           <Menu mode="inline" selectedKeys={[location.pathname]} items={menuItems} onClick={(e) => { handleMenuClick(e); if (isMobile) setDrawerOpen(false); }} style={{ border: 'none', background: 'transparent' }} />
         </ConfigProvider>
       </div>
-      {!isMobile && (
+      {/* {!isMobile && ( */}
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '8px', borderTop: '1px solid #f0f0f0', background: '#fff' }}>
           <div style={{ ...bottomItemStyle, marginBottom: 4, cursor: 'pointer' }} onClick={() => window.open('https://wa.me/6281234567890', '_blank')} onMouseEnter={e => (e.currentTarget.style.background = '#f1f5f9')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
             <QuestionCircleOutlined style={{ fontSize: 16 }} />{!collapsed && <span>Support</span>}
@@ -100,7 +100,7 @@ const JuriLayout = () => {
             <LogoutOutlined style={{ fontSize: 16 }} />{!collapsed && <span>Keluar</span>}
           </div>
         </div>
-      )}
+      {/* )} */}
     </>
   );
 
@@ -121,12 +121,12 @@ const JuriLayout = () => {
             {isMobile || collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {!isMobile && (
+            {/* {!isMobile && ( */}
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontWeight: 600, fontSize: 13, color: '#1e293b', lineHeight: 1.3 }}>{user?.name || 'Juri'}</div>
                 <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'capitalize', lineHeight: 1.3 }}>{role || 'juri'}</div>
               </div>
-            )}
+            {/* )} */}
             <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#1e293b', cursor: 'pointer' }} />
           </div>
         </Header>

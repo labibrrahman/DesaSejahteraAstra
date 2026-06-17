@@ -172,7 +172,7 @@ const AdminLayout = () => {
       </div>
 
       {/* Bottom Items */}
-      {!isMobile && (
+      {/* {!isMobile && ( */}
         <div
           style={{
             position: 'absolute',
@@ -203,7 +203,7 @@ const AdminLayout = () => {
             {!collapsed && <span>Keluar</span>}
           </div>
         </div>
-      )}
+      {/* )} */}
     </>
   );
 
@@ -264,12 +264,12 @@ const AdminLayout = () => {
             {isMobile || collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </div>
           <Space size={16}>
-            {!isMobile && (
+            {/* {!isMobile && ( */}
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontWeight: 600, fontSize: 13, color: '#1e293b', lineHeight: 1.3 }}>{user?.name || 'Admin'}</div>
                 <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'capitalize', lineHeight: 1.3 }}>{role || 'admin'}</div>
               </div>
-            )}
+            {/* )} */}
             <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#1e293b', cursor: 'pointer' }} />
           </Space>
         </Header>

@@ -66,6 +66,7 @@ const JuriPesertaList = () => {
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [pilarFilter, setPilarFilter] = useState(null);
+  const [durasiFilter, setDurasiFilter] = useState(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedPeserta, setSelectedPeserta] = useState(null);
   const navigate = useNavigate();
@@ -107,7 +108,8 @@ const JuriPesertaList = () => {
       item.nama_desa.toLowerCase().includes(searchText.toLowerCase()) ||
       item.nama_kelompok.toLowerCase().includes(searchText.toLowerCase());
     const matchPilar = !pilarFilter || item.pilar === pilarFilter;
-    return matchSearch && matchPilar;
+    const matchDurasi = !durasiFilter || item.durasi_program === durasiFilter;
+    return matchSearch && matchPilar && matchDurasi;
   });
 
   /** Ambil daftar pilar unik dari data */
@@ -173,35 +175,42 @@ const JuriPesertaList = () => {
 
       {/* Filters */}
       <Card style={{ marginBottom: 24 }}>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} lg={10}>
-            <Input
-              placeholder="Cari nama desa atau kelompok..."
-              prefix={<SearchOutlined />}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              allowClear
-            />
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Select
-              placeholder="Filter Pilar"
-              style={{ width: '100%' }}
-              allowClear
-              value={pilarFilter}
-              onChange={(value) => setPilarFilter(value)}
-            >
-              {pilarOptions.map((pilar) => (
-                <Option key={pilar} value={pilar}>{pilar}</Option>
-              ))}
-            </Select>
-          </Col>
-          <Col xs={24} sm={12} lg={8}>
-            <Button icon={<FilterOutlined />} onClick={() => { setSearchText(''); setPilarFilter(null); }}>
-              Reset Filter
-            </Button>
-          </Col>
-        </Row>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+          <Input
+            placeholder="Cari nama desa atau kelompok..."
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            allowClear
+            style={{ flex: '1 1 200px', minWidth: 180 }}
+          />
+          <Select
+            placeholder="Pilar"
+            style={{ flex: '1 1 140px', minWidth: 130 }}
+            allowClear
+            value={pilarFilter}
+            onChange={(value) => setPilarFilter(value)}
+          >
+            {pilarOptions.map((pilar) => (
+              <Option key={pilar} value={pilar}>{pilar}</Option>
+            ))}
+          </Select>
+          <Select
+            placeholder="Durasi"
+            style={{ flex: '1 1 130px', minWidth: 120 }}
+            allowClear
+            value={durasiFilter}
+            onChange={(value) => setDurasiFilter(value)}
+          >
+            <Option value="<1 Tahun">&lt;1 Tahun</Option>
+            <Option value="1-3 Tahun">1-3 Tahun</Option>
+            <Option value="3-5 Tahun">3-5 Tahun</Option>
+            <Option value=">5 Tahun">&gt;5 Tahun</Option>
+          </Select>
+          <Button icon={<FilterOutlined />} onClick={() => { setSearchText(''); setPilarFilter(null); setDurasiFilter(null); }} style={{ flexShrink: 0 }}>
+            Reset
+          </Button>
+        </div>
       </Card>
 
       {/* Table */}

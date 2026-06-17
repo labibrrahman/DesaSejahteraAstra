@@ -32,6 +32,7 @@ const mapFromApi = (item) => ({
   nama: item.name,
   pilar_id: item.pillarId || item.pillar?.id || '',
   pilar_nama: item.pillar?.name || '',
+  dsa_type: item.dsaType || '',
 });
 
 /**
@@ -40,6 +41,7 @@ const mapFromApi = (item) => ({
 const mapToApi = (values) => ({
   name: values.nama,
   pillarId: values.pilar_id,
+  dsaType: values.dsa_type,
 });
 
 const MasterKategori = () => {
@@ -89,6 +91,7 @@ const MasterKategori = () => {
       form.setFieldsValue({
         nama: record.nama,
         pilar_id: record.pilar_id,
+        dsa_type: record.dsa_type,
       });
     } else {
       form.resetFields();
@@ -151,6 +154,12 @@ const MasterKategori = () => {
       dataIndex: 'pilar_nama',
       key: 'pilar_nama',
       render: (text) => text || '-',
+    },
+    {
+      title: 'Jenis DSA',
+      dataIndex: 'dsa_type',
+      key: 'dsa_type',
+      render: (text) => text ? <Tag color={text === 'Kelompok' ? 'blue' : 'green'}>{text}</Tag> : '-',
     },
     {
       title: 'Aksi',
@@ -226,6 +235,16 @@ const MasterKategori = () => {
                   {pilar.name}
                 </Option>
               ))}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            name="dsa_type"
+            label="Jenis DSA"
+            rules={[{ required: true, message: 'Pilih jenis DSA' }]}
+          >
+            <Select placeholder="Pilih Jenis DSA">
+              <Option value="Kelompok">Kelompok</Option>
+              <Option value="Individu">Individu</Option>
             </Select>
           </Form.Item>
           <Form.Item

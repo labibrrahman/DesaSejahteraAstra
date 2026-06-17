@@ -84,6 +84,7 @@ const AdminPesertaList = () => {
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState(null);
   const [pilarFilter, setPilarFilter] = useState(null);
+  const [durasiFilter, setDurasiFilter] = useState(null);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -101,6 +102,7 @@ const AdminPesertaList = () => {
       if (searchText) params.search = searchText;
       if (statusFilter) params.status = statusFilter;
       if (pilarFilter) params.pillar_id = pilarFilter;
+      if (durasiFilter) params.program_duration = durasiFilter;
 
       const result = await adminService.getRegistrations(params);
 
@@ -129,7 +131,7 @@ const AdminPesertaList = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchText, statusFilter, pilarFilter]);
+  }, [searchText, statusFilter, pilarFilter, durasiFilter]);
 
   /** Fetch pilar options untuk filter */
   const fetchPillars = useCallback(async () => {
@@ -175,6 +177,7 @@ const AdminPesertaList = () => {
     setSearchText('');
     setStatusFilter(null);
     setPilarFilter(null);
+    setDurasiFilter(null);
   };
 
   /** Helper: download blob sebagai file */
@@ -257,48 +260,51 @@ const AdminPesertaList = () => {
 
       {/* Filters */}
       <Card style={{ marginBottom: 24 }}>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} lg={8}>
-            <Input
-              placeholder="Cari nama desa atau kelompok..."
-              prefix={<SearchOutlined />}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              allowClear
-            />
-          </Col>
-          <Col xs={24} sm={12} lg={5}>
-            <Select
-              placeholder="Filter Status"
-              style={{ width: '100%' }}
-              allowClear
-              value={statusFilter}
-              onChange={(value) => setStatusFilter(value)}
-            >
-              {Object.entries(STATUS_MAP).map(([key, val]) => (
-                <Option key={key} value={key}>{val.label}</Option>
-              ))}
-            </Select>
-          </Col>
-          <Col xs={24} sm={12} lg={5}>
-            <Select
-              placeholder="Filter Pilar"
-              style={{ width: '100%' }}
-              allowClear
-              value={pilarFilter}
-              onChange={(value) => setPilarFilter(value)}
-            >
-              {pilarOptions.map((pilar) => (
-                <Option key={pilar.id} value={pilar.id}>{pilar.name}</Option>
-              ))}
-            </Select>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Space wrap>
-              <Button onClick={handleReset}>Reset</Button>
-            </Space>
-          </Col>
-        </Row>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+          <Input
+            placeholder="Cari nama desa atau kelompok..."
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            allowClear
+            style={{ flex: '1 1 200px', minWidth: 180 }}
+          />
+          <Select
+            placeholder="Status"
+            style={{ flex: '1 1 140px', minWidth: 130 }}
+            allowClear
+            value={statusFilter}
+            onChange={(value) => setStatusFilter(value)}
+          >
+            {Object.entries(STATUS_MAP).map(([key, val]) => (
+              <Option key={key} value={key}>{val.label}</Option>
+            ))}
+          </Select>
+          <Select
+            placeholder="Pilar"
+            style={{ flex: '1 1 140px', minWidth: 130 }}
+            allowClear
+            value={pilarFilter}
+            onChange={(value) => setPilarFilter(value)}
+          >
+            {pilarOptions.map((pilar) => (
+              <Option key={pilar.id} value={pilar.id}>{pilar.name}</Option>
+            ))}
+          </Select>
+          <Select
+            placeholder="Durasi"
+            style={{ flex: '1 1 130px', minWidth: 120 }}
+            allowClear
+            value={durasiFilter}
+            onChange={(value) => setDurasiFilter(value)}
+          >
+            <Option value="<1 Tahun">&lt;1 Tahun</Option>
+            <Option value="1-3 Tahun">1-3 Tahun</Option>
+            <Option value="3-5 Tahun">3-5 Tahun</Option>
+            <Option value=">5 Tahun">&gt;5 Tahun</Option>
+          </Select>
+          <Button onClick={handleReset} style={{ flexShrink: 0 }}>Reset</Button>
+        </div>
       </Card>
 
       {/* Table */}

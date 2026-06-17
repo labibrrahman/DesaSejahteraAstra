@@ -492,7 +492,7 @@ const LandingPage = () => {
             </div>
 
             <Row gutter={[isMobile ? 16 : 48, isMobile ? 32 : 48]} justify="center">
-              <Col xs={24} sm={8}>
+              <Col xs={24} sm={8} onClick={() => window.open('https://wa.me/085713043230', '_blank')}>
                 <div style={{ textAlign: 'center', padding: isMobile ? 20 : 32 }}>
                   <div style={{ marginBottom: 16 }}>
                     <PhoneOutlined style={{ fontSize: 32, color: '#1870F0' }} />
@@ -501,11 +501,11 @@ const LandingPage = () => {
                     Telepon
                   </Text>
                   <Text style={{ fontSize: isMobile ? 18 : 20, fontWeight: 600, color: '#181c21', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                    +62 21 5000 1234
+                    +62 85713043230
                   </Text>
                 </div>
               </Col>
-              <Col xs={24} sm={8}>
+              {/* <Col xs={24} sm={8}>
                 <div style={{ textAlign: 'center', padding: isMobile ? 20 : 32 }}>
                   <div style={{ marginBottom: 16 }}>
                     <MailOutlined style={{ fontSize: 32, color: '#1870F0' }} />
@@ -530,7 +530,7 @@ const LandingPage = () => {
                     Jl. TB Simatupang, Jakarta
                   </Text>
                 </div>
-              </Col>
+              </Col> */}
             </Row>
           </div>
         </section>
@@ -555,12 +555,12 @@ const LandingPage = () => {
           }}
         >
           <div>
-            <Text style={{ color: '#fff', fontSize: 16, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'block', marginBottom: 4 }}>
+            {/* <Text style={{ color: '#fff', fontSize: 16, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'block', marginBottom: 4 }}>
               Desa Sejahtera Astra
             </Text>
             <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>
               Astra International CSR Division
-            </Text>
+            </Text> */}
           </div>
           <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? 16 : 24 }}>
             <div style={{ display: 'flex', gap: 24 }}>

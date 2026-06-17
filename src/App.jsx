@@ -10,13 +10,12 @@ import Login from './pages/public/Login';
 import AuthCallback from './pages/public/AuthCallback';
 
 // Peserta Pages
-import PesertaLayout from './components/layouts/PesertaLayout';
+import AppLayout from './components/layouts/AppLayout';
 import PesertaDashboard from './pages/peserta/PesertaDashboard';
 import FormPendaftaran from './pages/peserta/FormPendaftaran';
 import PendaftaranGuard from './pages/peserta/PendaftaranGuard';
 
 // Admin Pages
-import AdminLayout from './components/layouts/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminPesertaList from './pages/admin/AdminPesertaList';
 import AdminPenilaianHistory from './pages/admin/AdminPenilaianHistory';
@@ -27,7 +26,6 @@ import MasterWilayah from './pages/admin/MasterWilayah';
 import MasterGrupAstra from './pages/admin/MasterGrupAstra';
 
 // Juri Pages
-import JuriLayout from './components/layouts/JuriLayout';
 import JuriPesertaList from './pages/juri/JuriPesertaList';
 import JuriFormPenilaian from './pages/juri/JuriFormPenilaian';
 import JuriPenilaianHistory from './pages/juri/JuriPenilaianHistory';
@@ -69,7 +67,7 @@ function App() {
             path="/peserta"
             element={
               <ProtectedRoute allowedRoles={['peserta']}>
-                <PesertaLayout />
+                <AppLayout role="peserta" />
               </ProtectedRoute>
             }
           >
@@ -86,7 +84,6 @@ function App() {
               </ProtectedRoute>
             }
           >
-            {/* Child route: tampil tanpa sidebar (Outlet) */}
             <Route index element={<FormPendaftaran />} />
           </Route>
 
@@ -95,7 +92,7 @@ function App() {
             path="/admin"
             element={
               <ProtectedRoute allowedRoles={['admin']}>
-                <AdminLayout />
+                <AppLayout role="admin" />
               </ProtectedRoute>
             }
           >
@@ -115,7 +112,7 @@ function App() {
             path="/juri"
             element={
               <ProtectedRoute allowedRoles={['juri']}>
-                <JuriLayout />
+                <AppLayout role="juri" />
               </ProtectedRoute>
             }
           >

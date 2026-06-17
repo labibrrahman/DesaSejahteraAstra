@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Row, Col, Typography, Space, Layout, Drawer, Dropdown } from 'antd';
+import React, { useState } from 'react';
+import { Button, Row, Col, Typography, Space, Layout } from 'antd';
 import {
   HeartOutlined,
   ReadOutlined,
@@ -9,18 +9,8 @@ import {
   PhoneOutlined,
   MailOutlined,
   EnvironmentOutlined,
-  MenuOutlined,
-  CloseOutlined,
-  DashboardOutlined,
-  LogoutOutlined,
-  UserOutlined,
-  SearchOutlined,
-  DownOutlined,
   UpOutlined,
-  ExpandOutlined,
-  SafetyOutlined,
-  DotChartOutlined,
-  DollarOutlined,
+  DownOutlined,
   ArrowDownOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -88,180 +78,16 @@ const faqData = [
 const LandingPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const { isAuthenticated, user, logout } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   const px = isMobile ? 20 : 30;
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/');
-  };
-
-  const userMenuItems = [
-    {
-      key: 'dashboard',
-      icon: <DashboardOutlined />,
-      label: 'Dashboard',
-      onClick: () => navigate('/peserta/dashboard'),
-    },
-    { type: 'divider' },
-    {
-      key: 'logout',
-      icon: <LogoutOutlined />,
-      label: 'Keluar',
-      danger: true,
-      onClick: handleLogout,
-    },
-  ];
-
   const scrollTo = (id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-    setDrawerOpen(false);
   };
 
   return (
     <Layout style={{ minHeight: '100vh', background: '#f8f9ff' }}>
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <Header
-        style={{
-          padding: `0 ${px}px`,
-          background: '#fff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-          position: 'sticky',
-          top: 0,
-          zIndex: 50,
-          height: isMobile ? 64 : scrolled ? 64 : 80,
-          transition: 'height 0.3s ease',
-        }}
-      >
-        {/* Left: Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 12 : 24 }}>
-          <img src={astraLogo} alt="Astra Logo" style={{ height: isMobile ? 28 : 32, objectFit: 'contain' }} />
-        </div>
-
-        {/* Right: Nav + Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 24 }}>
-          {!isMobile && (
-            <>
-              <Text
-                style={{ fontSize: 14, color: '#005BAA', cursor: 'pointer', fontWeight: 500, whiteSpace: 'nowrap' }}
-                onClick={() => scrollTo('tentang-section')}
-                onMouseEnter={e => e.currentTarget.style.color = '#1870F0'}
-                onMouseLeave={e => e.currentTarget.style.color = '#005BAA'}
-              >
-                Tentang Program
-              </Text>
-              <Text
-                style={{ fontSize: 14, color: '#005BAA', cursor: 'pointer', fontWeight: 500, whiteSpace: 'nowrap' }}
-                onClick={() => scrollTo('kontak-section')}
-                onMouseEnter={e => e.currentTarget.style.color = '#1870F0'}
-                onMouseLeave={e => e.currentTarget.style.color = '#005BAA'}
-              >
-                Kontak
-              </Text>
-            </>
-          )}
-          {isAuthenticated ? (
-            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
-              <div
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: '50%',
-                  background: '#1870F0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: 'pointer',
-                  border: '2px solid rgba(24,112,240,0.1)',
-                  transition: 'transform 0.2s',
-                }}
-                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-              >
-                <UserOutlined style={{ color: '#fff', fontSize: 16 }} />
-              </div>
-            </Dropdown>
-          ) : isMobile ? (
-            <Button
-              type="text"
-              icon={<MenuOutlined style={{ fontSize: 20, color: '#005BAA' }} />}
-              onClick={() => setDrawerOpen(true)}
-            />
-          ) : (
-            <Button
-              type="primary"
-              block
-              style={{ background: '#1870F0', borderColor: '#1870F0', borderRadius: 8, height: 44 }}
-              onClick={() => { setDrawerOpen(false); navigate('/login'); }}
-            >
-              Masuk
-            </Button>
-          )}
-        </div>
-      </Header>
-
-      {/* ── Mobile Drawer ──────────────────────────────────────────────────── */}
-      <Drawer
-        placement="right"
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        width={280}
-        closeIcon={<CloseOutlined />}
-        styles={{ body: { padding: '24px 20px' } }}
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <Text style={{ fontSize: 15, color: '#1870F0', fontWeight: 600, cursor: 'pointer' }} onClick={() => scrollTo('tentang-section')}>
-            Tentang Program
-          </Text>
-          <Text style={{ fontSize: 15, color: '#333', cursor: 'pointer' }} onClick={() => scrollTo('kontak-section')}>
-            Kontak
-          </Text>
-          <div style={{ height: 1, background: '#f0f0f0' }} />
-          {isAuthenticated ? (
-            <>
-              <Button
-                block
-                icon={<DashboardOutlined />}
-                style={{ borderRadius: 8, textAlign: 'left', height: 44 }}
-                onClick={() => { setDrawerOpen(false); navigate('/peserta/dashboard'); }}
-              >
-                Dashboard
-              </Button>
-              <Button
-                block
-                danger
-                icon={<LogoutOutlined />}
-                style={{ borderRadius: 8, textAlign: 'left', height: 44 }}
-                onClick={() => { setDrawerOpen(false); handleLogout(); }}
-              >
-                Keluar
-              </Button>
-            </>
-          ) : (
-            <Button
-              type="primary"
-              block
-              style={{ background: '#1870F0', borderColor: '#1870F0', borderRadius: 8, height: 44 }}
-              onClick={() => { setDrawerOpen(false); navigate('/login'); }}
-            >
-              Masuk
-            </Button>
-          )}
-        </div>
-      </Drawer>
-
       <Content>
         {/* ── Hero Section ──────────────────────────────────────────────────── */}
         <section
@@ -308,25 +134,50 @@ const LandingPage = () => {
             style={{
               position: 'absolute',
               top: isMobile ? 16 : 24,
-              right: isMobile ? 20 : 64,
+              left: isMobile ? 20 : 64,
               zIndex: 30,
+              height: 65,
               padding: '12px 16px',
-              background: 'rgba(255,255,255,0.1)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: 12,
-              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+              // background: 'rgba(255,255,255,0.1)',
+              // backdropFilter: 'blur(12px)',
+              // border: '1px solid rgba(255,255,255,0.2)',
+              // borderRadius: 12,
+              // boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
               transition: 'all 0.3s',
               cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+            // onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; }}
+            // onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
           >
-            <img
-              src={satuIndoLogo}
-              alt="Satu Indonesia Logo"
-              style={{ height: isMobile ? 36 : 48, objectFit: 'contain' }}
-            />
+            <img src={astraLogo} alt="Astra Logo" style={{ height: 32, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+          </div>
+
+          <div
+            style={{
+              position: 'absolute',
+              top: isMobile ? 16 : 24,
+              right: isMobile ? 20 : 64,
+              zIndex: 30,
+              height: 65,
+              padding: '12px 16px',
+              // background: 'rgba(255,255,255,0.1)',
+              // backdropFilter: 'blur(12px)',
+              // border: '1px solid rgba(255,255,255,0.2)',
+              // borderRadius: 12,
+              // boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            // onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; }}
+            // onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+          >
+            <img src={satuIndoLogo} alt="Satu Indonesia Logo" style={{ height: 50, objectFit: 'contain' }} />
           </div>
 
           {/* Content */}
@@ -334,7 +185,7 @@ const LandingPage = () => {
             style={{
               position: 'relative',
               zIndex: 10,
-              padding: `0 ${isMobile ? 20 : 64}px`,
+              padding: `150px ${isMobile ? 20 : 64}px`,
               textAlign: 'center',
               maxWidth: 800,
               width: '100%',
@@ -501,24 +352,6 @@ const LandingPage = () => {
                   pertumbuhan inisiatif sosial yang memiliki dampak nyata bagi ekosistem sekitar.
                 </p>
               </div>
-              <a
-                href="#"
-                style={{
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: '#1870F0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  whiteSpace: 'nowrap',
-                  textDecoration: 'none',
-                  transition: 'gap 0.2s',
-                }}
-                onMouseEnter={e => e.currentTarget.style.gap = '12px'}
-                onMouseLeave={e => e.currentTarget.style.gap = '8px'}
-              >
-                Lihat Kriteria Penilaian <ArrowRightOutlined style={{ fontSize: 14 }} />
-              </a>
             </div>
 
             {/* Cards */}

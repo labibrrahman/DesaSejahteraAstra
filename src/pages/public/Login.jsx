@@ -93,7 +93,7 @@ const Login = ({ adminMode = false }) => {
               </Form>
 
               <div style={{ textAlign: 'center', marginTop: 24 }}>
-                <Text type="secondary" style={{ fontSize: 12 }}>© 2024 Astra International. All Rights Reserved.</Text>
+                <Text type="secondary" style={{ fontSize: 12 }}>© 2026 Astra International. All Rights Reserved.</Text>
               </div>
             </div>
           </div>
@@ -159,7 +159,7 @@ const Login = ({ adminMode = false }) => {
             </Button>
 
             <div style={{ textAlign: 'center', marginTop: 48 }}>
-              <Text type="secondary" style={{ fontSize: 12 }}>© 2024 Astra International. All Rights Reserved.</Text>
+              <Text type="secondary" style={{ fontSize: 12 }}>© 2026 Astra International. All Rights Reserved.</Text>
             </div>
           </div>
         </div>

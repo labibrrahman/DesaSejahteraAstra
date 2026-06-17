@@ -731,15 +731,15 @@ const LandingPage = () => {
           </div>
           <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? 16 : 24 }}>
             <div style={{ display: 'flex', gap: 24 }}>
-              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}>
+              {/* <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}>
                 Kebijakan Privasi
               </Text>
               <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}>
                 Syarat & Ketentuan
-              </Text>
+              </Text> */}
             </div>
             <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
-              © 2024 Astra International. All Rights Reserved.
+              © 2026 Astra International. All Rights Reserved.
             </Text>
           </div>
         </div>

@@ -81,8 +81,8 @@ const JuriLayout = () => {
         </div>
         {(!collapsed || isMobile) && (
           <div>
-            <div style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', lineHeight: 1.3 }}>Astra CSR</div>
-            <div style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.3 }}>Rural Development</div>
+            <div style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', lineHeight: 1.3 }}>DSA Platform</div>
+            <div style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.3 }}>Desa Sejahtera Astra</div>
           </div>
         )}
       </div>

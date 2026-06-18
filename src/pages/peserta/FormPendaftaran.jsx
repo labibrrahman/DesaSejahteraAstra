@@ -29,7 +29,7 @@ const STEPS = ['Pilar', 'Identitas', 'Program', 'Review'];
 const STEP_TITLES = [
   'Pilih Pilar & Kategori Lomba',
   'Identitas Pendaftar',
-  'Detail Program Inisiatif',
+  'Detail Program Berjalan',
   'Review & Konfirmasi',
 ];
 
@@ -344,9 +344,13 @@ const FormPendaftaran = () => {
   const nextStep = () => {
     if (validateStep(currentStep)) {
       setCurrentStep(prev => Math.min(prev + 1, 4));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
-  const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
+  const prevStep = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // ── Handle pemilihan kategori — otomatis set pilar parent ──────────────────
 
@@ -594,6 +598,15 @@ const FormPendaftaran = () => {
 
     return (
       <div style={{ width: '100%', maxWidth: 800, marginBottom: 32, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 32 }}>
+        <div style={{...fieldWrapper, visibility :'hidden'}}>
+          <Text style={labelStyle}>Jenis DSA *</Text>
+          <Select placeholder="Pilih kategori terlebih dahulu" style={{ width: '100%' }} size="large"
+            value={formData.jenis_dsa} disabled>
+            <Option value="kelompok">Kelompok</Option>
+            <Option value="individu">Individu</Option>
+          </Select>
+        </div>
+
         <div style={{ marginBottom: 24 }}>
           <Text style={{ ...labelStyle, fontSize: 15 }}>Data Desa & Kelompok</Text>
           <Text type="secondary" style={{ fontSize: 13 }}>Isi informasi identitas desa dan kelompok yang mendaftar</Text>
@@ -608,19 +621,6 @@ const FormPendaftaran = () => {
           </Col>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={labelStyle}>Jenis DSA *</Text>
-              <Select placeholder="Pilih kategori terlebih dahulu" style={{ width: '100%' }} size="large"
-                value={formData.jenis_dsa} disabled>
-                <Option value="kelompok">Kelompok</Option>
-                <Option value="individu">Individu</Option>
-              </Select>
-            </div>
-          </Col>
-        </Row>
-
-        <Row gutter={[24, 0]}>
-          <Col xs={24} sm={12}>
-            <div style={fieldWrapper}>
               <Text style={labelStyle}>
                 {formData.jenis_dsa === 'individu' ? 'Nama Peserta *' : 'Nama Penanggung Jawab *'}
               </Text>
@@ -633,10 +633,22 @@ const FormPendaftaran = () => {
               />
             </div>
           </Col>
+        </Row>
+
+        <Row gutter={[24, 0]}>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
               <Text style={labelStyle}>Nomor HP (WhatsApp) *</Text>
               <Input placeholder="Contoh: 08123456789" style={inputStyle} value={formData.phone_number} onChange={handlePhoneChange} maxLength={15} />
+            </div>
+          </Col>
+          <Col xs={24} sm={12}>
+            <div style={fieldWrapper}>
+              <Text style={labelStyle}>Binaan</Text>
+              <Select placeholder="Pilih perusahaan/grup Group Astra (Pembina) jika ada..." style={{ width: '100%' }} size="large" allowClear showSearch optionFilterProp="children"
+                value={formData.grup_astra_id} onChange={val => updateField('grup_astra_id', val)}>
+                {astraGroups.map(g => <Option key={g.id} value={g.id}>{g.name}</Option>)}
+              </Select>
             </div>
           </Col>
         </Row>
@@ -765,7 +777,7 @@ const FormPendaftaran = () => {
     <div style={{ width: '100%', maxWidth: 800, marginBottom: 32, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 32 }}>
       <div style={{ marginBottom: 24 }}>
         <Text style={{ ...labelStyle, fontSize: 15 }}>Informasi Program</Text>
-        <Text type="secondary" style={{ fontSize: 13 }}>Jelaskan detail program inisiatif yang akan dijalankan</Text>
+        <Text type="secondary" style={{ fontSize: 13 }}>Jelaskan detail program yang telah berjalan</Text>
       </div>
 
       <div style={fieldWrapper}>

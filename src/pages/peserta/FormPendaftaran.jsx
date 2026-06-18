@@ -644,7 +644,7 @@ const FormPendaftaran = () => {
           </Col>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={labelStyle}>Binaan</Text>
+              <Text style={labelStyle}>Binaan (Opsional)</Text>
               <Select placeholder="Pilih perusahaan/grup Group Astra (Pembina) jika ada..." style={{ width: '100%' }} size="large" allowClear showSearch optionFilterProp="children"
                 value={formData.grup_astra_id} onChange={val => updateField('grup_astra_id', val)}>
                 {astraGroups.map(g => <Option key={g.id} value={g.id}>{g.name}</Option>)}
@@ -781,14 +781,6 @@ const FormPendaftaran = () => {
       </div>
 
       <div style={fieldWrapper}>
-        <Text style={labelStyle}>Binaan</Text>
-        <Select placeholder="Pilih perusahaan/grup Group Astra (Pembina) jika ada..." style={{ width: '100%' }} size="large" allowClear showSearch optionFilterProp="children"
-          value={formData.grup_astra_id} onChange={val => updateField('grup_astra_id', val)}>
-          {astraGroups.map(g => <Option key={g.id} value={g.id}>{g.name}</Option>)}
-        </Select>
-      </div>
-
-      <div style={fieldWrapper}>
         <Text style={labelStyle}>Durasi Program *</Text>
         <Select placeholder="Pilih durasi program..." style={{ width: '100%' }} size="large"
           value={formData.durasi_program} onChange={val => updateField('durasi_program', val)}>
@@ -850,7 +842,7 @@ const FormPendaftaran = () => {
       <ReviewCard title="Pilar & Kategori" icon={<CheckCircleOutlined style={{ color: '#1890ff', fontSize: 16 }} />}>
         <Row gutter={[16, 12]}>
           <ReviewField label="Pilar Terpilih" value={selectedPilar?.name} />
-          <ReviewField label="Sub-kategori" value={kategoriLabel} />
+          <ReviewField label="kategori" value={kategoriLabel} />
         </Row>
       </ReviewCard>
 
@@ -860,6 +852,7 @@ const FormPendaftaran = () => {
           <ReviewField label="Jenis DSA" value={formData.jenis_dsa === 'kelompok' ? 'Kelompok' : formData.jenis_dsa === 'individu' ? 'Individu' : '-'} />
           <ReviewField label={formData.jenis_dsa === 'individu' ? 'Nama Peserta' : 'Nama Penanggung Jawab'} value={formData.nama_kelompok} />
           <ReviewField label="Nomor HP (WhatsApp)" value={formData.phone_number} />
+          <ReviewField label="Binaan" value={grupLabel || '-'} span={24} />
           <ReviewField label="Nama Kontak Darurat" value={formData.nama_kontak_darurat} />
           <ReviewField label="Nomor HP Kontak Darurat" value={formData.no_hp_kontak_darurat} />
           <ReviewField label="Alamat Lengkap" value={formData.alamat} span={24} />
@@ -872,8 +865,7 @@ const FormPendaftaran = () => {
 
       <ReviewCard title="Detail Program" icon={<EnvironmentOutlined style={{ color: '#1890ff', fontSize: 16 }} />}>
         <Row gutter={[16, 12]}>
-          <ReviewField label="Group Astra (Pembina)" value={grupLabel || 'Belum dipilih'} span={24} />
-          <ReviewField label="Durasi Program" value={formData.durasi_program || 'Belum dipilih'} />
+          <ReviewField label="Durasi Program" value={formData.durasi_program || '-'} />
           <ReviewField label="Latar Belakang / Rasionalisasi" value={formData.latar_belakang} span={24} />
           <ReviewField label="Dampak Yang Sudah Terealisasi" value={formData.dampak_program} span={24} />
           <ReviewField label="Rencana Pengembangan" value={formData.rencana_pengembangan} span={24} />

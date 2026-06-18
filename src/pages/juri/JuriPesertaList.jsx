@@ -359,7 +359,9 @@ const JuriPesertaList = () => {
               </div>
 
               {/* Deskripsi Program */}
-              <div>
+              <div style={{ 
+                paddingTop:'20px'
+               }}>
                 <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
                   📝 Deskripsi Program
                 </Text>

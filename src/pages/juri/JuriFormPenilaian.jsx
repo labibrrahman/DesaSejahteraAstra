@@ -9,8 +9,8 @@ const { TextArea } = Input;
 
 const KRITERIA = [
   { key: 'criteria1', label: 'Inovasi & Kreativitas', desc: 'Penilaian terhadap tingkat inovasi dan kreativitas dalam program yang diajukan.', icon: <BulbOutlined />, color: '#8b5cf6', bg: '#f5f3ff' },
-  { key: 'criteria2', label: 'Dampak & Keberlanjutan', desc: 'Penilaian terhadap dampak program dan aspek keberlanjutan jangka panjang.', icon: <ThunderboltOutlined />, color: '#10b981', bg: '#ecfdf5' },
-  { key: 'criteria3', label: 'Kelayakan & Implementasi', desc: 'Penilaian terhadap kelayakan teknis dan rencana implementasi program.', icon: <ToolOutlined />, color: '#f59e0b', bg: '#fffbeb' },
+  { key: 'criteria2', label: 'Dampak Program', desc: 'Penilaian terhadap dampak nyata program bagi masyarakat.', icon: <ThunderboltOutlined />, color: '#10b981', bg: '#ecfdf5' },
+  { key: 'criteria3', label: 'Potensi Keberlanjutan Program', desc: 'Penilaian terhadap potensi keberlanjutan dan pengembangan program ke depan.', icon: <ToolOutlined />, color: '#f59e0b', bg: '#fffbeb' },
 ];
 
 const mapFromApi = (i) => ({
@@ -35,14 +35,27 @@ const JuriFormPenilaian = () => {
 
   const fetchDetail = useCallback(async () => {
     setLoading(true);
-    try { const r = await adminService.getRegistrationDetail(id); setPeserta(mapFromApi(r)); }
-    catch { message.error('Gagal memuat data peserta'); }
+    try {
+      const r = await adminService.getRegistrationDetail(id);
+      setPeserta(mapFromApi(r));
+
+      // Update status ke being_assessed jika masih waiting_screening
+      if (r.status === 'waiting_screening') {
+        try {
+          await adminService.updateRegistrationStatus(id, { status: 'being_assessed' });
+        } catch { /* ignore — mungkin sudah diupdate juri lain */ }
+      }
+    } catch { message.error('Gagal memuat data peserta'); }
     finally { setLoading(false); }
   }, [id]);
 
   useEffect(() => { fetchDetail(); }, [fetchDetail]);
 
-  const onValuesChange = (_, v) => setTotalScore((v.criteria1 || 0) + (v.criteria2 || 0) + (v.criteria3 || 0));
+  const onValuesChange = (_, v) => {
+    const c1 = v.criteria1 || 0, c2 = v.criteria2 || 0, c3 = v.criteria3 || 0;
+    const hasAny = v.criteria1 != null || v.criteria2 != null || v.criteria3 != null;
+    setTotalScore(hasAny ? Math.round((c1 + c2 + c3) / 3) : 0);
+  };
 
   const handleSubmit = async () => {
     try {
@@ -53,9 +66,8 @@ const JuriFormPenilaian = () => {
     finally { setSubmitting(false); }
   };
 
-  const pct = Math.round((totalScore / 300) * 100);
-  const scoreColor = totalScore >= 240 ? '#10b981' : totalScore >= 150 ? '#1890ff' : totalScore > 0 ? '#f59e0b' : '#94a3b8';
-  const grade = totalScore >= 270 ? 'Sangat Baik' : totalScore >= 240 ? 'Baik' : totalScore >= 180 ? 'Cukup' : totalScore >= 90 ? 'Perlu Perbaikan' : totalScore > 0 ? 'Sangat Perlu Perbaikan' : 'Belum Dinilai';
+  const scoreColor = totalScore >= 80 ? '#10b981' : totalScore >= 60 ? '#1890ff' : totalScore > 0 ? '#f59e0b' : '#94a3b8';
+  const grade = totalScore >= 90 ? 'Sangat Baik' : totalScore >= 80 ? 'Baik' : totalScore >= 60 ? 'Cukup' : totalScore >= 40 ? 'Perlu Perbaikan' : totalScore > 0 ? 'Sangat Perlu Perbaikan' : 'Belum Dinilai';
 
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: 100 }}><Spin size="large" /></div>;
 
@@ -65,7 +77,7 @@ const JuriFormPenilaian = () => {
         <CheckCircleFilled style={{ fontSize: 40, color: '#fff' }} />
       </div>
       <Title level={3}>Penilaian Berhasil Disubmit!</Title>
-      <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>Total: <Text strong style={{ color: scoreColor, fontSize: 18 }}>{totalScore}</Text>/300</Text>
+      <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>Rata-rata: <Text strong style={{ color: scoreColor, fontSize: 18 }}>{totalScore}</Text>/100</Text>
       <Text type="secondary" style={{ display: 'block', marginBottom: 32 }}>Status peserta telah berubah menjadi 'Selesai Dinilai'.</Text>
       <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
         <Button type="primary" onClick={() => navigate('/juri/peserta')}>Kembali ke Daftar Peserta</Button>
@@ -149,14 +161,14 @@ const JuriFormPenilaian = () => {
         <Col xs={24} lg={14}>
           {/* Score */}
           <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', padding: 24, marginBottom: 20, textAlign: 'center' }}>
-            <Text style={{ fontSize: 12, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 12 }}>Total Nilai Sementara</Text>
+            <Text style={{ fontSize: 12, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 12 }}>Rata-rata Nilai Sementara</Text>
             <div style={{ fontSize: 56, fontWeight: 800, fontFamily: "'Plus Jakarta Sans', sans-serif", color: scoreColor, lineHeight: 1, marginBottom: 4, transition: 'color 0.3s' }}>{totalScore}</div>
-            <Text style={{ fontSize: 14, color: '#94a3b8' }}>/ 300</Text>
+            <Text style={{ fontSize: 14, color: '#94a3b8' }}>/ 100</Text>
             <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               <div style={{ height: 6, flex: 1, maxWidth: 300, borderRadius: 3, background: '#f1f5f9', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${scoreColor}, ${scoreColor}dd)`, borderRadius: 3, transition: 'width 0.4s ease' }} />
+                <div style={{ height: '100%', width: `${totalScore}%`, background: `linear-gradient(90deg, ${scoreColor}, ${scoreColor}dd)`, borderRadius: 3, transition: 'width 0.4s ease' }} />
               </div>
-              <Text style={{ fontSize: 13, fontWeight: 600, color: scoreColor, minWidth: 40 }}>{pct}%</Text>
+              <Text style={{ fontSize: 13, fontWeight: 600, color: scoreColor, minWidth: 40 }}>{totalScore}%</Text>
             </div>
             {totalScore > 0 && <Tag color={totalScore >= 240 ? 'success' : totalScore >= 150 ? 'blue' : 'warning'} style={{ marginTop: 12, fontSize: 12, padding: '2px 12px', borderRadius: 12 }}>{grade}</Tag>}
           </div>

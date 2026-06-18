@@ -30,6 +30,14 @@ const PesertaDashboard = () => {
   const navigate = useNavigate();
   const { registration, loading, hasRegistration } = useRegistration();
   const [detailOpen, setDetailOpen] = useState(false);
+  const [statusModalOpen, setStatusModalOpen] = useState(false);
+
+  // Auto-open status modal untuk finalist/rejected
+  React.useEffect(() => {
+    if (registration?.status === 'finalist' || registration?.status === 'rejected') {
+      setStatusModalOpen(true);
+    }
+  }, [registration?.status]);
 
   // Loading
   if (loading) {
@@ -60,7 +68,8 @@ const PesertaDashboard = () => {
     waiting_screening: 'Menunggu Screening',
     being_assessed: 'Sedang Dinilai',
     assessed: 'Selesai Dinilai',
-    finalist: 'Finalis',
+    finalist: 'Selamat! Anda Lolos',
+    rejected: 'Tidak Lolos',
   }[status] || status;
 
   const statusStep = {
@@ -69,13 +78,15 @@ const PesertaDashboard = () => {
     being_assessed: 2,
     assessed: 3,
     finalist: 4,
+    rejected: 4,
   }[status] || 0;
 
+  const isFinal = status === 'finalist' || status === 'rejected';
+
   const statusSteps = [
-    { title: 'Registration', icon: <CheckCircleFilled />, completed: statusStep >= 1 },
-    { title: 'Screening', icon: <SearchOutlined />, current: statusStep === 1, completed: statusStep > 1 },
-    { title: 'Assessment', icon: <FormOutlined />, current: statusStep === 2, completed: statusStep > 2 },
-    { title: 'Finalist', icon: <TrophyOutlined />, current: statusStep >= 3, completed: statusStep > 3 },
+    { title: 'Registrasi', icon: <CheckCircleFilled />, completed: statusStep >= 1 },
+    { title: 'Menunggu Screening', icon: <SearchOutlined />, current: statusStep === 1, completed: statusStep > 1 },
+    { title: isFinal ? 'Sudah Dinilai' : 'Sedang Dinilai', icon: <FormOutlined />, current: statusStep === 2, completed: statusStep > 2 },
   ];
 
   return (
@@ -134,35 +145,37 @@ const PesertaDashboard = () => {
             </Text>
           </Col>
           <Col xs={24} sm={24} md={8}>
-            <div
-              style={{
-                background: 'rgba(255,255,255,0.1)',
-                backdropFilter: 'blur(12px)',
-                borderRadius: 12,
-                padding: '14px 20px',
-                textAlign: 'center',
-                border: '1px solid rgba(255,255,255,0.15)',
-              }}
-            >
-              <Text
+            {!isFinal && (
+              <div
                 style={{
-                  fontSize: 10,
-                  color: 'rgba(255,255,255,0.5)',
-                  display: 'block',
-                  letterSpacing: 1.5,
-                  textTransform: 'uppercase',
-                  marginBottom: 6,
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(12px)',
+                  borderRadius: 12,
+                  padding: '14px 20px',
+                  textAlign: 'center',
+                  border: '1px solid rgba(255,255,255,0.15)',
                 }}
               >
-                Status Saat Ini
-              </Text>
-              <Space size={8}>
-                <ClockCircleOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
-                <Text strong style={{ color: '#fff', fontSize: 14 }}>
-                  {statusLabel}
+                <Text
+                  style={{
+                    fontSize: 10,
+                    color: 'rgba(255,255,255,0.5)',
+                    display: 'block',
+                    letterSpacing: 1.5,
+                    textTransform: 'uppercase',
+                    marginBottom: 6,
+                  }}
+                >
+                  Status Saat Ini
                 </Text>
-              </Space>
-            </div>
+                <Space size={8}>
+                  <ClockCircleOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
+                  <Text strong style={{ color: '#fff', fontSize: 14 }}>
+                    {statusLabel}
+                  </Text>
+                </Space>
+              </div>
+            )}
           </Col>
         </Row>
 
@@ -173,7 +186,7 @@ const PesertaDashboard = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              maxWidth: 640,
+              // maxWidth: 640,
             }}
           >
             {statusSteps.map((step, index) => (
@@ -233,6 +246,37 @@ const PesertaDashboard = () => {
               </React.Fragment>
             ))}
           </div>
+
+          {/* Status Message — Finalis / Ditolak */}
+          {isFinal && (
+            <div
+              style={{
+                marginTop: 24,
+                padding: '16px 24px',
+                borderRadius: 12,
+                background: status === 'finalist' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
+                border: `1px solid ${status === 'finalist' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+              }}
+            >
+              {status === 'finalist'
+                ? <CheckCircleFilled style={{ fontSize: 24, color: '#22c55e' }} />
+                : <CloseOutlined style={{ fontSize: 24, color: '#ef4444' }} />
+              }
+              <div>
+                <Text strong style={{ color: status === 'finalist' ? '#22c55e' : '#ef4444', fontSize: 15, display: 'block' }}>
+                  {status === 'finalist' ? 'Selamat! Anda Lolos' : 'Maaf, Anda Tidak Lolos'}
+                </Text>
+                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>
+                  {status === 'finalist'
+                    ? 'Pendaftaran Anda telah dinyatakan lolos ke tahap berikutnya.'
+                    : 'Pendaftaran Anda belum memenuhi kriteria untuk tahap berikutnya.'}
+                </Text>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -772,6 +816,46 @@ const PesertaDashboard = () => {
               </div>
             </div>
           </div>
+        </div>
+      </Modal>
+
+      {/* Status Modal — Finalist / Rejected */}
+      <Modal
+        open={statusModalOpen}
+        closable={false}
+        footer={[
+          <Button key="close" type="primary" onClick={() => setStatusModalOpen(false)} style={{ background: status === 'finalist' ? '#10b981' : '#ef4444', borderColor: status === 'finalist' ? '#10b981' : '#ef4444' }}>
+            Tutup
+          </Button>,
+        ]}
+        width={480}
+        centered
+      >
+        <div style={{ textAlign: 'center', padding: '16px 0' }}>
+          <div style={{
+            width: 80,
+            height: 80,
+            borderRadius: '50%',
+            background: status === 'finalist' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #ef4444, #dc2626)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 20px',
+            boxShadow: status === 'finalist' ? '0 8px 24px rgba(16,185,129,0.3)' : '0 8px 24px rgba(239,68,68,0.3)',
+          }}>
+            {status === 'finalist'
+              ? <CheckCircleFilled style={{ fontSize: 40, color: '#fff' }} />
+              : <CloseOutlined style={{ fontSize: 40, color: '#fff' }} />
+            }
+          </div>
+          <Title level={3} style={{ marginBottom: 8, color: status === 'finalist' ? '#10b981' : '#ef4444' }}>
+            {status === 'finalist' ? 'Selamat! Anda Lolos' : 'Maaf, Anda Tidak Lolos'}
+          </Title>
+          <Text style={{ fontSize: 15, color: '#64748b', display: 'block', lineHeight: 1.6 }}>
+            {status === 'finalist'
+              ? 'Pendaftaran Anda telah dinyatakan lolos ke tahap berikutnya. Silakan pantau perkembangan selanjutnya.'
+              : 'Mohon maaf, pendaftaran Anda belum memenuhi kriteria untuk tahap berikutnya. Terima kasih telah berpartisipasi.'}
+          </Text>
         </div>
       </Modal>
     </div>

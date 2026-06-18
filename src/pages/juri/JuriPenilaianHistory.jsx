@@ -152,9 +152,9 @@ const JuriPenilaianHistory = () => {
       dataIndex: 'total',
       key: 'total',
       render: (total) => (
-        <Tag color={total >= 270 ? 'success' : total >= 240 ? 'processing' : 'warning'}>
+        <Tag color={total >= 80 ? 'success' : total >= 60 ? 'processing' : 'warning'}>
           <Text strong style={{ fontSize: 16 }}>{total}</Text>
-          <Text type="secondary"> / 300</Text>
+          <Text type="secondary"> / 100</Text>
         </Tag>
       ),
     },
@@ -316,8 +316,8 @@ const JuriPenilaianHistory = () => {
                 <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
                   {[
                     { label: 'Inovasi & Kreativitas', score: selectedRecord.kriteria1, color: '#8b5cf6', bg: '#f5f3ff' },
-                    { label: 'Dampak & Keberlanjutan', score: selectedRecord.kriteria2, color: '#10b981', bg: '#ecfdf5' },
-                    { label: 'Kelayakan & Implementasi', score: selectedRecord.kriteria3, color: '#f59e0b', bg: '#fffbeb' },
+                    { label: 'Dampak Program', score: selectedRecord.kriteria2, color: '#10b981', bg: '#ecfdf5' },
+                    { label: 'Potensi Keberlanjutan', score: selectedRecord.kriteria3, color: '#f59e0b', bg: '#fffbeb' },
                   ].map((item, idx) => (
                     <Col xs={24} sm={8} key={idx}>
                       <div style={{
@@ -371,17 +371,17 @@ const JuriPenilaianHistory = () => {
                       Total Nilai
                     </Text>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                      <span style={{ fontSize: 36, fontWeight: 800, color: getScoreColor(selectedRecord.total / 3), fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1 }}>
+                      <span style={{ fontSize: 36, fontWeight: 800, color: getScoreColor(selectedRecord.total), fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1 }}>
                         {selectedRecord.total}
                       </span>
-                      <Text style={{ fontSize: 14, color: '#94a3b8' }}>/ 300</Text>
+                      <Text style={{ fontSize: 14, color: '#94a3b8' }}>/ 100</Text>
                     </div>
                   </div>
                   <Tag
-                    color={selectedRecord.total >= 240 ? 'success' : selectedRecord.total >= 150 ? 'blue' : 'warning'}
+                    color={selectedRecord.total >= 80 ? 'success' : selectedRecord.total >= 60 ? 'blue' : 'warning'}
                     style={{ fontSize: 13, padding: '4px 14px', borderRadius: 16, margin: 0 }}
                   >
-                    {selectedRecord.total >= 270 ? 'Sangat Baik' : selectedRecord.total >= 240 ? 'Baik' : selectedRecord.total >= 180 ? 'Cukup' : 'Perlu Perbaikan'}
+                    {selectedRecord.total >= 90 ? 'Sangat Baik' : selectedRecord.total >= 80 ? 'Baik' : selectedRecord.total >= 60 ? 'Cukup' : 'Perlu Perbaikan'}
                   </Tag>
                 </div>
               </div>

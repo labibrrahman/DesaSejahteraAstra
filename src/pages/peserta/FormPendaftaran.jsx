@@ -208,25 +208,21 @@ const FormPendaftaran = () => {
         setAllCategories(allCats);
 
         // Cek apakah sudah punya registrasi
+        let hasExistingReg = false;
         try {
           const { data } = await api.get('/registrations/my');
           const reg = data?.data ?? data;
           if (reg && reg.id) {
+            hasExistingReg = true;
             // Sudah punya registrasi, hapus draft lama
             localStorage.removeItem(DRAFT_KEY);
             setRegistrationId(reg.id);
             setSelectedPilarId(reg.pillarId || null);
 
             // Load wilayah dependent options untuk existing registration
-            if (reg.provinceId) {
-              await fetchCities(reg.provinceId);
-            }
-            if (reg.cityId) {
-              await fetchDistricts(reg.cityId);
-            }
-            if (reg.districtId) {
-              await fetchVillages(reg.districtId);
-            }
+            if (reg.provinceId) await fetchCities(reg.provinceId);
+            if (reg.cityId) await fetchDistricts(reg.cityId);
+            if (reg.districtId) await fetchVillages(reg.districtId);
 
             setFormData({
               nama_desa: reg.villageName || '',
@@ -254,13 +250,18 @@ const FormPendaftaran = () => {
             if (reg.categoryId) setSelectedKategoriId(reg.categoryId);
           }
         } catch {
-          // Belum ada registrasi dari API — jika ada draft, restore dependent dropdowns
-          if (savedDraft?.formData) {
-            const d = savedDraft.formData;
-            if (d.provinceId) await fetchCities(d.provinceId);
-            if (d.cityId) await fetchDistricts(d.cityId);
-            if (d.districtId) await fetchVillages(d.districtId);
-          }
+          // ignore — belum ada registrasi
+        }
+
+        // Jika tidak ada registrasi dan ada draft, restore wilayah dropdowns
+        if (!hasExistingReg && savedDraft?.formData) {
+          const d = savedDraft.formData;
+          // Load semua options secara paralel agar Select segera punya data
+          await Promise.all([
+            d.provinceId ? fetchCities(d.provinceId) : Promise.resolve(),
+            d.cityId ? fetchDistricts(d.cityId) : Promise.resolve(),
+            d.districtId ? fetchVillages(d.districtId) : Promise.resolve(),
+          ]);
         }
       } catch {
         message.error('Gagal memuat data master');

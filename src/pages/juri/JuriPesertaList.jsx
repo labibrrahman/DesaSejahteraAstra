@@ -129,7 +129,7 @@ const JuriPesertaList = () => {
 
   const columns = [
     {
-      title: 'Nama Desa',
+      title: 'Nama DSA',
       dataIndex: 'nama_desa',
       key: 'nama_desa',
       render: (text, record) => (
@@ -138,7 +138,7 @@ const JuriPesertaList = () => {
         </Button>
       ),
     },
-    { title: 'Kelompok/Individu', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
+    { title: 'Nama Peserta/Penanggung Jawab', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
     { title: 'Pilar', dataIndex: 'pilar', key: 'pilar' },
     { title: 'Kategori', dataIndex: 'kategori', key: 'kategori' },
     { title: 'Wilayah', dataIndex: 'wilayah', key: 'wilayah' },
@@ -180,7 +180,7 @@ const JuriPesertaList = () => {
       <Card style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
           <Input
-            placeholder="Cari nama desa atau kelompok..."
+            placeholder="Cari Nama DSA atau Nama Peserta/Penanggung Jawab..."
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}

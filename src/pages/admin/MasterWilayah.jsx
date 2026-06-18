@@ -18,6 +18,7 @@ import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
 import masterService from '../../services/masterService';
 
@@ -60,6 +61,7 @@ const mapFromApi = (item, parentName) => ({
 
 const MasterWilayah = () => {
   const [activeTab, setActiveTab] = useState('provinsi');
+  const [searchText, setSearchText] = useState('');
   const [dataByTab, setDataByTab] = useState({
     provinsi: [],
     kabupaten: [],
@@ -289,11 +291,26 @@ const MasterWilayah = () => {
       </div>
 
       <Card>
-        <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} />
+        <Tabs activeKey={activeTab} onChange={(tab) => { setActiveTab(tab); setSearchText(''); }} items={tabItems} />
+        <div style={{ marginBottom: 16 }}>
+          <Input
+            placeholder="Cari kode atau nama..."
+            prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            allowClear
+            style={{ maxWidth: 300 }}
+          />
+        </div>
         <Spin spinning={loading}>
           <Table
             columns={getColumns()}
-            dataSource={dataByTab[activeTab]}
+            dataSource={(dataByTab[activeTab] || []).filter((item) =>
+              !searchText ||
+              item.kode?.toLowerCase().includes(searchText.toLowerCase()) ||
+              item.nama?.toLowerCase().includes(searchText.toLowerCase()) ||
+              item.parentNama?.toLowerCase().includes(searchText.toLowerCase())
+            )}
             rowKey="id"
             pagination={false}
             scroll={{ x: 500 }}

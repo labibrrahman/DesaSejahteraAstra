@@ -624,7 +624,7 @@ const FormPendaftaran = () => {
                 {formData.jenis_dsa === 'individu' ? 'Nama Peserta *' : 'Nama Penanggung Jawab *'}
               </Text>
               <Input
-                placeholder={formData.jenis_dsa === 'individu' ? 'Otomatis dari akun login' : 'Contoh: Koperasi Tani Makmur'}
+                placeholder={formData.jenis_dsa === 'individu' ? 'Otomatis dari akun login' : 'Masukan Nama Penanggung Jawab'}
                 style={inputStyle}
                 value={formData.nama_kelompok}
                 onChange={e => updateField('nama_kelompok', e.target.value)}

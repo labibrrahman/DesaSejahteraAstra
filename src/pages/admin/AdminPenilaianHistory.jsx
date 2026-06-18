@@ -165,7 +165,7 @@ const AdminPenilaianHistory = () => {
 
   const columns = [
     {
-      title: 'Nama Desa',
+      title: 'Nama DSA',
       dataIndex: 'nama_desa',
       key: 'nama_desa',
       render: (text, record) => (
@@ -174,7 +174,7 @@ const AdminPenilaianHistory = () => {
         </Button>
       ),
     },
-    { title: 'Kelompok', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
+    { title: 'Nama Peserta/Penanggung Jawab', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
     { title: 'Pilar', dataIndex: 'pilar', key: 'pilar' },
     {
       title: 'Juri',
@@ -281,7 +281,7 @@ const AdminPenilaianHistory = () => {
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12} lg={8}>
             <Input
-              placeholder="Cari nama desa atau kelompok..."
+              placeholder="Cari nama DSA atau Nama Peserta/Penanggung Jawab..."
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}

@@ -328,7 +328,7 @@ const PesertaDashboard = () => {
                         letterSpacing: 0.5,
                       }}
                     >
-                      Nama Desa
+                      Nama DSA
                     </Text>
                     <Text strong style={{ fontSize: 15, color: '#1e293b' }}>
                       {namaDesa}
@@ -708,7 +708,7 @@ const PesertaDashboard = () => {
                   <Text strong style={{ fontSize: 13 }}>{reg?.category?.name || '—'}</Text>
                 </Col>
                 <Col xs={12} sm={8}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Grup Astra</Text>
+                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Binaan</Text>
                   <Text strong style={{ fontSize: 13 }}>{reg?.astraGroup?.name || '—'}</Text>
                 </Col>
                 <Col xs={12} sm={8}>

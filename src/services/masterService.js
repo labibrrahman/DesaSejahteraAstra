@@ -116,25 +116,25 @@ const masterService = {
 
   // ─── Astra Groups ─────────────────────────────────────────────
 
-  /** GET /api/astra-groups — ambil semua grup astra */
+  /** GET /api/astra-groups — ambil semua Binaan */
   getAstraGroups: async () => {
     const { data } = await api.get('/astra-groups');
     return data.data || data;
   },
 
-  /** POST /api/astra-groups — buat grup astra baru (admin) */
+  /** POST /api/astra-groups — buat Binaan baru (admin) */
   createAstraGroup: async (dto) => {
     const { data } = await api.post('/astra-groups', dto);
     return data.data || data;
   },
 
-  /** PATCH /api/astra-groups/:id — update grup astra (admin) */
+  /** PATCH /api/astra-groups/:id — update Binaan (admin) */
   updateAstraGroup: async (id, dto) => {
     const { data } = await api.patch(`/astra-groups/${id}`, dto);
     return data.data || data;
   },
 
-  /** DELETE /api/astra-groups/:id — hapus grup astra (admin) */
+  /** DELETE /api/astra-groups/:id — hapus Binaan (admin) */
   deleteAstraGroup: async (id) => {
     const { data } = await api.delete(`/astra-groups/${id}`);
     return data.data || data;

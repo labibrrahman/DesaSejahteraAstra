@@ -16,6 +16,7 @@ import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
 import masterService from '../../services/masterService';
 
@@ -38,13 +39,14 @@ const mapToApi = (values) => ({
 
 const MasterGrupAstra = () => {
   const [data, setData] = useState([]);
+  const [searchText, setSearchText] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [form] = Form.useForm();
 
-  /** Fetch semua grup astra dari API */
+  /** Fetch semua Binaan dari API */
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -52,7 +54,7 @@ const MasterGrupAstra = () => {
       const list = Array.isArray(result) ? result : [];
       setData(list.map(mapFromApi));
     } catch (error) {
-      message.error('Gagal memuat data grup astra');
+      message.error('Gagal memuat data Binaan');
       console.error('Fetch astra groups error:', error);
     } finally {
       setLoading(false);
@@ -101,7 +103,7 @@ const MasterGrupAstra = () => {
     }
   };
 
-  /** Hapus grup astra */
+  /** Hapus Binaan */
   const handleDelete = async (id) => {
     try {
       await masterService.deleteAstraGroup(id);
@@ -151,12 +153,16 @@ const MasterGrupAstra = () => {
     },
   ];
 
+  const filteredData = data.filter((item) =>
+    !searchText || item.nama?.toLowerCase().includes(searchText.toLowerCase())
+  );
+
   return (
     <div>
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <Title level={3} style={{ margin: 0 }}>Master Grup Astra</Title>
-          <Text type="secondary">Kelola data grup astra</Text>
+          <Title level={3} style={{ margin: 0 }}>Master Binaan</Title>
+          <Text type="secondary">Kelola data Binaan</Text>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
           Tambah Grup
@@ -164,10 +170,20 @@ const MasterGrupAstra = () => {
       </div>
 
       <Card>
+        <div style={{ marginBottom: 16 }}>
+          <Input
+            placeholder="Cari nama grup..."
+            prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            allowClear
+            style={{ maxWidth: 300 }}
+          />
+        </div>
         <Spin spinning={loading}>
           <Table
             columns={columns}
-            dataSource={data}
+            dataSource={filteredData}
             rowKey="id"
             pagination={false}
             scroll={{ x: 500 }}
@@ -176,7 +192,7 @@ const MasterGrupAstra = () => {
       </Card>
 
       <Modal
-        title={editingRecord ? 'Edit Grup Astra' : 'Tambah Grup Astra'}
+        title={editingRecord ? 'Edit Binaan' : 'Tambah Binaan'}
         open={modalVisible}
         onOk={handleOk}
         confirmLoading={submitting}
@@ -192,7 +208,7 @@ const MasterGrupAstra = () => {
             label="Nama Grup"
             rules={[{ required: true, message: 'Masukkan nama grup' }]}
           >
-            <Input placeholder="Masukkan nama grup astra" />
+            <Input placeholder="Masukkan nama Binaan" />
           </Form.Item>
         </Form>
       </Modal>

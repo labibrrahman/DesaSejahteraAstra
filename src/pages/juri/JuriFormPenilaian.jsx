@@ -106,7 +106,7 @@ const JuriFormPenilaian = () => {
                 { l: 'Pilar', v: peserta.pilar, tag: true },
                 { l: 'Kategori', v: peserta.kategori },
                 { l: 'Wilayah', v: peserta.wilayah },
-                { l: 'Grup Astra', v: peserta.grup_astra },
+                { l: 'Binaan', v: peserta.grup_astra },
                 { l: 'Durasi Program', v: peserta.durasi_program },
               ].map((item, idx, arr) => (
                 <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', padding: '10px 0', borderBottom: idx < arr.length - 1 ? '1px solid #f5f5f5' : 'none' }}>

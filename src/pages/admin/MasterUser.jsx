@@ -20,6 +20,7 @@ import {
   DeleteOutlined,
   UserOutlined,
   KeyOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
 import adminService from '../../services/adminService';
 import masterService from '../../services/masterService';
@@ -68,6 +69,7 @@ const mapToUpdateApi = (values) => {
 const MasterUser = () => {
   const [data, setData] = useState([]);
   const [pilarOptions, setPilarOptions] = useState([]);
+  const [searchText, setSearchText] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -281,10 +283,25 @@ const MasterUser = () => {
       </div>
 
       <Card>
+        <div style={{ marginBottom: 16 }}>
+          <Input
+            placeholder="Cari nama, email, atau role..."
+            prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            allowClear
+            style={{ maxWidth: 300 }}
+          />
+        </div>
         <Spin spinning={loading}>
           <Table
             columns={columns}
-            dataSource={data}
+            dataSource={data.filter((item) =>
+              !searchText ||
+              item.nama?.toLowerCase().includes(searchText.toLowerCase()) ||
+              item.username?.toLowerCase().includes(searchText.toLowerCase()) ||
+              item.role?.toLowerCase().includes(searchText.toLowerCase())
+            )}
             rowKey="id"
             pagination={false}
             scroll={{ x: 500 }}

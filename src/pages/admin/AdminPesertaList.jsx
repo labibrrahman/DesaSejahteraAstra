@@ -214,7 +214,7 @@ const AdminPesertaList = () => {
 
   const columns = [
     {
-      title: 'Nama Desa',
+      title: 'Nama DSA',
       dataIndex: 'nama_desa',
       key: 'nama_desa',
       render: (text, record) => (
@@ -223,7 +223,7 @@ const AdminPesertaList = () => {
         </Button>
       ),
     },
-    { title: 'Kelompok/Individu', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
+    { title: 'Nama Peserta/Penanggung Jawab', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
     { title: 'Pilar', dataIndex: 'pilar', key: 'pilar' },
     { title: 'Kategori', dataIndex: 'kategori', key: 'kategori' },
     { title: 'Wilayah', dataIndex: 'wilayah', key: 'wilayah' },
@@ -237,7 +237,7 @@ const AdminPesertaList = () => {
         </Tag>
       ),
     },
-    { title: 'Juri', dataIndex: 'juri', key: 'juri' },
+    // { title: 'Juri', dataIndex: 'juri', key: 'juri' },
     { title: 'Tanggal', dataIndex: 'tanggal_daftar', key: 'tanggal_daftar' },
     {
       title: 'Aksi',
@@ -264,7 +264,7 @@ const AdminPesertaList = () => {
       <Card style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
           <Input
-            placeholder="Cari nama desa atau kelompok..."
+            placeholder="Cari Nama DSA atau Nama Peserta/Penanggung Jawab..."
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
@@ -421,7 +421,7 @@ const AdminPesertaList = () => {
                       <Text strong style={{ fontSize: 13 }}>{selectedPeserta.kategori}</Text>
                     </Col>
                     <Col xs={12} sm={8}>
-                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Grup Astra</Text>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Binaan</Text>
                       <Text strong style={{ fontSize: 13 }}>{selectedPeserta.grup_astra}</Text>
                     </Col>
                     <Col xs={12} sm={8}>

@@ -18,6 +18,7 @@ import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
 import masterService from '../../services/masterService';
 
@@ -47,6 +48,7 @@ const mapToApi = (values) => ({
 const MasterKategori = () => {
   const [data, setData] = useState([]);
   const [pilarOptions, setPilarOptions] = useState([]);
+  const [searchText, setSearchText] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -201,10 +203,24 @@ const MasterKategori = () => {
       </div>
 
       <Card>
+        <div style={{ marginBottom: 16 }}>
+          <Input
+            placeholder="Cari nama kategori atau pilar..."
+            prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            allowClear
+            style={{ maxWidth: 300 }}
+          />
+        </div>
         <Spin spinning={loading}>
           <Table
             columns={columns}
-            dataSource={data}
+            dataSource={data.filter((item) =>
+              !searchText ||
+              item.nama?.toLowerCase().includes(searchText.toLowerCase()) ||
+              item.pilar_nama?.toLowerCase().includes(searchText.toLowerCase())
+            )}
             rowKey="id"
             pagination={false}
             scroll={{ x: 500 }}

@@ -66,8 +66,8 @@ const JuriFormPenilaian = () => {
     finally { setSubmitting(false); }
   };
 
-  const scoreColor = totalScore >= 80 ? '#10b981' : totalScore >= 60 ? '#1890ff' : totalScore > 0 ? '#f59e0b' : '#94a3b8';
-  const grade = totalScore >= 90 ? 'Sangat Baik' : totalScore >= 80 ? 'Baik' : totalScore >= 60 ? 'Cukup' : totalScore >= 40 ? 'Perlu Perbaikan' : totalScore > 0 ? 'Sangat Perlu Perbaikan' : 'Belum Dinilai';
+  const scoreColor = totalScore >= 90 ? '#2563eb' : totalScore >= 75 ? '#22c55e' : totalScore >= 60 ? '#f59e0b' : totalScore > 0 ? '#ef4444' : '#94a3b8';
+  const grade = totalScore >= 90 ? 'Sangat Baik' : totalScore >= 75 ? 'Baik' : totalScore >= 60 ? 'Cukup' : totalScore > 0 ? 'Rendah' : 'Belum Dinilai';
 
   if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: 100 }}><Spin size="large" /></div>;
 
@@ -78,7 +78,6 @@ const JuriFormPenilaian = () => {
       </div>
       <Title level={3}>Penilaian Berhasil Disubmit!</Title>
       <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>Rata-rata: <Text strong style={{ color: scoreColor, fontSize: 18 }}>{totalScore}</Text>/100</Text>
-      <Text type="secondary" style={{ display: 'block', marginBottom: 32 }}>Status peserta telah berubah menjadi 'Selesai Dinilai'.</Text>
       <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
         <Button type="primary" onClick={() => navigate('/juri/peserta')}>Kembali ke Daftar Peserta</Button>
         <Button onClick={() => navigate('/juri/riwayat')}>Lihat Riwayat</Button>
@@ -168,9 +167,9 @@ const JuriFormPenilaian = () => {
               <div style={{ height: 6, flex: 1, maxWidth: 300, borderRadius: 3, background: '#f1f5f9', overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: `${totalScore}%`, background: `linear-gradient(90deg, ${scoreColor}, ${scoreColor}dd)`, borderRadius: 3, transition: 'width 0.4s ease' }} />
               </div>
-              <Text style={{ fontSize: 13, fontWeight: 600, color: scoreColor, minWidth: 40 }}>{totalScore}%</Text>
+              {/* <Text style={{ fontSize: 13, fontWeight: 600, color: scoreColor, minWidth: 40 }}>{totalScore}%</Text> */}
             </div>
-            {totalScore > 0 && <Tag color={totalScore >= 240 ? 'success' : totalScore >= 150 ? 'blue' : 'warning'} style={{ marginTop: 12, fontSize: 12, padding: '2px 12px', borderRadius: 12 }}>{grade}</Tag>}
+            {totalScore > 0 && <Tag color={totalScore >= 90 ? 'blue' : totalScore >= 75 ? 'success' : totalScore >= 60 ? 'warning' : 'error'} style={{ marginTop: 12, fontSize: 12, padding: '2px 12px', borderRadius: 12 }}>{grade}</Tag>}
           </div>
 
           <Form form={form} layout="vertical" onValuesChange={onValuesChange}>

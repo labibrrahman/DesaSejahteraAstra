@@ -5,6 +5,7 @@ import {
   FileTextOutlined,
   ClockCircleOutlined,
   CheckCircleOutlined,
+  CloseCircleOutlined,
 } from '@ant-design/icons';
 import adminService from '../../services/adminService';
 import masterService from '../../services/masterService';
@@ -35,6 +36,8 @@ const mapDashboardFromApi = (data) => {
       menunggu_screening: byStatus.waiting_screening || 0,
       sedang_dinilai: byStatus.being_assessed || 0,
       selesai_dinilai: byStatus.assessed || 0,
+      lolos: data.total_finalist || 0,
+      tidak_lolos: data.total_rejected || 0,
     },
     pilarStats: (data.by_pillar || []).map((item, index) => ({
       name: item.pillar || `Pilar ${index + 1}`,
@@ -133,47 +136,25 @@ const AdminDashboard = () => {
       <Spin spinning={loading}>
         {/* Statistics Cards */}
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-          <Col xs={12} sm={6}>
+        {[
+          { title: "Total Pendaftar", value: statistics.total_pendaftar, icon: <TeamOutlined />, color: '#1890ff' },
+          { title: "Menunggu Screening", value: statistics.menunggu_screening, icon: <ClockCircleOutlined />, color: '#faad14' },
+          { title: "Sedang Dinilai", value: statistics.sedang_dinilai, icon: <FileTextOutlined />, color: '#1890ff' },
+          { title: "Lolos", value: statistics.lolos, icon: <CheckCircleOutlined />, color: '#10b981' },
+          { title: "Tidak Lolos", value: statistics.tidak_lolos, icon: <CloseCircleOutlined />, color: '#ef4444' }
+        ].map((item, index) => (
+          <Col key={index} xs={index === 0 ? 24 : 12} sm={{ flex: '1 0 20%' }}>
             <Card>
               <Statistic
-                title="Total Pendaftar"
-                value={statistics.total_pendaftar}
-                prefix={<TeamOutlined />}
-                valueStyle={{ color: '#1890ff' }}
+                title={item.title}
+                value={item.value}
+                prefix={item.icon}
+                valueStyle={{ color: item.color }}
               />
             </Card>
           </Col>
-          <Col xs={12} sm={6}>
-            <Card>
-              <Statistic
-                title="Menunggu Screening"
-                value={statistics.menunggu_screening}
-                prefix={<ClockCircleOutlined />}
-                valueStyle={{ color: '#faad14' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={12} sm={6}>
-            <Card>
-              <Statistic
-                title="Sedang Dinilai"
-                value={statistics.sedang_dinilai}
-                prefix={<FileTextOutlined />}
-                valueStyle={{ color: '#1890ff' }}
-              />
-            </Card>
-          </Col>
-          <Col xs={12} sm={6}>
-            <Card>
-              <Statistic
-                title="Selesai Dinilai"
-                value={statistics.selesai_dinilai}
-                prefix={<CheckCircleOutlined />}
-                valueStyle={{ color: '#52c41a' }}
-              />
-            </Card>
-          </Col>
-        </Row>
+        ))}
+      </Row>
 
         <Row gutter={[24, 24]}>
           {/* Pilar Statistics */}

@@ -48,7 +48,7 @@ const mapFromApi = (item) => ({
   pilar: item.pillar?.name || '-',
   kategori: item.category?.name || '-',
   wilayah: item.province?.name
-    ? [item.province?.name, item.city?.name].filter(Boolean).join(' - ')
+    ? [item.province?.name, item.city?.name, item.district?.name, item.villageRegion?.name].filter(Boolean).join(', ')
     : '-',
   jenis_dsa: item.dsaType || '-',
   phone_number: item.phoneNumber || '-',
@@ -142,16 +142,16 @@ const JuriPesertaList = () => {
     { title: 'Pilar', dataIndex: 'pilar', key: 'pilar' },
     { title: 'Kategori', dataIndex: 'kategori', key: 'kategori' },
     { title: 'Wilayah', dataIndex: 'wilayah', key: 'wilayah' },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status) => (
-        <Tag color={STATUS_MAP[status]?.color || 'default'}>
-          {STATUS_MAP[status]?.label || status}
-        </Tag>
-      ),
-    },
+    // {
+    //   title: 'Status',
+    //   dataIndex: 'status',
+    //   key: 'status',
+    //   render: (status) => (
+    //     <Tag color={STATUS_MAP[status]?.color || 'default'}>
+    //       {STATUS_MAP[status]?.label || status}
+    //     </Tag>
+    //   ),
+    // },
     { title: 'Tanggal', dataIndex: 'tanggal_daftar', key: 'tanggal_daftar' },
     {
       title: 'Aksi',
@@ -283,9 +283,9 @@ const JuriPesertaList = () => {
                 <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13 }}>
                   {selectedPeserta.nama_kelompok}
                 </Text>
-                <Tag color={STATUS_MAP[selectedPeserta.status]?.color || 'default'} style={{ margin: 0, fontSize: 11 }}>
+                {/* <Tag color={STATUS_MAP[selectedPeserta.status]?.color || 'default'} style={{ margin: 0, fontSize: 11 }}>
                   {STATUS_MAP[selectedPeserta.status]?.label || selectedPeserta.status}
-                </Tag>
+                </Tag> */}
               </div>
             </div>
 

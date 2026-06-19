@@ -32,8 +32,9 @@ const STATUS_MAP = {
   draft: { label: 'Draft', color: 'default' },
   waiting_screening: { label: 'Menunggu Screening', color: 'processing' },
   being_assessed: { label: 'Sedang Dinilai', color: 'warning' },
-  assessed: { label: 'Selesai Dinilai', color: 'success' },
-  finalist: { label: 'Finalis', color: 'purple' },
+  assessed: { label: 'Selesai Dinilai', color: 'info' },
+  finalist: { label: 'Lolos', color: 'success' },
+  rejected: { label: 'Tidak Lolos', color: 'error' },
 };
 
 /**
@@ -231,11 +232,15 @@ const AdminPesertaList = () => {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (status) => (
-        <Tag color={STATUS_MAP[status]?.color || 'default'}>
+      render: (status) => {
+        let val = status;
+        val = status === 'Finalis' && 'Lolos'  
+        val = status === 'rejected' && 'Tidak Lolos'  
+        
+        return (<Tag color={STATUS_MAP[status]?.color || 'default'}>
           {STATUS_MAP[status]?.label || status}
-        </Tag>
-      ),
+        </Tag>)
+      },
     },
     // { title: 'Juri', dataIndex: 'juri', key: 'juri' },
     { title: 'Tanggal', dataIndex: 'tanggal_daftar', key: 'tanggal_daftar' },

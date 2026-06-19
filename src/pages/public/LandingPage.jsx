@@ -492,7 +492,7 @@ const LandingPage = () => {
             </div>
 
             <Row gutter={[isMobile ? 16 : 48, isMobile ? 32 : 48]} justify="center">
-              <Col xs={24} sm={8} onClick={() => window.open('https://wa.me/085713043230', '_blank')}>
+              <Col xs={24} sm={8} onClick={() => window.open('https://wa.me/6285713043230', '_blank')}>
                 <div style={{ textAlign: 'center', padding: isMobile ? 20 : 32 }}>
                   <div style={{ marginBottom: 16 }}>
                     <PhoneOutlined style={{ fontSize: 32, color: '#1870F0' }} />

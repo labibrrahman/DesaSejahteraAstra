@@ -566,7 +566,7 @@ const PesertaDashboard = () => {
                   Tim pendamping Astra siap membantu Anda dalam setiap tahapan program.
                 </Text>
                 <Button
-                  onClick={() => window.open('https://wa.me/6281234567890', '_blank')}
+                  onClick={() => window.open('https://wa.me/6285713043230', '_blank')}
                   style={{
                     background: '#fff',
                     borderColor: '#fff',

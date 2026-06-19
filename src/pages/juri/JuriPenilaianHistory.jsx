@@ -103,9 +103,9 @@ const JuriPenilaianHistory = () => {
   };
 
   const getScoreColor = (score) => {
-    if (score >= 90) return '#52c41a';
-    if (score >= 80) return '#1890ff';
-    if (score >= 70) return '#faad14';
+    if (score >= 90) return '#2563eb';
+    if (score >= 75) return '#22c55e';
+    if (score >= 60) return '#f59e0b';
     return '#ff4d4f';
   };
 
@@ -152,7 +152,7 @@ const JuriPenilaianHistory = () => {
       dataIndex: 'total',
       key: 'total',
       render: (total) => (
-        <Tag color={total >= 80 ? 'success' : total >= 60 ? 'processing' : 'warning'}>
+        <Tag color={total >= 90 ? 'blue' : total >= 75 ? 'success' : total >= 60 ? 'warning' : 'error'}>
           <Text strong style={{ fontSize: 16 }}>{total}</Text>
           <Text type="secondary"> / 100</Text>
         </Tag>
@@ -378,10 +378,10 @@ const JuriPenilaianHistory = () => {
                     </div>
                   </div>
                   <Tag
-                    color={selectedRecord.total >= 80 ? 'success' : selectedRecord.total >= 60 ? 'blue' : 'warning'}
+                    color={selectedRecord.total >= 90 ? 'blue' : selectedRecord.total >= 75 ? 'success' : selectedRecord.total >= 60 ? 'warning' : 'error'}
                     style={{ fontSize: 13, padding: '4px 14px', borderRadius: 16, margin: 0 }}
                   >
-                    {selectedRecord.total >= 90 ? 'Sangat Baik' : selectedRecord.total >= 80 ? 'Baik' : selectedRecord.total >= 60 ? 'Cukup' : 'Perlu Perbaikan'}
+                    {selectedRecord.total >= 90 ? 'Sangat Baik' : selectedRecord.total >= 75 ? 'Baik' : selectedRecord.total >= 60 ? 'Cukup' : 'Rendah'}
                   </Tag>
                 </div>
               </div>

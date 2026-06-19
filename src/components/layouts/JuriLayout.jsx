@@ -93,7 +93,7 @@ const JuriLayout = () => {
       </div>
       {/* {!isMobile && ( */}
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '8px', borderTop: '1px solid #f0f0f0', background: '#fff' }}>
-          <div style={{ ...bottomItemStyle, marginBottom: 4, cursor: 'pointer' }} onClick={() => window.open('https://wa.me/6281234567890', '_blank')} onMouseEnter={e => (e.currentTarget.style.background = '#f1f5f9')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+          <div style={{ ...bottomItemStyle, marginBottom: 4, cursor: 'pointer' }} onClick={() => window.open('https://wa.me/6285713043230', '_blank')} onMouseEnter={e => (e.currentTarget.style.background = '#f1f5f9')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
             <QuestionCircleOutlined style={{ fontSize: 16 }} />{!collapsed && <span>Support</span>}
           </div>
           <div style={{ ...bottomItemStyle, color: '#dc2626' }} onClick={handleLogout} onMouseEnter={e => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.color = '#dc2626'; }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#dc2626'; }}>

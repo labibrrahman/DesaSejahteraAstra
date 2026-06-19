@@ -56,7 +56,7 @@ const AdminLayout = () => {
         { key: '/admin/master/kategori', icon: <TagsOutlined />, label: 'Kategori' },
         { key: '/admin/master/user', icon: <UserOutlined />, label: 'User (Admin/Juri)' },
         { key: '/admin/master/wilayah', icon: <EnvironmentOutlined />, label: 'Wilayah' },
-        { key: '/admin/master/grup-astra', icon: <ShopOutlined />, label: 'Grup Astra' },
+        { key: '/admin/master/grup-astra', icon: <ShopOutlined />, label: 'Binaan' },
       ],
     },
   ];
@@ -186,7 +186,7 @@ const AdminLayout = () => {
         >
           <div
             style={{ ...bottomItemStyle, marginBottom: 4, cursor: 'pointer' }}
-            onClick={() => window.open('https://wa.me/6281234567890', '_blank')}
+            onClick={() => window.open('https://wa.me/6285713043230', '_blank')}
             onMouseEnter={e => (e.currentTarget.style.background = '#f1f5f9')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >

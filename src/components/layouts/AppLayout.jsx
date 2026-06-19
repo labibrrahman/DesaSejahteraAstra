@@ -178,7 +178,7 @@ const AppLayout = ({ role = 'admin' }) => {
       }}>
         <div
           style={{ ...bottomItemStyle, marginBottom: 4, cursor: 'pointer' }}
-          onClick={() => window.open('https://wa.me/085713043230', '_blank')}
+          onClick={() => window.open('https://wa.me/6285713043230', '_blank')}
           onMouseEnter={e => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#1e293b'; }}
           onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#64748b'; }}
         >

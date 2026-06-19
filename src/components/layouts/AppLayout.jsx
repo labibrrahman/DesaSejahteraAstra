@@ -13,6 +13,7 @@ import {
   EnvironmentOutlined,
   ShopOutlined,
   TagsOutlined,
+  CheckCircleOutlined,
   AppstoreOutlined,
   QuestionCircleOutlined,
   HistoryOutlined,
@@ -30,6 +31,7 @@ const MENU_CONFIG = {
     { key: '/admin/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
     { key: '/admin/peserta', icon: <TeamOutlined />, label: 'Daftar Peserta' },
     { key: '/admin/penilaian', icon: <FileTextOutlined />, label: 'Riwayat Penilaian' },
+    { key: '/admin/seleksi', icon: <CheckCircleOutlined />, label: 'Hasil Seleksi' },
     {
       key: 'master-data',
       icon: <DatabaseOutlined />,

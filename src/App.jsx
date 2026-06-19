@@ -19,6 +19,7 @@ import PendaftaranGuard from './pages/peserta/PendaftaranGuard';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminPesertaList from './pages/admin/AdminPesertaList';
 import AdminPenilaianHistory from './pages/admin/AdminPenilaianHistory';
+import AdminSelectionReview from './pages/admin/AdminSelectionReview';
 import MasterPilar from './pages/admin/MasterPilar';
 import MasterKategori from './pages/admin/MasterKategori';
 import MasterUser from './pages/admin/MasterUser';
@@ -100,6 +101,7 @@ function App() {
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="peserta" element={<AdminPesertaList />} />
             <Route path="penilaian" element={<AdminPenilaianHistory />} />
+            <Route path="seleksi" element={<AdminSelectionReview />} />
             <Route path="master/pilar" element={<MasterPilar />} />
             <Route path="master/kategori" element={<MasterKategori />} />
             <Route path="master/user" element={<MasterUser />} />

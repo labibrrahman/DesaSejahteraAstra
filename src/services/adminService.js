@@ -46,6 +46,43 @@ const adminService = {
     return data.data || data;
   },
 
+  // ─── Selection Review ──────────────────────────────────────────
+
+  /**
+   * GET /api/registrations/selection-review — daftar review & summary
+   */
+  getSelectionReview: async (params = {}) => {
+    const { data } = await api.get('/registrations/selection-review', { params });
+    return data.data || data;
+  },
+
+  /**
+   * GET /api/registrations/selection-review/export — download Excel
+   */
+  exportSelectionReview: async (params = {}) => {
+    const { data } = await api.get('/registrations/selection-review/export', {
+      params,
+      responseType: 'blob',
+    });
+    return data;
+  },
+
+  /**
+   * POST /api/registrations/selection-review/decision — keputusan seleksi
+   */
+  selectionDecision: async (dto) => {
+    const { data } = await api.post('/registrations/selection-review/decision', dto);
+    return data.data || data;
+  },
+
+  /**
+   * GET /api/registrations/:id/assessments — detail penilaian juri
+   */
+  getAssessmentsByRegistration: async (registrationId) => {
+    const { data } = await api.get(`/registrations/${registrationId}/assessments`);
+    return data.data || data;
+  },
+
   // ─── Assessments (Penilaian) ──────────────────────────────────
 
   /**

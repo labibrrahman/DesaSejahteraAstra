@@ -1,0 +1,443 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  Card, Table, Button, Row, Col, Typography, Tag, Space, Input, Select,
+  Checkbox, Modal, message, Spin, Progress, Tooltip,
+} from 'antd';
+import {
+  SearchOutlined, ExportOutlined, CheckCircleOutlined, CloseCircleOutlined,
+  UndoOutlined, EyeOutlined, FilterOutlined, TrophyOutlined,
+  ClockCircleOutlined, TeamOutlined, BarChartOutlined,
+} from '@ant-design/icons';
+import adminService from '../../services/adminService';
+import masterService from '../../services/masterService';
+
+const { Title, Text } = Typography;
+const { Option } = Select;
+
+// ── Score Indicator ──────────────────────────────────────────────────────────
+const getScoreIndicator = (score) => {
+  if (score == null) return { label: '-', color: '#94a3b8' };
+  if (score < 60) return { label: 'Rendah', color: '#ef4444' };
+  if (score < 75) return { label: 'Cukup', color: '#f59e0b' };
+  if (score < 90) return { label: 'Baik', color: '#22c55e' };
+  return { label: 'Sangat Baik', color: '#2563eb' };
+};
+
+const STATUS_MAP = {
+  'belum_diputuskan': { label: 'Belum Diputuskan', color: 'warning' },
+  'lolos': { label: 'Lolos', color: 'success' },
+  'tidak_lolos': { label: 'Tidak Lolos', color: '#ef4444' },
+};
+
+// ── Component ────────────────────────────────────────────────────────────────
+const AdminSelectionReview = () => {
+  const [data, setData] = useState([]);
+  const [summary, setSummary] = useState({ totalAssessed: 0, undecidedCount: 0, lolosCount: 0, tidakLolosCount: 0 });
+  const [loading, setLoading] = useState(false);
+  const [pilarOptions, setPilarOptions] = useState([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+
+  // Filters
+  const [searchText, setSearchText] = useState('');
+  const [pilarFilter, setPilarFilter] = useState(null);
+  const [indicatorFilter, setIndicatorFilter] = useState(null);
+  const [statusFilter, setStatusFilter] = useState(null);
+  const [durasiFilter, setDurasiFilter] = useState(null);
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
+
+  // Detail modal
+  const [detailVisible, setDetailVisible] = useState(false);
+  const [detailData, setDetailData] = useState([]);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailPeserta, setDetailPeserta] = useState(null);
+
+  // ── Fetch data ────────────────────────────────────────────────────────────
+  const fetchData = useCallback(async (page = 1, limit = 10) => {
+    setLoading(true);
+    try {
+      const params = { page, limit };
+      if (searchText) params.search = searchText;
+      if (pilarFilter) params.pillar_id = pilarFilter;
+      if (indicatorFilter) params.indicator = indicatorFilter;
+      if (statusFilter) params.status = statusFilter;
+      if (durasiFilter) params.program_duration = durasiFilter;
+
+      const result = await adminService.getSelectionReview(params);
+      setData(result.data || []);
+      setSummary(result.summary || { totalAssessed: 0, undecidedCount: 0, lolosCount: 0, tidakLolosCount: 0 });
+      setPagination(prev => ({ ...prev, current: result.page || page, total: result.total || 0 }));
+    } catch (error) {
+      message.error('Gagal memuat data seleksi');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchText, pilarFilter, indicatorFilter, statusFilter, durasiFilter]);
+
+  const fetchPilars = useCallback(async () => {
+    try {
+      const result = await masterService.getPillars();
+      setPilarOptions((result || []).map(p => ({ id: p.id, name: p.name })));
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { fetchPilars(); }, [fetchPilars]);
+
+  // ── Export ────────────────────────────────────────────────────────────────
+  const handleExport = async () => {
+    try {
+      const params = {};
+      if (searchText) params.search = searchText;
+      if (pilarFilter) params.pillar_id = pilarFilter;
+      if (indicatorFilter) params.indicator = indicatorFilter;
+      if (statusFilter) params.status = statusFilter;
+      if (durasiFilter) params.program_duration = durasiFilter;
+
+      const blob = await adminService.exportSelectionReview(params);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `hasil-seleksi-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      message.success('Export berhasil');
+    } catch (error) {
+      message.error('Gagal export data');
+      console.error(error);
+    }
+  };
+
+  // ── Decision (approve / reject / cancel) ──────────────────────────────────
+  const handleDecision = async (action, ids) => {
+    if (!ids || ids.length === 0) {
+      message.warning('Pilih peserta terlebih dahulu');
+      return;
+    }
+
+    const actionLabels = { approve: 'Meloloskan', reject: 'Menolak', cancel: 'Membatalkan' };
+    const actionColors = { approve: '#10b981', reject: '#ef4444', cancel: '#f59e0b' };
+
+    Modal.confirm({
+      title: `${actionLabels[action]} Peserta`,
+      content: `Anda yakin ingin ${actionLabels[action].toLowerCase()} ${ids.length} peserta?`,
+      okText: 'Ya, Lanjutkan',
+      cancelText: 'Batal',
+      okButtonProps: { style: { background: actionColors[action], borderColor: actionColors[action] } },
+      onOk: async () => {
+        try {
+          const result = await adminService.selectionDecision({ registrationIds: ids, action });
+          message.success(result.message || `${actionLabels[action]} berhasil`);
+          setSelectedRowKeys([]);
+          fetchData(pagination.current, pagination.pageSize);
+        } catch (error) {
+          const msg = error.response?.data?.message || 'Gagal memproses keputusan';
+          message.error(msg);
+        }
+      },
+    });
+  };
+
+  // ── Detail Assessment ─────────────────────────────────────────────────────
+  const showDetail = async (record) => {
+    setDetailPeserta(record);
+    setDetailVisible(true);
+    setDetailLoading(true);
+    try {
+      const result = await adminService.getAssessmentsByRegistration(record.id);
+      setDetailData(Array.isArray(result) ? result : result?.data || []);
+    } catch (error) {
+      message.error('Gagal memuat detail penilaian');
+      console.error(error);
+      setDetailData([]);
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  // ── Reset filters ─────────────────────────────────────────────────────────
+  const handleReset = () => {
+    setSearchText('');
+    setPilarFilter(null);
+    setIndicatorFilter(null);
+    setStatusFilter(null);
+    setDurasiFilter(null);
+  };
+
+  // ── Table columns ─────────────────────────────────────────────────────────
+  const columns = [
+    {
+      title: 'Nama DSA',
+      dataIndex: 'namaDsa',
+      key: 'namaDsa',
+      render: (text) => <Text strong>{text}</Text>,
+    },
+    {
+      title: 'Pilar',
+      dataIndex: 'pillar',
+      key: 'pillar',
+      render: (p) => p?.name || '-',
+    },
+    {
+      title: 'Wilayah',
+      key: 'wilayah',
+      render: (_, r) => {
+        const w = [r.province?.name, r.city?.name, r.district?.name].filter(Boolean).join(', ');
+        return <Text style={{ fontSize: 12 }}>{w || '-'}</Text>;
+      },
+    },
+    {
+      title: 'Jumlah Juri',
+      dataIndex: 'jurorCount',
+      key: 'jurorCount',
+      align: 'center',
+      render: (v) => <Tag color="blue">{v || 0}</Tag>,
+    },
+    {
+      title: 'Rata-rata',
+      dataIndex: 'averageScore',
+      key: 'averageScore',
+      align: 'center',
+      render: (v) => {
+        const ind = getScoreIndicator(v);
+        return (
+          <div>
+            <Text strong style={{ fontSize: 16, color: ind.color }}>{v != null ? v.toFixed(1) : '-'}</Text>
+            <br />
+            <Tag color={ind.color} style={{ fontSize: 11, marginTop: 4 }}>{ind.label}</Tag>
+          </div>
+        );
+      },
+    },
+    {
+      title: 'Status',
+      dataIndex: 'statusLabel',
+      key: 'statusLabel',
+      render: (label, record) => {
+        const s = STATUS_MAP[record.statusLabel] || { label, color: 'default' };
+        return <Tag color={s.color}>{s.label}</Tag>;
+      },
+    },
+    {
+      title: 'Aksi',
+      key: 'action',
+      width: 80,
+      align: 'center',
+      render: (_, record) => (
+        <Tooltip title="Detail Penilaian">
+          <Button type="link" icon={<EyeOutlined />} onClick={() => showDetail(record)} />
+        </Tooltip>
+      ),
+    },
+  ];
+
+  // ── Row selection ─────────────────────────────────────────────────────────
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (keys) => setSelectedRowKeys(keys),
+    getCheckboxProps: (record) => ({
+      disabled: false,
+    }),
+  };
+
+  // ── Selected row statuses ──────────────────────────────────────────────────
+  const selectedRows = data.filter(r => selectedRowKeys.includes(r.id));
+  const hasDecided = selectedRows.some(r => r.status === 'finalist' || r.status === 'rejected');
+  const hasUndecided = selectedRows.some(r => r.status === 'being_assessed' || r.status === 'assessed');
+
+  return (
+    <div>
+      {/* Header */}
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <Title level={3} style={{ margin: 0 }}>Hasil Seleksi</Title>
+          <Text type="secondary">Review dan putuskan hasil penilaian peserta oleh juri</Text>
+        </div>
+        <Button icon={<ExportOutlined />} onClick={handleExport}>Export Excel</Button>
+      </div>
+
+      {/* Summary Cards */}
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        {[
+          { label: 'Total Dinilai', value: summary.totalAssessed, icon: <TeamOutlined />, color: '#2563eb', bg: '#eff6ff' },
+          { label: 'Belum Diputuskan', value: summary.undecidedCount, icon: <ClockCircleOutlined />, color: '#f59e0b', bg: '#fffbeb' },
+          { label: 'Lolos', value: summary.lolosCount, icon: <CheckCircleOutlined />, color: '#10b981', bg: '#ecfdf5' },
+          { label: 'Tidak Lolos', value: summary.tidakLolosCount, icon: <CloseCircleOutlined />, color: '#ef4444', bg: '#fef2f2' },
+        ].map((item, idx) => (
+          <Col xs={12} sm={6} key={idx}>
+            <Card style={{ borderRadius: 12, border: '1px solid #e2e8f0' }} bodyStyle={{ padding: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 10, background: item.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: item.color, fontSize: 20 }}>
+                  {item.icon}
+                </div>
+                <div>
+                  <Text style={{ fontSize: 12, color: '#64748b', display: 'block' }}>{item.label}</Text>
+                  <Text strong style={{ fontSize: 24, color: '#1e293b' }}>{item.value}</Text>
+                </div>
+              </div>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+
+      {/* Filters */}
+      <Card style={{ marginBottom: 24 }}>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+          <Input placeholder="Cari nama DSA..." prefix={<SearchOutlined style={{ color: '#94a3b8' }} />} value={searchText} onChange={e => setSearchText(e.target.value)} allowClear style={{ flex: '1 1 200px', minWidth: 180 }} />
+          <Select placeholder="Pilar" style={{ flex: '1 1 140px', minWidth: 130 }} allowClear value={pilarFilter} onChange={v => setPilarFilter(v)}>
+            {pilarOptions.map(p => <Option key={p.id} value={p.id}>{p.name}</Option>)}
+          </Select>
+          <Select placeholder="Indikator Nilai" style={{ flex: '1 1 150px', minWidth: 140 }} allowClear value={indicatorFilter} onChange={v => setIndicatorFilter(v)}>
+            <Option value="Rendah">Rendah (&lt;60)</Option>
+            <Option value="Cukup">Cukup (60-74)</Option>
+            <Option value="Baik">Baik (75-89)</Option>
+            <Option value="Sangat Baik">Sangat Baik (90+)</Option>
+          </Select>
+          <Select placeholder="Status" style={{ flex: '1 1 150px', minWidth: 140 }} allowClear value={statusFilter} onChange={v => setStatusFilter(v)}>
+            <Option value="belum_diputuskan">Belum Diputuskan</Option>
+            <Option value="lolos">Lolos</Option>
+            <Option value="tidak_lolos">Tidak Lolos</Option>
+          </Select>
+          <Select placeholder="Lama Program" style={{ flex: '1 1 140px', minWidth: 130 }} allowClear value={durasiFilter} onChange={v => setDurasiFilter(v)}>
+            <Option value="<1 Tahun">&lt;1 Tahun</Option>
+            <Option value="1-3 Tahun">1-3 Tahun</Option>
+            <Option value="3-5 Tahun">3-5 Tahun</Option>
+            <Option value=">5 Tahun">&gt;5 Tahun</Option>
+          </Select>
+          <Button onClick={handleReset} style={{ flexShrink: 0 }}>Reset</Button>
+        </div>
+      </Card>
+
+      {/* Action Buttons */}
+      {selectedRowKeys.length > 0 && (
+        <Card style={{ marginBottom: 16, background: '#f0f7ff', borderColor: '#bfdbfe' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <Text strong style={{ fontSize: 13 }}>{selectedRowKeys.length} peserta dipilih</Text>
+            <div style={{ flex: 1 }} />
+            {hasUndecided && (
+              <>
+                <Button type="primary" icon={<CheckCircleOutlined />} style={{ background: '#10b981', borderColor: '#10b981' }} onClick={() => handleDecision('approve', selectedRowKeys)}>
+                  Lolos
+                </Button>
+                <Button danger icon={<CloseCircleOutlined />} onClick={() => handleDecision('reject', selectedRowKeys)}>
+                  Tidak Lolos
+                </Button>
+              </>
+            )}
+            {hasDecided && (
+              <Button icon={<UndoOutlined />} style={{ borderColor: '#f59e0b', color: '#f59e0b' }} onClick={() => handleDecision('cancel', selectedRowKeys)}>
+                Batal Keputusan
+              </Button>
+            )}
+          </div>
+        </Card>
+      )}
+
+      {/* Table */}
+      <Card>
+        <Spin spinning={loading}>
+          <Table
+            columns={columns}
+            dataSource={data}
+            rowKey="id"
+            rowSelection={rowSelection}
+            pagination={{
+              current: pagination.current,
+              pageSize: pagination.pageSize,
+              total: pagination.total,
+              showSizeChanger: true,
+              pageSizeOptions: ['10', '20', '50'],
+              showTotal: (total) => `Total ${total} data`,
+              onChange: (page, limit) => fetchData(page, limit),
+            }}
+            scroll={{ x: 900 }}
+          />
+        </Spin>
+      </Card>
+
+      {/* Detail Modal */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <BarChartOutlined style={{ color: '#2563eb' }} />
+            <span>Detail Penilaian Juri — {detailPeserta?.namaDsa}</span>
+          </div>
+        }
+        open={detailVisible}
+        onCancel={() => { setDetailVisible(false); setDetailData([]); setDetailPeserta(null); }}
+        footer={[
+          <Button key="close" onClick={() => { setDetailVisible(false); setDetailData([]); setDetailPeserta(null); }}>Tutup</Button>,
+        ]}
+        width={700}
+      >
+        <Spin spinning={detailLoading}>
+          {detailData.length === 0 && !detailLoading ? (
+            <div style={{ textAlign: 'center', padding: 40 }}>
+              <Text type="secondary">Belum ada data penilaian dari juri</Text>
+            </div>
+          ) : (
+            <>
+              {/* Summary */}
+              {detailPeserta && (
+                <div style={{ marginBottom: 20, padding: 16, background: '#f8fafc', borderRadius: 8, display: 'flex', justifyContent: 'space-around', textAlign: 'center' }}>
+                  <div>
+                    <Text style={{ fontSize: 12, color: '#64748b', display: 'block' }}>Jumlah Juri</Text>
+                    <Text strong style={{ fontSize: 20, color: '#2563eb' }}>{detailPeserta.jurorCount || detailData.length}</Text>
+                  </div>
+                  <div>
+                    <Text style={{ fontSize: 12, color: '#64748b', display: 'block' }}>Rata-rata Skor</Text>
+                    <Text strong style={{ fontSize: 20, color: getScoreIndicator(detailPeserta.averageScore).color }}>
+                      {detailPeserta.averageScore != null ? detailPeserta.averageScore.toFixed(1) : '-'}
+                    </Text>
+                  </div>
+                  <div>
+                    <Text style={{ fontSize: 12, color: '#64748b', display: 'block' }}>Status</Text>
+                    <Tag color={STATUS_MAP[detailPeserta.statusLabel]?.color || 'default'} style={{ fontSize: 13 }}>
+                      {detailPeserta.statusLabel || '-'}
+                    </Tag>
+                  </div>
+                </div>
+              )}
+
+              {/* Assessment Cards */}
+              {detailData.map((item, idx) => (
+                <div key={item.id || idx} style={{ border: '1px solid #e2e8f0', borderRadius: 10, padding: 16, marginBottom: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <Text strong style={{ fontSize: 14 }}>Juri {idx + 1}: {item.jurorName || '-'}</Text>
+                    <Tag color={getScoreIndicator(item.totalScore).color} style={{ fontSize: 12 }}>
+                      {item.totalScore?.toFixed(1) || '-'} / 100
+                    </Tag>
+                  </div>
+                  <Row gutter={[16, 8]}>
+                    {[
+                      { label: 'Inovasi & Kreativitas', value: item.criteria1, color: '#8b5cf6' },
+                      { label: 'Dampak Program', value: item.criteria2, color: '#10b981' },
+                      { label: 'Potensi Keberlanjutan', value: item.criteria3, color: '#f59e0b' },
+                    ].map((c, ci) => (
+                      <Col xs={8} key={ci}>
+                        <Text style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 4 }}>{c.label}</Text>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <Progress percent={c.value || 0} showInfo={false} strokeColor={c.color} size="small" style={{ flex: 1 }} />
+                          <Text strong style={{ color: c.color, fontSize: 13, minWidth: 30 }}>{c.value || 0}</Text>
+                        </div>
+                      </Col>
+                    ))}
+                  </Row>
+                  {item.notes && (
+                    <div style={{ marginTop: 10, padding: '8px 12px', background: '#f8fafc', borderRadius: 6, borderLeft: '3px solid #2563eb' }}>
+                      <Text style={{ fontSize: 12, color: '#475569', fontStyle: 'italic' }}>"{item.notes}"</Text>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </>
+          )}
+        </Spin>
+      </Modal>
+    </div>
+  );
+};
+
+export default AdminSelectionReview;

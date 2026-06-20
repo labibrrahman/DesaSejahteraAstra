@@ -343,9 +343,9 @@ const AdminPesertaList = () => {
           <Button type="link" icon={<EyeOutlined />} onClick={() => showDetail(record)} style={{ padding: '0 4px' }}>
             Detail
           </Button>
-          <Button type="link" icon={<EditOutlined />} onClick={() => showEditModal(record)} style={{ padding: '0 4px' }}>
+          {/* <Button type="link" icon={<EditOutlined />} onClick={() => showEditModal(record)} style={{ padding: '0 4px' }}>
             Edit
-          </Button>
+          </Button> */}
         </Space>
       ),
     },

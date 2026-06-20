@@ -2,38 +2,56 @@ import { useState, useEffect } from 'react';
 import api from '../lib/api';
 
 /**
- * Hook untuk cek apakah peserta sudah punya registrasi.
- * Mengembalikan { registration, loading, hasRegistration }.
+ * Hook untuk data peserta dashboard.
+ * Menggabungkan data dari:
+ * - GET /dashboard/perseta (structured steps, status, support)
+ * - GET /registrations/my (full registration data untuk detail modal)
  */
 const useRegistration = () => {
   const [registration, setRegistration] = useState(null);
+  const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const check = async () => {
+    const loadData = async () => {
       try {
-        const { data } = await api.get('/registrations/my');
-        // Backend wrap response: { success, message, data }
-        // data bisa: null, object kosong, atau object dengan id
-        const regData = data?.data ?? data;
-        if (regData && regData.id) {
-          setRegistration(regData);
-        } else {
-          setRegistration(null);
+        // Fetch kedua endpoint secara paralel
+        const [regRes, dashRes] = await Promise.allSettled([
+          api.get('/registrations/my'),
+          api.get('/dashboard/peserta'),
+        ]);
+
+        // Parse registration data
+        if (regRes.status === 'fulfilled') {
+          const regData = regRes.value?.data?.data ?? regRes.value?.data;
+          if (regData && regData.id) {
+            setRegistration(regData);
+          }
         }
-      } catch (err) {
-        // 404 = belum ada registrasi (normal)
-        // 403 = role bukan peserta (juga anggap belum ada)
-        // Error lain = juga anggap belum ada
+
+        // Parse dashboard data (steps, status_label, support)
+        if (dashRes.status === 'fulfilled') {
+          console.log(dashRes);
+          const dashData = dashRes.value?.data?.data ?? dashRes.value?.data;
+          if (dashData) {
+            setDashboardData(dashData);
+          }
+        }
+      } catch {
         setRegistration(null);
       } finally {
         setLoading(false);
       }
     };
-    check();
+    loadData();
   }, []);
 
-  return { registration, loading, hasRegistration: !!registration };
+  return {
+    registration,
+    dashboardData,
+    loading,
+    hasRegistration: !!registration,
+  };
 };
 
 export default useRegistration;

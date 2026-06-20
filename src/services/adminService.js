@@ -76,6 +76,22 @@ const adminService = {
   },
 
   /**
+   * POST /api/registrations/:id/send-email — kirim email single
+   */
+  sendSingleEmail: async (registrationId, dto) => {
+    const { data } = await api.post(`/registrations/${registrationId}/send-email`, dto);
+    return data.data || data;
+  },
+
+  /**
+   * POST /api/registrations/emails/send-bulk — kirim email massal
+   */
+  sendBulkEmail: async (dto) => {
+    const { data } = await api.post('/registrations/emails/send-bulk', dto);
+    return data.data || data;
+  },
+
+  /**
    * GET /api/registrations/:id/assessments — detail penilaian juri
    */
   getAssessmentsByRegistration: async (registrationId) => {

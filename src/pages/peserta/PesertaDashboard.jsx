@@ -28,16 +28,16 @@ const { Title, Text, Paragraph } = Typography;
 
 const PesertaDashboard = () => {
   const navigate = useNavigate();
-  const { registration, loading, hasRegistration } = useRegistration();
+  const { registration, dashboardData, loading, hasRegistration } = useRegistration();
   const [detailOpen, setDetailOpen] = useState(false);
   const [statusModalOpen, setStatusModalOpen] = useState(false);
 
   // Auto-open status modal untuk finalist/rejected
   React.useEffect(() => {
-    if (registration?.status === 'finalist' || registration?.status === 'rejected') {
+    if (dashboardData?.registration?.status === 'finalist' || dashboardData?.registration?.status === 'rejected') {
       setStatusModalOpen(true);
     }
-  }, [registration?.status]);
+  }, [dashboardData?.registration?.status]);
 
   // Loading
   if (loading) {
@@ -56,14 +56,16 @@ const PesertaDashboard = () => {
 
   // Data dari API
   const reg = registration;
+  const dash = dashboardData;
   const nama = reg?.user?.name || 'Peserta';
   const namaDesa = reg?.villageName || '—';
   const namaKelompok = reg?.groupName || '—';
   const namaLabel = reg?.dsaType === 'Individu' ? 'Nama Peserta' : 'Nama Penanggung Jawab';
   const pilar = reg?.pillar?.name || '—';
-  const status = reg?.status || 'draft';
+  const status = dash?.registration?.status || 'draft';
 
-  const statusLabel = {
+  // Gunakan status_label dari BE dashboard jika ada
+  const statusLabel = dashboardData?.registration?.status_label || {
     draft: 'Draft',
     waiting_screening: 'Menunggu Screening',
     being_assessed: 'Sedang Dinilai',
@@ -409,108 +411,61 @@ const PesertaDashboard = () => {
               </Row>
             </Card>
 
-            {/* Informasi Program */}
+            {/* Timeline Acara */}
             <Card
               title={
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 8,
-                      background: '#eff6ff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <InfoCircleOutlined style={{ color: '#2563eb', fontSize: 16 }} />
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <ClockCircleOutlined style={{ color: '#2563eb', fontSize: 16 }} />
                   </div>
-                  <span style={{ fontWeight: 600 }}>Informasi Program Desa Sejahtera Astra</span>
+                  <span style={{ fontWeight: 600 }}>Jadwal Acara</span>
                 </div>
               }
-              style={{
-                borderRadius: 12,
-                border: '1px solid #e2e8f0',
-              }}
-              bodyStyle={{ padding: 20 }}
+              style={{ borderRadius: 12, border: '1px solid #e2e8f0' }}
+              bodyStyle={{ padding: 0 }}
             >
-              <div style={{ marginBottom: 24 }}>
-                <Text
-                  style={{
-                    color: '#2563eb',
-                    fontWeight: 600,
-                    fontSize: 13,
-                    display: 'block',
-                    marginBottom: 12,
-                    textTransform: 'uppercase',
-                    letterSpacing: 0.5,
-                  }}
-                >
-                  Latar Belakang
-                </Text>
-                <div
-                  style={{
-                    background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-                    borderRadius: 10,
-                    padding: '16px 20px',
-                    borderLeft: '4px solid #2563eb',
-                  }}
-                >
-                  <Paragraph
-                    style={{
-                      margin: 0,
-                      color: '#475569',
-                      lineHeight: 1.8,
-                      fontSize: 13,
-                    }}
-                  >
-                    Desa Sejahtera Astra (DSA) merupakan program kontribusi sosial berkelanjutan Astra
-                    yang berfokus pada pengembangan ekonomi desa berbasis potensi lokal. Melalui
-                    pendampingan intensif, Astra berkomitmen untuk meningkatkan kemandirian ekonomi
-                    masyarakat melalui pilar-pilar strategis seperti kewirausahaan, pendidikan, dan
-                    lingkungan.
-                  </Paragraph>
-                </div>
+              {/* Tahap 1 */}
+              <div style={{ background: '#2563eb', padding: '12px 20px' }}>
+                <Text strong style={{ color: '#fff', fontSize: 13, letterSpacing: 0.5 }}>TAHAP 1 — PENDAFTARAN & SOSIALISASI</Text>
               </div>
+              {[
+                { date: '22 Juni', desc: 'Kick Off & Pembukaan Pendaftaran Lomba Inovasi', active: status === 'draft' },
+                { date: '22 Juni – 11 Juli', desc: 'Open Registration', active: ['draft', 'waiting_screening'].includes(status) },
+                { date: '30 Juni', desc: 'Sosialisasi Lomba Inovasi', active: false },
+                { date: '13 – 17 Juli', desc: 'Proses Seleksi & Penilaian Tahap 1', active: ['waiting_screening', 'being_assessed'].includes(status) },
+                { date: '21 – 23 Juli', desc: 'Pengumuman Hasil Seleksi Tahap 1 & Pengumuman Linimasa Tahap 2', active: ['assessed', 'finalist', 'rejected'].includes(status) },
+              ].map((item, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '14px 20px', borderBottom: idx < 4 ? '1px solid #f1f5f9' : 'none', background: item.active ? '#f0f7ff' : 'transparent' }}>
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', marginTop: 5, flexShrink: 0, background: item.active ? '#2563eb' : '#d1d5db', boxShadow: item.active ? '0 0 0 3px rgba(37,99,235,0.2)' : 'none' }} />
+                  <div style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>{item.date}</Text>
+                    <Text style={{ fontSize: 13, color: '#1e293b', display: 'block', marginTop: 2 }}>{item.desc}</Text>
+                  </div>
+                </div>
+              ))}
 
-              <div>
-                <Text
-                  style={{
-                    color: '#2563eb',
-                    fontWeight: 600,
-                    fontSize: 13,
-                    display: 'block',
-                    marginBottom: 12,
-                    textTransform: 'uppercase',
-                    letterSpacing: 0.5,
-                  }}
-                >
-                  Dampak Program
-                </Text>
-                <div
-                  style={{
-                    background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-                    borderRadius: 10,
-                    padding: '16px 20px',
-                    borderLeft: '4px solid #2563eb',
-                  }}
-                >
-                  <Paragraph
-                    style={{
-                      margin: 0,
-                      color: '#475569',
-                      lineHeight: 1.8,
-                      fontSize: 13,
-                    }}
-                  >
-                    Program ini ditargetkan untuk menciptakan minimal 100 lapangan kerja baru di
-                    tingkat desa dalam 2 tahun pertama, meningkatkan pendapatan rata-rata rumah
-                    tangga peserta sebesar 25%, serta mengintegrasikan teknologi digital dalam rantai
-                    pasok produk unggulan desa.
-                  </Paragraph>
-                </div>
+              {/* Tahap 2 */}
+              <div style={{ background: '#7c3aed', padding: '12px 20px' }}>
+                <Text strong style={{ color: '#fff', fontSize: 13, letterSpacing: 0.5 }}>TAHAP 2 — PENJURIAN</Text>
               </div>
+              {[
+                { date: '28 Juli', desc: 'Kategori Kesehatan Kelompok (1-5), Kategori Pendidikan Kelompok (1-5)' },
+                { date: '30 Juli', desc: 'Kategori Kesehatan Kelompok (6-10), Kategori Pendidikan Kelompok (6-10)' },
+                { date: '4 Agustus', desc: 'Kategori Kesehatan Individual (1-5), Kategori Pendidikan Individual (1-5)' },
+                { date: '6 Agustus', desc: 'Kategori Kesehatan Individual (6-10), Kategori Pendidikan Individual (6-10)' },
+                { date: '11 Agustus', desc: 'Kategori Lingkungan Kelompok (1-5), Kategori Kewirausahaan Kelompok (1-5), Kategori Lingkungan Kelompok (6-10)' },
+                { date: '13 Agustus', desc: 'Kategori Kewirausahaan Kelompok (6-10)' },
+                { date: '18 Agustus', desc: 'Kategori Lingkungan Individual (1-5), Kategori Kewirausahaan Individual (1-5)' },
+                { date: '20 Agustus', desc: 'Kategori Lingkungan Individual (6-10), Kategori Kewirausahaan Individual (6-10)' },
+              ].map((item, idx) => (
+                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '14px 20px', borderBottom: idx < 7 ? '1px solid #f1f5f9' : 'none' }}>
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', marginTop: 5, flexShrink: 0, background: '#d1d5db' }} />
+                  <div style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>{item.date}</Text>
+                    <Text style={{ fontSize: 13, color: '#1e293b', display: 'block', marginTop: 2 }}>{item.desc}</Text>
+                  </div>
+                </div>
+              ))}
             </Card>
           </Col>
 
@@ -566,7 +521,7 @@ const PesertaDashboard = () => {
                   Tim pendamping Astra siap membantu Anda dalam setiap tahapan program.
                 </Text>
                 <Button
-                  onClick={() => window.open('https://wa.me/6285713043230', '_blank')}
+                  onClick={() => window.open(`https://wa.me/${dashboardData?.support?.whatsapp || '6285713043230'}`, '_blank')}
                   style={{
                     background: '#fff',
                     borderColor: '#fff',

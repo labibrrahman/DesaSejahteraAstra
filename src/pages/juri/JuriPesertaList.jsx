@@ -291,30 +291,6 @@ const JuriPesertaList = () => {
 
             {/* Content */}
             <div style={{ padding: '24px 28px 28px' }}>
-              {/* Identitas Pendaftar */}
-              <div style={{ marginBottom: 24 }}>
-                <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                  🏷️ Identitas Pendaftar
-                </Text>
-                <Row gutter={[20, 12]}>
-                  {[
-                    { label: 'Jenis DSA', value: selectedPeserta.jenis_dsa },
-                    { label: 'Nomor HP', value: selectedPeserta.phone_number },
-                    { label: 'Nama Kontak Darurat', value: selectedPeserta.nama_kontak_darurat },
-                    { label: 'No HP Kontak Darurat', value: selectedPeserta.no_hp_kontak_darurat },
-                  ].filter(item => item.value).map((item, idx) => (
-                    <Col xs={12} sm={8} key={idx}>
-                      <Text style={{ fontSize: 11, color: '#94a3b8', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                        {item.label}
-                      </Text>
-                      <Text strong style={{ fontSize: 13, color: '#1e293b' }}>
-                        {item.value || '-'}
-                      </Text>
-                    </Col>
-                  ))}
-                </Row>
-              </div>
-
               {/* Informasi Program */}
               <div style={{ marginBottom: 24 }}>
                 <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
@@ -327,6 +303,30 @@ const JuriPesertaList = () => {
                     { label: 'Durasi Program', value: selectedPeserta.durasi_program },
                     { label: 'Tanggal Daftar', value: selectedPeserta.tanggal_daftar },
                   ].map((item, idx) => (
+                    <Col xs={12} sm={8} key={idx}>
+                      <Text style={{ fontSize: 11, color: '#94a3b8', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                        {item.label}
+                      </Text>
+                      <Text strong style={{ fontSize: 13, color: '#1e293b' }}>
+                        {item.value || '-'}
+                      </Text>
+                    </Col>
+                  ))}
+                </Row>
+              </div>
+
+              {/* Identitas Pendaftar */}
+              <div style={{ marginBottom: 24 }}>
+                <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
+                  🏷️ Identitas Pendaftar
+                </Text>
+                <Row gutter={[20, 12]}>
+                  {[
+                    { label: 'Jenis DSA', value: selectedPeserta.jenis_dsa },
+                    { label: 'Nomor HP', value: selectedPeserta.phone_number },
+                    { label: 'Nama Kontak Darurat', value: selectedPeserta.nama_kontak_darurat },
+                    { label: 'No HP Kontak Darurat', value: selectedPeserta.no_hp_kontak_darurat },
+                  ].filter(item => item.value).map((item, idx) => (
                     <Col xs={12} sm={8} key={idx}>
                       <Text style={{ fontSize: 11, color: '#94a3b8', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                         {item.label}

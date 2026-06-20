@@ -386,31 +386,6 @@ const AdminPesertaList = () => {
 
               {/* Content */}
               <div style={{ padding: '24px 32px 28px' }}>
-                {/* Section: Identitas Pendaftar */}
-                <div style={{ marginBottom: 24 }}>
-                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                    🏷️ Identitas Pendaftar
-                  </Text>
-                  <Row gutter={[20, 16]}>
-                    <Col xs={12} sm={8}>
-                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Jenis DSA</Text>
-                      <Text strong style={{ fontSize: 13 }}>{selectedPeserta.jenis_dsa}</Text>
-                    </Col>
-                    <Col xs={12} sm={8}>
-                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nomor HP</Text>
-                      <Text strong style={{ fontSize: 13 }}>{selectedPeserta.phone_number}</Text>
-                    </Col>
-                    <Col xs={12} sm={8}>
-                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nama Kontak Darurat</Text>
-                      <Text strong style={{ fontSize: 13 }}>{selectedPeserta.nama_kontak_darurat}</Text>
-                    </Col>
-                    <Col xs={12} sm={8}>
-                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>No HP Kontak Darurat</Text>
-                      <Text strong style={{ fontSize: 13 }}>{selectedPeserta.no_hp_kontak_darurat}</Text>
-                    </Col>
-                  </Row>
-                </div>
-
                 {/* Section: Program */}
                 <div style={{ marginBottom: 24 }}>
                   <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
@@ -432,6 +407,31 @@ const AdminPesertaList = () => {
                     <Col xs={12} sm={8}>
                       <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Durasi Program</Text>
                       <Text strong style={{ fontSize: 13 }}>{selectedPeserta.durasi_program}</Text>
+                    </Col>
+                  </Row>
+                </div>
+
+                {/* Section: Identitas Pendaftar */}
+                <div style={{ marginBottom: 24 }}>
+                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
+                    🏷️ Identitas Pendaftar
+                  </Text>
+                  <Row gutter={[20, 16]}>
+                    <Col xs={12} sm={8}>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Jenis DSA</Text>
+                      <Text strong style={{ fontSize: 13 }}>{selectedPeserta.jenis_dsa}</Text>
+                    </Col>
+                    <Col xs={12} sm={8}>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nomor HP</Text>
+                      <Text strong style={{ fontSize: 13 }}>{selectedPeserta.phone_number}</Text>
+                    </Col>
+                    <Col xs={12} sm={8}>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nama Kontak Darurat</Text>
+                      <Text strong style={{ fontSize: 13 }}>{selectedPeserta.nama_kontak_darurat}</Text>
+                    </Col>
+                    <Col xs={12} sm={8}>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>No HP Kontak Darurat</Text>
+                      <Text strong style={{ fontSize: 13 }}>{selectedPeserta.no_hp_kontak_darurat}</Text>
                     </Col>
                   </Row>
                 </div>

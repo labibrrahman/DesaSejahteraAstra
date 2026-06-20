@@ -140,6 +140,54 @@ const AdminSelectionReview = () => {
     });
   };
 
+  // ── Kirim Email Single ────────────────────────────────────────────────────
+  const handleSendEmail = async (record) => {
+    const templateType = record.status === 'finalist' ? 'finalist' : 'rejected';
+    const subject = templateType === 'finalist'
+      ? 'Selamat! Anda Terpilih Menjadi Finalis 4 Pilar DSA 2026'
+      : 'Hasil Seleksi Pendaftaran 4 Pilar DSA 2026';
+
+    Modal.confirm({
+      title: 'Kirim Email',
+      content: `Kirim email "${templateType}" ke ${record.namaDsa}?`,
+      okText: 'Ya, Kirim',
+      cancelText: 'Batal',
+      okButtonProps: { style: { background: '#2563eb', borderColor: '#2563eb' } },
+      onOk: async () => {
+        try {
+          const result = await adminService.sendSingleEmail(record.id, { templateType, subject });
+          message.success(result.message || 'Email berhasil dikirim');
+          fetchData(pagination.current, pagination.pageSize);
+        } catch (error) {
+          message.error(error.response?.data?.message || 'Gagal mengirim email');
+        }
+      },
+    });
+  };
+
+  // ── Kirim Email Bulk (semua yang lolos) ───────────────────────────────────
+  const handleSendEmailAllLolos = () => {
+    Modal.confirm({
+      title: 'Kirim Email ke Semua Peserta Lolos',
+      content: 'Semua peserta berstatus "Lolos" akan menerima email notifikasi. Lanjutkan?',
+      okText: 'Ya, Kirim Semua',
+      cancelText: 'Batal',
+      okButtonProps: { style: { background: '#2563eb', borderColor: '#2563eb' } },
+      onOk: async () => {
+        try {
+          const result = await adminService.sendBulkEmail({
+            targetStatus: 'finalist',
+            subject: 'Selamat! Anda Terpilih Menjadi Finalis 4 Pilar DSA 2026',
+          });
+          message.success(result.message || `Email berhasil dikirim ke ${result.queuedCount || 0} peserta`);
+          fetchData(pagination.current, pagination.pageSize);
+        } catch (error) {
+          message.error(error.response?.data?.message || 'Gagal mengirim email massal');
+        }
+      },
+    });
+  };
+
   // ── Detail Assessment ─────────────────────────────────────────────────────
   const showDetail = async (record) => {
     setDetailPeserta(record);
@@ -221,14 +269,33 @@ const AdminSelectionReview = () => {
       },
     },
     {
+      title: 'Status Email',
+      key: 'emailStatus',
+      align: 'center',
+      render: (_, record) => {
+        if (record.status !== 'finalist' && record.status !== 'rejected') {
+          return <Text type="secondary" style={{ fontSize: 12 }}>—</Text>;
+        }
+        // Placeholder: status email akan ditambahkan di BE nanti
+        return <Tag color="default" style={{ fontSize: 11 }}>Belum Dikirim</Tag>;
+      },
+    },
+    {
       title: 'Aksi',
       key: 'action',
-      width: 80,
+      width: 140,
       align: 'center',
       render: (_, record) => (
-        <Tooltip title="Detail Penilaian">
-          <Button type="link" icon={<EyeOutlined />} onClick={() => showDetail(record)} />
-        </Tooltip>
+        <Space size={4}>
+          <Tooltip title="Detail Penilaian">
+            <Button type="link" icon={<EyeOutlined />} onClick={() => showDetail(record)} style={{ padding: '0 4px' }} />
+          </Tooltip>
+          {(record.status === 'finalist' || record.status === 'rejected') && (
+            <Tooltip title="Kirim Email">
+              <Button type="link" icon={<ExportOutlined />} onClick={() => handleSendEmail(record)} style={{ padding: '0 4px', color: '#2563eb' }} />
+            </Tooltip>
+          )}
+        </Space>
       ),
     },
   ];
@@ -255,7 +322,14 @@ const AdminSelectionReview = () => {
           <Title level={3} style={{ margin: 0 }}>Hasil Seleksi</Title>
           <Text type="secondary">Review dan putuskan hasil penilaian peserta oleh juri</Text>
         </div>
-        <Button icon={<ExportOutlined />} onClick={handleExport}>Export Excel</Button>
+        <Space>
+          <Button icon={<ExportOutlined />} onClick={handleExport}>Export Excel</Button>
+          {summary.lolosCount > 0 && (
+            <Button icon={<ExportOutlined />} onClick={handleSendEmailAllLolos} style={{ background: '#2563eb', borderColor: '#2563eb', color: '#fff' }}>
+              Kirim Email Semua Lolos ({summary.lolosCount})
+            </Button>
+          )}
+        </Space>
       </div>
 
       {/* Summary Cards */}

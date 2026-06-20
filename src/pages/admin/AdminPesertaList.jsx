@@ -108,6 +108,17 @@ const AdminPesertaList = () => {
   const [editSubmitting, setEditSubmitting] = useState(false);
   const [editForm] = Form.useForm();
 
+  // Region options & loading for Edit Modal
+  const [provinceOptions, setProvinceOptions] = useState([]);
+  const [cityOptions, setCityOptions] = useState([]);
+  const [districtOptions, setDistrictOptions] = useState([]);
+  const [desaOptions, setDesaOptions] = useState([]);
+
+  const [loadingProvinces, setLoadingProvinces] = useState(false);
+  const [loadingCities, setLoadingCities] = useState(false);
+  const [loadingDistricts, setLoadingDistricts] = useState(false);
+  const [loadingDesa, setLoadingDesa] = useState(false);
+
   /** Fetch registrations dari API */
   const fetchRegistrations = useCallback(async (page = 1, limit = 10) => {
     setLoading(true);
@@ -169,6 +180,101 @@ const AdminPesertaList = () => {
     }
   };
 
+  /** Fetch provinces dari API */
+  const fetchProvinces = async () => {
+    setLoadingProvinces(true);
+    try {
+      const result = await masterService.getProvinces({ limit: 100 });
+      const list = Array.isArray(result) ? result : result?.data || [];
+      setProvinceOptions(list.map(p => ({ id: p.id, name: p.name })));
+    } catch {
+      message.error('Gagal memuat data provinsi');
+    } finally {
+      setLoadingProvinces(false);
+    }
+  };
+
+  /** Fetch kota/kabupaten dari API */
+  const fetchCities = async (provinceId) => {
+    if (!provinceId) { setCityOptions([]); return; }
+    setLoadingCities(true);
+    try {
+      const result = await masterService.getCities(provinceId, { limit: 100 });
+      const list = Array.isArray(result) ? result : result?.data || [];
+      setCityOptions(list.map(c => ({ id: c.id, name: c.name })));
+    } catch {
+      setCityOptions([]);
+    } finally {
+      setLoadingCities(false);
+    }
+  };
+
+  /** Fetch kecamatan dari API */
+  const fetchDistricts = async (cityId) => {
+    if (!cityId) { setDistrictOptions([]); return; }
+    setLoadingDistricts(true);
+    try {
+      const result = await masterService.getDistricts(cityId, { limit: 100 });
+      const list = Array.isArray(result) ? result : result?.data || [];
+      setDistrictOptions(list.map(d => ({ id: d.id, name: d.name })));
+    } catch {
+      setDistrictOptions([]);
+    } finally {
+      setLoadingDistricts(false);
+    }
+  };
+
+  /** Fetch desa/kelurahan dari API */
+  const fetchVillages = async (districtId) => {
+    if (!districtId) { setDesaOptions([]); return; }
+    setLoadingDesa(true);
+    try {
+      const result = await masterService.getVillages(districtId, { limit: 100 });
+      const list = Array.isArray(result) ? result : result?.data || [];
+      setDesaOptions(list.map(v => ({ id: v.id, name: v.name })));
+    } catch {
+      setDesaOptions([]);
+    } finally {
+      setLoadingDesa(false);
+    }
+  };
+
+  const handleProvinceChange = async (provinceId) => {
+    editForm.setFieldsValue({
+      cityId: null,
+      districtId: null,
+      villageRegionId: null,
+    });
+    setCityOptions([]);
+    setDistrictOptions([]);
+    setDesaOptions([]);
+    if (provinceId) {
+      await fetchCities(provinceId);
+    }
+  };
+
+  const handleCityChange = async (cityId) => {
+    editForm.setFieldsValue({
+      districtId: null,
+      villageRegionId: null,
+    });
+    setDistrictOptions([]);
+    setDesaOptions([]);
+    if (cityId) {
+      await fetchDistricts(cityId);
+    }
+  };
+
+  const handleDistrictChange = async (districtId) => {
+    editForm.setFieldsValue({
+      villageRegionId: null,
+    });
+    setDesaOptions([]);
+    if (districtId) {
+      await fetchVillages(districtId);
+    }
+  };
+
   useEffect(() => {
     fetchPillars();
     // Fetch astra groups
@@ -204,25 +310,54 @@ const AdminPesertaList = () => {
       const detail = await adminService.getRegistrationDetail(record.id);
       setEditRecord(detail);
       const pilarId = detail.pillar?.id || detail.pillarId;
+
+      // Ensure pilar options are loaded (re-fetch if empty)
+      if (pilarOptions.length === 0) {
+        await fetchPillars();
+      }
+
+      // Load kategori based on selected pilar
       if (pilarId) await fetchKategoriByPilar(pilarId);
-      editForm.setFieldsValue({
-        status: detail.status,
-        pillarId,
-        categoryId: detail.category?.id || detail.categoryId,
-        villageName: detail.villageName,
-        groupName: detail.groupName,
-        phoneNumber: detail.phoneNumber,
-        dsaType: detail.dsaType,
-        astraGroupId: detail.astraGroup?.id || null,
-        astraGroupCustom: detail.astraGroupCustom || '',
-        address: detail.address,
-        background: detail.background,
-        programImpact: detail.programImpact,
-        developmentPlan: detail.developmentPlan,
-        programDuration: detail.programDuration,
-        emergencyContactName: detail.emergencyContactName,
-        emergencyContactPhone: detail.emergencyContactPhone,
-      });
+
+      // Load region options
+      await fetchProvinces();
+      if (detail.provinceId) await fetchCities(detail.provinceId);
+      if (detail.cityId) await fetchDistricts(detail.cityId);
+      if (detail.districtId) await fetchVillages(detail.districtId);
+
+      // Ensure astra group options are loaded
+      if (astraGroupOptions.length === 0) {
+        try {
+          const result = await masterService.getAstraGroups();
+          setAstraGroupOptions(Array.isArray(result) ? result.map(g => ({ id: g.id, name: g.name })) : []);
+        } catch { /* ignore */ }
+      }
+
+      // Use setTimeout to ensure Select options are rendered before setting values
+      setTimeout(() => {
+        editForm.setFieldsValue({
+          status: detail.status,
+          pillarId: pilarId || undefined,
+          categoryId: detail.category?.id || detail.categoryId || undefined,
+          villageName: detail.villageName,
+          groupName: detail.groupName,
+          phoneNumber: detail.phoneNumber,
+          dsaType: detail.dsaType,
+          astraGroupId: detail.astraGroup?.id || null,
+          astraGroupCustom: detail.astraGroupCustom || '',
+          address: detail.address,
+          background: detail.background,
+          programImpact: detail.programImpact,
+          developmentPlan: detail.developmentPlan,
+          programDuration: detail.programDuration,
+          emergencyContactName: detail.emergencyContactName,
+          emergencyContactPhone: detail.emergencyContactPhone,
+          provinceId: detail.provinceId || null,
+          cityId: detail.cityId || null,
+          districtId: detail.districtId || null,
+          villageRegionId: detail.villageRegionId || null,
+        });
+      }, 100);
     } catch (error) {
       message.error('Gagal memuat data');
       setEditModalVisible(false);
@@ -236,8 +371,9 @@ const AdminPesertaList = () => {
     try {
       const values = await editForm.validateFields();
       setEditSubmitting(true);
+
+      // Update data registrasi (tanpa status)
       const payload = {
-        status: values.status,
         pillarId: values.pillarId,
         categoryId: values.categoryId,
         villageName: values.villageName,
@@ -250,13 +386,26 @@ const AdminPesertaList = () => {
         programDuration: values.programDuration,
         emergencyContactName: values.emergencyContactName,
         emergencyContactPhone: values.emergencyContactPhone,
+        provinceId: values.provinceId || null,
+        cityId: values.cityId || null,
+        districtId: values.districtId || null,
+        villageRegionId: values.villageRegionId || null,
       };
       if (values.astraGroupId === 'others') {
         payload.astraGroupCustom = values.astraGroupCustom || '';
       } else if (values.astraGroupId) {
         payload.astraGroupId = values.astraGroupId;
+      } else {
+        payload.astraGroupId = null;
+        payload.astraGroupCustom = '';
       }
       await adminService.updateRegistrationByAdmin(editRecord.id, payload);
+
+      // Update status jika berubah (endpoint terpisah)
+      if (values.status && values.status !== editRecord.status) {
+        await adminService.updateRegistrationStatus(editRecord.id, { status: values.status });
+      }
+
       message.success('Data berhasil diperbarui');
       setEditModalVisible(false);
       editForm.resetFields();
@@ -685,20 +834,25 @@ const AdminPesertaList = () => {
               <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item name="pillarId" label="Pilar">
-                    <Select placeholder="Pilih Pilar" allowClear onChange={(val) => { fetchKategoriByPilar(val); editForm.setFieldsValue({ categoryId: null }); }}>
-                      {pilarOptions.map(p => (
-                        <Option key={p.id} value={p.id}>{p.name}</Option>
-                      ))}
-                    </Select>
+                    <Select
+                      placeholder="Pilih Pilar"
+                      allowClear
+                      showSearch
+                      optionFilterProp="label"
+                      options={pilarOptions.map(p => ({ value: p.id, label: p.name }))}
+                      onChange={(val) => { fetchKategoriByPilar(val); editForm.setFieldsValue({ categoryId: null }); }}
+                    />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
                   <Form.Item name="categoryId" label="Kategori">
-                    <Select placeholder="Pilih Kategori" allowClear>
-                      {kategoriOptions.map(c => (
-                        <Option key={c.id} value={c.id}>{c.name}</Option>
-                      ))}
-                    </Select>
+                    <Select
+                      placeholder="Pilih Kategori"
+                      allowClear
+                      showSearch
+                      optionFilterProp="label"
+                      options={kategoriOptions.map(c => ({ value: c.id, label: c.name }))}
+                    />
                   </Form.Item>
                 </Col>
               </Row>
@@ -758,6 +912,91 @@ const AdminPesertaList = () => {
 
               <Form.Item name="address" label="Alamat Lengkap">
                 <Input.TextArea rows={3} placeholder="Detail jalan, RW/RT..." style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
+              </Form.Item>
+
+              {/* Wilayah Administratif */}
+              <Form.Item noStyle shouldUpdate>
+                {({ getFieldValue }) => {
+                  const provinceId = getFieldValue('provinceId');
+                  const cityId = getFieldValue('cityId');
+                  const districtId = getFieldValue('districtId');
+                  return (
+                    <>
+                      <div style={{ marginTop: 12, marginBottom: 12, fontWeight: 600 }}>Wilayah Administratif</div>
+                      <Row gutter={16}>
+                        <Col span={12}>
+                          <Form.Item name="provinceId" label="Provinsi">
+                            <Select
+                              placeholder="Pilih Provinsi"
+                              allowClear
+                              showSearch
+                              optionFilterProp="children"
+                              onChange={handleProvinceChange}
+                              loading={loadingProvinces}
+                            >
+                              {provinceOptions.map(p => (
+                                <Option key={p.id} value={p.id}>{p.name}</Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                          <Form.Item name="cityId" label="Kabupaten / Kota">
+                            <Select
+                              placeholder="Pilih Kabupaten / Kota"
+                              allowClear
+                              showSearch
+                              optionFilterProp="children"
+                              onChange={handleCityChange}
+                              loading={loadingCities}
+                              disabled={!provinceId}
+                            >
+                              {cityOptions.map(c => (
+                                <Option key={c.id} value={c.id}>{c.name}</Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </Col>
+                      </Row>
+
+                      <Row gutter={16}>
+                        <Col span={12}>
+                          <Form.Item name="districtId" label="Kecamatan">
+                            <Select
+                              placeholder="Pilih Kecamatan"
+                              allowClear
+                              showSearch
+                              optionFilterProp="children"
+                              onChange={handleDistrictChange}
+                              loading={loadingDistricts}
+                              disabled={!cityId}
+                            >
+                              {districtOptions.map(d => (
+                                <Option key={d.id} value={d.id}>{d.name}</Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                          <Form.Item name="villageRegionId" label="Desa / Kelurahan">
+                            <Select
+                              placeholder="Pilih Desa / Kelurahan"
+                              allowClear
+                              showSearch
+                              optionFilterProp="children"
+                              loading={loadingDesa}
+                              disabled={!districtId}
+                            >
+                              {desaOptions.map(v => (
+                                <Option key={v.id} value={v.id}>{v.name}</Option>
+                              ))}
+                            </Select>
+                          </Form.Item>
+                        </Col>
+                      </Row>
+                    </>
+                  );
+                }}
               </Form.Item>
 
               <Form.Item name="programDuration" label="Durasi Program">

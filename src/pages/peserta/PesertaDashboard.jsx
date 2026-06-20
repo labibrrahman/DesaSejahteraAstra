@@ -23,6 +23,8 @@ import {
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import useRegistration from '../../hooks/useRegistration';
+import astraLogo from '../../assets/images/astra-logo.png';
+import satuIndoLogo from '../../assets/images/satu-indonesia-logo.png';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -97,7 +99,7 @@ const PesertaDashboard = () => {
       <div
         style={{
           background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1e40af 100%)',
-          padding: '36px 32px',
+          padding: '25px 32px',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -136,6 +138,14 @@ const PesertaDashboard = () => {
             background: 'rgba(255,255,255,0.03)',
           }}
         />
+        <Row gutter={[16, 16]} justify="space-between" align="middle" style={{ paddingBottom:'20px' }}>
+          <Col xs={12} sm={12} md={12}>
+              <img src={astraLogo} alt="Astra Logo" style={{ height: 22, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+          </Col>
+          <Col xs={12} sm={12} md={12} align="end">
+              <img src={satuIndoLogo} alt="Satu Indonesia Logo" style={{ height: 35, objectFit: 'contain' }} />
+          </Col>
+        </Row>
 
         <Row gutter={[16, 16]} justify="space-between" align="middle">
           <Col xs={24} sm={24} md={16}>
@@ -143,7 +153,7 @@ const PesertaDashboard = () => {
               Selamat Datang, {nama}!
             </Title>
             <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, lineHeight: 1.6 }}>
-              Pantau kemajuan pendaftaran dan kelola informasi program desa Anda di sini.
+              Pantau kemajuan seleksi dan ikuti perkembangan Lomba 4 Pilar Astra Anda di sini.
             </Text>
           </Col>
           <Col xs={24} sm={24} md={8}>

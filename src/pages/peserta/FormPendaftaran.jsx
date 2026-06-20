@@ -648,8 +648,11 @@ const FormPendaftaran = () => {
 
     return (
       <div style={{ width: '100%', maxWidth: 800, marginBottom: 32, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 32 }}>
-        <div style={{ marginBottom: 24 }}>
-          <Text className="text-red" style={{ fontSize: 9 }}>Catatan: Bidang yang bertanda (*) wajib diisi.</Text>
+        <div style={{ marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span className="text-[11px] text-red-500 italic">Catatan: Bidang yang bertanda (*) wajib diisi.</span>
+          <span className="text-[11px] text-gray-400 italic" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+            <CheckOutlined style={{ fontSize: '10px', color: '#94a3b8' }} /> Draft tersimpan otomatis
+          </span>
         </div>
 
         <div style={{ marginBottom: 24 }}>

@@ -411,7 +411,8 @@ const PesertaDashboard = () => {
               </Row>
             </Card>
 
-            {/* Timeline Acara */}
+            {/* Timeline Acara — hide jika rejected */}
+            {status !== 'rejected' && (
             <Card
               title={
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -467,6 +468,7 @@ const PesertaDashboard = () => {
                 </div>
               ))}
             </Card>
+            )}
           </Col>
 
           {/* Right Sidebar */}

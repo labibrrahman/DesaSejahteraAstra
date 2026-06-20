@@ -618,7 +618,7 @@ const AdminSelectionReview = () => {
                     {[
                       { label: 'Pilar', value: regDetailData.pillar?.name },
                       { label: 'Kategori', value: regDetailData.category?.name },
-                      { label: 'Binaan', value: regDetailData.astraGroup?.name },
+                      { label: 'Binaan', value: regDetailData.astraGroupCustom || regDetailData.astraGroup?.name },
                       { label: 'Durasi Program', value: regDetailData.programDuration },
                     ].map((item, idx) => (
                       <Col xs={12} sm={6} key={idx}>

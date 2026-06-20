@@ -46,6 +46,14 @@ const adminService = {
     return data.data || data;
   },
 
+  /**
+   * PATCH /api/registrations/:id/admin — update data registrasi oleh admin
+   */
+  updateRegistrationByAdmin: async (id, dto) => {
+    const { data } = await api.patch(`/registrations/${id}/admin`, dto);
+    return data.data || data;
+  },
+
   // ─── Selection Review ──────────────────────────────────────────
 
   /**
@@ -128,6 +136,40 @@ const adminService = {
   getUsers: async (params = {}) => {
     const { data } = await api.get('/users', { params });
     return data;
+  },
+
+  // ─── FAQ ──────────────────────────────────────────────
+
+  /**
+   * GET /api/faqs — daftar FAQ (public)
+   */
+  getFaqs: async (params = {}) => {
+    const { data } = await api.get('/faqs', { params });
+    return data.data || data;
+  },
+
+  /**
+   * POST /api/faqs — buat FAQ baru (admin)
+   */
+  createFaq: async (dto) => {
+    const { data } = await api.post('/faqs', dto);
+    return data.data || data;
+  },
+
+  /**
+   * PATCH /api/faqs/:id — update FAQ (admin)
+   */
+  updateFaq: async (id, dto) => {
+    const { data } = await api.patch(`/faqs/${id}`, dto);
+    return data.data || data;
+  },
+
+  /**
+   * DELETE /api/faqs/:id — hapus FAQ (admin)
+   */
+  deleteFaq: async (id) => {
+    const { data } = await api.delete(`/faqs/${id}`);
+    return data.data || data;
   },
 
   /**

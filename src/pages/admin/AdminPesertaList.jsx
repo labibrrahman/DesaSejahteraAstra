@@ -73,7 +73,7 @@ const mapFromApi = (item) => ({
   nama_kontak_darurat: item.emergencyContactName || '-',
   no_hp_kontak_darurat: item.emergencyContactPhone || '-',
   alamat: item.address || '-',
-  grup_astra: item.astraGroup?.name || '-',
+  grup_astra: item.astraGroupCustom || item.astraGroup?.name || '-',
   durasi_program: item.programDuration || '-',
   latar_belakang: item.background || '-',
   dampak_program: item.programImpact || '-',
@@ -85,6 +85,8 @@ const mapFromApi = (item) => ({
 const AdminPesertaList = () => {
   const [data, setData] = useState([]);
   const [pilarOptions, setPilarOptions] = useState([]);
+  const [kategoriOptions, setKategoriOptions] = useState([]);
+  const [astraGroupOptions, setAstraGroupOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [statusFilter, setStatusFilter] = useState(null);
@@ -156,8 +158,23 @@ const AdminPesertaList = () => {
     }
   }, []);
 
+  /** Fetch kategori berdasarkan pilar */
+  const fetchKategoriByPilar = async (pilarId) => {
+    if (!pilarId) { setKategoriOptions([]); return; }
+    try {
+      const cats = await masterService.getCategories(pilarId);
+      setKategoriOptions(Array.isArray(cats) ? cats.map(c => ({ id: c.id, name: c.name })) : []);
+    } catch {
+      setKategoriOptions([]);
+    }
+  };
+
   useEffect(() => {
     fetchPillars();
+    // Fetch astra groups
+    masterService.getAstraGroups().then(result => {
+      setAstraGroupOptions(Array.isArray(result) ? result.map(g => ({ id: g.id, name: g.name })) : []);
+    }).catch(() => {});
   }, [fetchPillars]);
 
   useEffect(() => {
@@ -186,13 +203,25 @@ const AdminPesertaList = () => {
     try {
       const detail = await adminService.getRegistrationDetail(record.id);
       setEditRecord(detail);
+      const pilarId = detail.pillar?.id || detail.pillarId;
+      if (pilarId) await fetchKategoriByPilar(pilarId);
       editForm.setFieldsValue({
         status: detail.status,
+        pillarId,
+        categoryId: detail.category?.id || detail.categoryId,
         villageName: detail.villageName,
         groupName: detail.groupName,
         phoneNumber: detail.phoneNumber,
         dsaType: detail.dsaType,
-        leaderName: detail.leaderName,
+        astraGroupId: detail.astraGroup?.id || null,
+        astraGroupCustom: detail.astraGroupCustom || '',
+        address: detail.address,
+        background: detail.background,
+        programImpact: detail.programImpact,
+        developmentPlan: detail.developmentPlan,
+        programDuration: detail.programDuration,
+        emergencyContactName: detail.emergencyContactName,
+        emergencyContactPhone: detail.emergencyContactPhone,
       });
     } catch (error) {
       message.error('Gagal memuat data');
@@ -207,9 +236,27 @@ const AdminPesertaList = () => {
     try {
       const values = await editForm.validateFields();
       setEditSubmitting(true);
-      await adminService.updateRegistrationStatus(editRecord.id, {
+      const payload = {
         status: values.status,
-      });
+        pillarId: values.pillarId,
+        categoryId: values.categoryId,
+        villageName: values.villageName,
+        groupName: values.groupName,
+        phoneNumber: values.phoneNumber,
+        address: values.address,
+        background: values.background,
+        programImpact: values.programImpact,
+        developmentPlan: values.developmentPlan,
+        programDuration: values.programDuration,
+        emergencyContactName: values.emergencyContactName,
+        emergencyContactPhone: values.emergencyContactPhone,
+      };
+      if (values.astraGroupId === 'others') {
+        payload.astraGroupCustom = values.astraGroupCustom || '';
+      } else if (values.astraGroupId) {
+        payload.astraGroupId = values.astraGroupId;
+      }
+      await adminService.updateRegistrationByAdmin(editRecord.id, payload);
       message.success('Data berhasil diperbarui');
       setEditModalVisible(false);
       editForm.resetFields();
@@ -343,9 +390,9 @@ const AdminPesertaList = () => {
           <Button type="link" icon={<EyeOutlined />} onClick={() => showDetail(record)} style={{ padding: '0 4px' }}>
             Detail
           </Button>
-          {/* <Button type="link" icon={<EditOutlined />} onClick={() => showEditModal(record)} style={{ padding: '0 4px' }}>
+          <Button type="link" icon={<EditOutlined />} onClick={() => showEditModal(record)} style={{ padding: '0 4px' }}>
             Edit
-          </Button> */}
+          </Button>
         </Space>
       ),
     },
@@ -608,7 +655,7 @@ const AdminPesertaList = () => {
         </Spin>
       </Modal>
 
-      {/* Edit Modal */}
+      {/* Edit Modal — admin bisa edit semua field */}
       <Modal
         title="Edit Data Peserta"
         open={editModalVisible}
@@ -617,57 +664,124 @@ const AdminPesertaList = () => {
         onCancel={() => { setEditModalVisible(false); editForm.resetFields(); setEditRecord(null); }}
         okText="Simpan"
         cancelText="Batal"
-        width={600}
+        width={680}
       >
         <Spin spinning={editLoading}>
-          <Form form={editForm} layout="vertical">
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="status" label="Status Pendaftaran" rules={[{ required: true, message: 'Pilih status' }]}>
-                  <Select placeholder="Pilih status">
-                    <Option value="draft">Draft</Option>
-                    <Option value="waiting_screening">Menunggu Screening</Option>
-                    <Option value="being_assessed">Sedang Dinilai</Option>
-                    <Option value="assessed">Selesai Dinilai</Option>
-                    <Option value="finalist">Finalis</Option>
-                    <Option value="rejected">Ditolak</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="dsaType" label="Jenis DSA">
-                  <Select placeholder="Pilih jenis DSA" disabled>
-                    <Option value="Kelompok">Kelompok</Option>
-                    <Option value="Individu">Individu</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="villageName" label="Nama DSA">
-                  <Input disabled />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="groupName" label="Nama Kelompok">
-                  <Input disabled />
-                </Form.Item>
-              </Col>
-            </Row>
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item name="leaderName" label="Nama Penanggung Jawab">
-                  <Input disabled />
-                </Form.Item>
-              </Col>
-              <Col span={12}>
-                <Form.Item name="phoneNumber" label="Nomor HP">
-                  <Input disabled />
-                </Form.Item>
-              </Col>
-            </Row>
-          </Form>
+          {editRecord && (
+            <Form form={editForm} layout="vertical">
+              {/* Status */}
+              <Form.Item name="status" label="Status Pendaftaran" rules={[{ required: true, message: 'Pilih status' }]}>
+                <Select placeholder="Pilih status">
+                  <Option value="draft">Draft</Option>
+                  <Option value="waiting_screening">Menunggu Screening</Option>
+                  <Option value="being_assessed">Sedang Dinilai</Option>
+                  <Option value="assessed">Selesai Dinilai</Option>
+                  <Option value="finalist">Finalis</Option>
+                  <Option value="rejected">Ditolak</Option>
+                </Select>
+              </Form.Item>
+
+              {/* Pilar & Kategori */}
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item name="pillarId" label="Pilar">
+                    <Select placeholder="Pilih Pilar" allowClear onChange={(val) => { fetchKategoriByPilar(val); editForm.setFieldsValue({ categoryId: null }); }}>
+                      {pilarOptions.map(p => (
+                        <Option key={p.id} value={p.id}>{p.name}</Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="categoryId" label="Kategori">
+                    <Select placeholder="Pilih Kategori" allowClear>
+                      {kategoriOptions.map(c => (
+                        <Option key={c.id} value={c.id}>{c.name}</Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              {/* Data DSA */}
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item name="villageName" label="Nama DSA (Desa Sejahtera Astra)" rules={[{ required: true, message: 'Wajib diisi' }]}>
+                    <Input placeholder="Contoh: Desa Suka Maju" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="groupName" label="Nama Peserta / Penanggung Jawab">
+                    <Input placeholder="Masukan Nama Penanggung Jawab" />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item name="phoneNumber" label="Nomor HP (WhatsApp)">
+                    <Input placeholder="Contoh: 08123456789" maxLength={15} />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="astraGroupId" label="Binaan">
+                    <Select placeholder="Pilih Binaan" allowClear>
+                      {astraGroupOptions.map(g => (
+                        <Option key={g.id} value={g.id}>{g.name}</Option>
+                      ))}
+                      <Option value="others">Lainnya...</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Form.Item noStyle shouldUpdate={(prev, cur) => prev.astraGroupId !== cur.astraGroupId}>
+                {({ getFieldValue }) => getFieldValue('astraGroupId') === 'others' && (
+                  <Form.Item name="astraGroupCustom" label="Nama Binaan Lainnya">
+                    <Input placeholder="Masukkan nama binaan lainnya" />
+                  </Form.Item>
+                )}
+              </Form.Item>
+
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item name="emergencyContactName" label="Nama Kontak Darurat">
+                    <Input placeholder="Contoh: Siti Aminah" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="emergencyContactPhone" label="Nomor HP Kontak Darurat">
+                    <Input placeholder="Contoh: 08123456789" maxLength={15} />
+                  </Form.Item>
+                </Col>
+              </Row>
+
+              <Form.Item name="address" label="Alamat Lengkap">
+                <Input.TextArea rows={3} placeholder="Detail jalan, RW/RT..." style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
+              </Form.Item>
+
+              <Form.Item name="programDuration" label="Durasi Program">
+                <Select placeholder="Pilih durasi program..." allowClear>
+                  <Option value="<1 Tahun">&lt;1 Tahun</Option>
+                  <Option value="1-3 Tahun">1-3 Tahun</Option>
+                  <Option value="3-5 Tahun">3-5 Tahun</Option>
+                  <Option value=">5 Tahun">&gt;5 Tahun</Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item name="background" label="Latar Belakang / Rasionalisasi">
+                <Input.TextArea rows={5} placeholder="Jelaskan alasan dan latar belakang inisiatif program ini..." style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
+              </Form.Item>
+
+              <Form.Item name="programImpact" label="Dampak Yang Sudah Terealisasi">
+                <Input.TextArea rows={5} placeholder="Jelaskan Dampak Yang Sudah Terealisasi" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
+              </Form.Item>
+
+              <Form.Item name="developmentPlan" label="Rencana dan Potensi Untuk Keberlanjutan Program">
+                <Input.TextArea rows={5} placeholder="Jelaskan Rencana dan Potensi Untuk Keberlanjutan Program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
+              </Form.Item>
+            </Form>
+          )}
         </Spin>
       </Modal>
     </div>

@@ -17,7 +17,7 @@ const mapFromApi = (i) => ({
   id: i.id, nama_desa: i.villageName || '-', nama_kelompok: i.groupName || '-',
   pilar: i.pillar?.name || '-', kategori: i.category?.name || '-',
   wilayah: [i.province?.name, i.city?.name, i.district?.name, i.villageRegion?.name].filter(Boolean).join(' - ') || '-',
-  grup_astra: i.astraGroup?.name || '-', durasi_program: i.programDuration || '-', latar_belakang: i.background || '-', dampak_program: i.programImpact || '-',
+  grup_astra: i.astraGroupCustom || i.astraGroup?.name || '-', durasi_program: i.programDuration || '-', latar_belakang: i.background || '-', dampak_program: i.programImpact || '-',
   rencana_pengembangan: i.developmentPlan || '-',
   jenis_dsa: i.dsaType || '-', phone_number: i.phoneNumber || '-',
   nama_kontak_darurat: i.emergencyContactName || '-', no_hp_kontak_darurat: i.emergencyContactPhone || '-',

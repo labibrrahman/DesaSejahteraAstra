@@ -58,20 +58,7 @@ const statsData = [
   { number: '15k', label: 'UMKM Berkembang' },
 ];
 
-const faqData = [
-  {
-    question: 'Bagaimana cara mendaftarkan desa kami?',
-    answer: 'Pendaftaran dapat dilakukan melalui tombol "Daftar Sekarang" di atas dengan mengisi formulir profil desa dan mengunggah dokumen pendukung program CSR yang sedang atau akan dijalankan. Tim Astra akan melakukan verifikasi data awal dalam waktu 7-14 hari kerja.',
-  },
-  {
-    question: 'Apa saja kriteria penilaian utama?',
-    answer: 'Kriteria penilaian meliputi aspek sosial, ekonomi, lingkungan, dan tata kelola desa. Setiap pilar dinilai berdasarkan dampak, keberlanjutan, dan keterlibatan masyarakat lokal.',
-  },
-  {
-    question: 'Kapan pengumuman hasil penilaian dilakukan?',
-    answer: 'Pengumuman hasil penilaian dilakukan setiap triwulan melalui situs resmi dan notifikasi langsung ke peserta yang terdaftar.',
-  },
-];
+// ─── Component ───────────────────────────────────────────────────────────────
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -79,6 +66,16 @@ const LandingPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { isAuthenticated, user } = useAuthStore();
+  const [faqData, setFaqData] = useState([]);
+
+  useEffect(() => {
+    import('../../services/adminService').then(({ default: adminService }) => {
+      adminService.getFaqs({ isActive: true }).then(result => {
+        const list = Array.isArray(result) ? result : [];
+        setFaqData(list.sort((a, b) => (a.order || 0) - (b.order || 0)));
+      }).catch(() => {});
+    });
+  }, []);
 
   const px = isMobile ? 20 : 30;
 

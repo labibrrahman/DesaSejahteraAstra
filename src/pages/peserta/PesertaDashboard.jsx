@@ -142,7 +142,7 @@ const PesertaDashboard = () => {
           <Col xs={12} sm={12} md={12}>
               <img src={astraLogo} alt="Astra Logo" style={{ height: 22, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
           </Col>
-          <Col xs={12} sm={12} md={12} align="end">
+          <Col xs={12} sm={12} md={12} align="right">
               <img src={satuIndoLogo} alt="Satu Indonesia Logo" style={{ height: 35, objectFit: 'contain' }} />
           </Col>
         </Row>
@@ -720,7 +720,7 @@ const PesertaDashboard = () => {
                 </Col>
                 <Col xs={12} sm={8}>
                   <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Binaan</Text>
-                  <Text strong style={{ fontSize: 13 }}>{reg?.astraGroup?.name || '—'}</Text>
+                  <Text strong style={{ fontSize: 13 }}>{reg?.astraGroupCustom || reg?.astraGroup?.name || '—'}</Text>
                 </Col>
                 <Col xs={12} sm={8}>
                   <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Durasi Program</Text>

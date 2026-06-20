@@ -73,26 +73,26 @@ const masterService = {
   },
 
   /** GET /api/regions?type=province — ambil provinsi */
-  getProvinces: async () => {
-    const { data } = await api.get('/regions', { params: { type: 'province' } });
+  getProvinces: async (params = {}) => {
+    const { data } = await api.get('/regions', { params: { type: 'province', ...params } });
     return data.data || data;
   },
 
   /** GET /api/regions?parent_id=...&type=city — ambil kabupaten/kota */
-  getCities: async (provinceId) => {
-    const { data } = await api.get('/regions', { params: { parent_id: provinceId, type: 'city' } });
+  getCities: async (provinceId, params = {}) => {
+    const { data } = await api.get('/regions', { params: { parent_id: provinceId, type: 'city', ...params } });
     return data.data || data;
   },
 
   /** GET /api/regions?parent_id=...&type=district — ambil kecamatan */
-  getDistricts: async (cityId) => {
-    const { data } = await api.get('/regions', { params: { parent_id: cityId, type: 'district' } });
+  getDistricts: async (cityId, params = {}) => {
+    const { data } = await api.get('/regions', { params: { parent_id: cityId, type: 'district', ...params } });
     return data.data || data;
   },
 
   /** GET /api/regions?parent_id=...&type=village — ambil desa/kelurahan */
-  getVillages: async (districtId) => {
-    const { data } = await api.get('/regions', { params: { parent_id: districtId, type: 'village' } });
+  getVillages: async (districtId, params = {}) => {
+    const { data } = await api.get('/regions', { params: { parent_id: districtId, type: 'village', ...params } });
     return data.data || data;
   },
 

@@ -91,6 +91,18 @@ const FormPendaftaran = () => {
   const [provinceOptions, setProvinceOptions] = useState([]);
   const [cityOptions, setCityOptions] = useState([]);
   const [districtOptions, setDistrictOptions] = useState([]);
+  const [provincePage, setProvincePage] = useState(1);
+  const [cityPage, setCityPage] = useState(1);
+  const [districtPage, setDistrictPage] = useState(1);
+  const [desaPage, setDesaPage] = useState(1);
+  const [provinceHasMore, setProvinceHasMore] = useState(false);
+  const [cityHasMore, setCityHasMore] = useState(false);
+  const [districtHasMore, setDistrictHasMore] = useState(false);
+  const [desaHasMore, setDesaHasMore] = useState(false);
+  const [provinceSearch, setProvinceSearch] = useState('');
+  const [citySearch, setCitySearch] = useState('');
+  const [districtSearch, setDistrictSearch] = useState('');
+  const [desaSearch, setDesaSearch] = useState('');
   const [loadingProvinces, setLoadingProvinces] = useState(false);
   const [loadingCities, setLoadingCities] = useState(false);
   const [loadingDistricts, setLoadingDistricts] = useState(false);
@@ -125,12 +137,27 @@ const FormPendaftaran = () => {
 
   // ── Fetch master data + existing registration on mount ──────────────────────
 
+  // ── Debounce helper ────────────────────────────────────────────────────────
+  const debounceTimers = React.useRef({});
+  const debounce = (key, fn, delay = 500) => {
+    clearTimeout(debounceTimers.current[key]);
+    debounceTimers.current[key] = setTimeout(fn, delay);
+  };
+
   // ── Fetch provinces dari API ────────────────────────────────────────────────
-  const fetchProvinces = async () => {
+  const PAGE_SIZE = 10;
+
+  const fetchProvinces = async (search, page = 1, append = false) => {
     setLoadingProvinces(true);
     try {
-      const result = await masterService.getProvinces();
-      setProvinceOptions(Array.isArray(result) ? result.map(p => ({ id: p.id, name: p.name })) : []);
+      const params = { page, limit: PAGE_SIZE };
+      if (search) params.search = search;
+      const result = await masterService.getProvinces(params);
+      const list = Array.isArray(result) ? result.map(p => ({ id: p.id, name: p.name })) : [];
+      setProvinceOptions(prev => append ? [...prev, ...list] : list);
+      setProvinceHasMore(list.length >= PAGE_SIZE);
+      setProvincePage(page);
+      if (search !== undefined) setProvinceSearch(search);
     } catch {
       console.error('Gagal memuat provinsi');
     } finally {
@@ -139,12 +166,18 @@ const FormPendaftaran = () => {
   };
 
   // ── Fetch kota/kabupaten dari API ──────────────────────────────────────────
-  const fetchCities = async (provinceId) => {
+  const fetchCities = async (provinceId, search, page = 1, append = false) => {
     if (!provinceId) { setCityOptions([]); return; }
     setLoadingCities(true);
     try {
-      const result = await masterService.getCities(provinceId);
-      setCityOptions(Array.isArray(result) ? result.map(c => ({ id: c.id, name: c.name })) : []);
+      const params = { page, limit: PAGE_SIZE };
+      if (search) params.search = search;
+      const result = await masterService.getCities(provinceId, params);
+      const list = Array.isArray(result) ? result.map(c => ({ id: c.id, name: c.name })) : [];
+      setCityOptions(prev => append ? [...prev, ...list] : list);
+      setCityHasMore(list.length >= PAGE_SIZE);
+      setCityPage(page);
+      if (search !== undefined) setCitySearch(search);
     } catch {
       setCityOptions([]);
     } finally {
@@ -153,12 +186,18 @@ const FormPendaftaran = () => {
   };
 
   // ── Fetch kecamatan dari API ───────────────────────────────────────────────
-  const fetchDistricts = async (cityId) => {
+  const fetchDistricts = async (cityId, search, page = 1, append = false) => {
     if (!cityId) { setDistrictOptions([]); return; }
     setLoadingDistricts(true);
     try {
-      const result = await masterService.getDistricts(cityId);
-      setDistrictOptions(Array.isArray(result) ? result.map(d => ({ id: d.id, name: d.name })) : []);
+      const params = { page, limit: PAGE_SIZE };
+      if (search) params.search = search;
+      const result = await masterService.getDistricts(cityId, params);
+      const list = Array.isArray(result) ? result.map(d => ({ id: d.id, name: d.name })) : [];
+      setDistrictOptions(prev => append ? [...prev, ...list] : list);
+      setDistrictHasMore(list.length >= PAGE_SIZE);
+      setDistrictPage(page);
+      if (search !== undefined) setDistrictSearch(search);
     } catch {
       setDistrictOptions([]);
     } finally {
@@ -167,12 +206,18 @@ const FormPendaftaran = () => {
   };
 
   // ── Fetch desa dari API ────────────────────────────────────────────────────
-  const fetchVillages = async (districtId) => {
+  const fetchVillages = async (districtId, search, page = 1, append = false) => {
     if (!districtId) { setDesaOptions([]); return; }
     setLoadingDesa(true);
     try {
-      const result = await masterService.getVillages(districtId);
-      setDesaOptions(Array.isArray(result) ? result.map(v => ({ id: v.id, name: v.name })) : []);
+      const params = { page, limit: PAGE_SIZE };
+      if (search) params.search = search;
+      const result = await masterService.getVillages(districtId, params);
+      const list = Array.isArray(result) ? result.map(v => ({ id: v.id, name: v.name })) : [];
+      setDesaOptions(prev => append ? [...prev, ...list] : list);
+      setDesaHasMore(list.length >= PAGE_SIZE);
+      setDesaPage(page);
+      if (search !== undefined) setDesaSearch(search);
     } catch {
       setDesaOptions([]);
     } finally {
@@ -232,7 +277,8 @@ const FormPendaftaran = () => {
               dampak_program: reg.programImpact || '',
               rencana_pengembangan: reg.developmentPlan || '',
               durasi_program: reg.programDuration || '',
-              grup_astra_id: reg.astraGroup?.id || null,
+              grup_astra_id: reg.astraGroupCustom ? 'others' : (reg.astraGroup?.id || null),
+              binaan_custom: reg.astraGroupCustom || '',
               jenis_dsa: reg.dsaType ? reg.dsaType.toLowerCase() : null,
               nama_ketua: reg.leaderName || '',
               phone_number: reg.phoneNumber || '',
@@ -404,7 +450,11 @@ const FormPendaftaran = () => {
       if (formData.cityId) payload.cityId = formData.cityId;
       if (formData.districtId) payload.districtId = formData.districtId;
       if (formData.villageRegionId) payload.villageRegionId = formData.villageRegionId;
-      if (formData.grup_astra_id) payload.astraGroupId = formData.grup_astra_id;
+      if (formData.grup_astra_id === 'others') {
+        payload.astraGroupCustom = formData.binaan_custom || '';
+      } else if (formData.grup_astra_id) {
+        payload.astraGroupId = formData.grup_astra_id;
+      }
 
       if (registrationId) {
         // Update registrasi yang sudah ada
@@ -599,6 +649,10 @@ const FormPendaftaran = () => {
     return (
       <div style={{ width: '100%', maxWidth: 800, marginBottom: 32, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 32 }}>
         <div style={{ marginBottom: 24 }}>
+          <Text className="text-red" style={{ fontSize: 9 }}>Catatan: Bidang yang bertanda (*) wajib diisi.</Text>
+        </div>
+
+        <div style={{ marginBottom: 24 }}>
           <Text style={{ ...labelStyle, fontSize: 15 }}>Data Desa & Kelompok</Text>
           <Text type="secondary" style={{ fontSize: 13 }}>Isi informasi identitas desa dan kelompok yang mendaftar</Text>
         </div>
@@ -636,10 +690,14 @@ const FormPendaftaran = () => {
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
               <Text style={labelStyle}>Binaan (Opsional)</Text>
-              <Select placeholder="Pilih perusahaan/grup Group Astra (Pembina) jika ada..." style={{ width: '100%' }} size="large" allowClear showSearch optionFilterProp="children"
+              <Select placeholder="Pilih Binaan..." style={{ width: '100%' }} size="large" allowClear showSearch optionFilterProp="children"
                 value={formData.grup_astra_id} onChange={val => updateField('grup_astra_id', val)}>
                 {astraGroups.map(g => <Option key={g.id} value={g.id}><span style={{ fontSize:13 }}>{g.name}</span></Option>)}
+                <Option value="others"><span style={{ fontSize:13, fontWeight: 600 }}>Lainnya...</span></Option>
               </Select>
+              {formData.grup_astra_id === 'others' && (
+                <Input placeholder="Masukkan nama binaan lainnya" style={{ ...inputStyle, marginTop: 8 }} value={formData.binaan_custom || ''} onChange={e => updateField('binaan_custom', e.target.value)} />
+              )}
             </div>
           </Col>
         </Row>
@@ -675,18 +733,34 @@ const FormPendaftaran = () => {
             <div style={fieldWrapper}>
               <Text style={labelStyle}>Provinsi *</Text>
               <Select
-                placeholder="Pilih Provinsi"
+                placeholder="Ketik untuk cari provinsi..."
                 style={{ width: '100%' }}
                 size="large"
                 showSearch
-                optionFilterProp="children"
+                optionFilterProp="label"
+                filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                 value={formData.provinceId}
                 onChange={handleProvinceChange}
+                onSearch={(val) => debounce('province', () => { setProvinceOptions([]); fetchProvinces(val, 1); }, 500)}
                 loading={loadingProvinces}
-                notFoundContent="Memuat data..."
+                notFoundContent={loadingProvinces ? 'Memuat data...' : 'Tidak ada data'}
+                allowClear
+                onClear={() => { setFormData(prev => ({ ...prev, provinceId: null, provinceName: '', cityId: null, cityName: '', districtId: null, districtName: '', villageRegionId: null, villageRegionName: '' })); setCityOptions([]); setDistrictOptions([]); setDesaOptions([]); setProvinceOptions([]); }}
+                dropdownRender={(menu) => (
+                  <div>
+                    {menu}
+                    {provinceHasMore && (
+                      <div style={{ padding: '8px 12px', textAlign: 'center', borderTop: '1px solid #f0f0f0' }}>
+                        <Button type="link" size="small" loading={loadingProvinces} onClick={() => fetchProvinces(provinceSearch, provincePage + 1, true)}>
+                          Muat Lainnya...
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
               >
                 {provinceOptions.map(p => (
-                  <Option key={p.id} value={p.id}><span style={{ fontSize:13 }}>{p.name}</span></Option>
+                  <Option key={p.id} value={p.id} label={p.name}><span style={{ fontSize:13 }}>{p.name}</span></Option>
                 ))}
               </Select>
             </div>
@@ -696,19 +770,35 @@ const FormPendaftaran = () => {
             <div style={fieldWrapper}>
               <Text style={labelStyle}>Kabupaten / Kota *</Text>
               <Select
-                placeholder="Pilih Kabupaten"
+                placeholder="Ketik untuk cari kabupaten..."
                 style={{ width: '100%' }}
                 size="large"
                 showSearch
-                optionFilterProp="children"
+                optionFilterProp="label"
+                filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                 value={formData.cityId}
                 onChange={handleCityChange}
+                onSearch={(val) => debounce('city', () => formData.provinceId && fetchCities(formData.provinceId, val), 500)}
                 disabled={!formData.provinceId}
                 loading={loadingCities}
                 notFoundContent={loadingCities ? 'Memuat data...' : 'Tidak ada data'}
+                allowClear
+                onClear={() => { setFormData(prev => ({ ...prev, cityId: null, cityName: '', districtId: null, districtName: '', villageRegionId: null, villageRegionName: '' })); setDistrictOptions([]); setDesaOptions([]); setCityOptions([]); }}
+                dropdownRender={(menu) => (
+                  <div>
+                    {menu}
+                    {cityHasMore && (
+                      <div style={{ padding: '8px 12px', textAlign: 'center', borderTop: '1px solid #f0f0f0' }}>
+                        <Button type="link" size="small" loading={loadingCities} onClick={() => fetchCities(formData.provinceId, citySearch, cityPage + 1, true)}>
+                          Muat Lainnya...
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
               >
                 {cityOptions.map(c => (
-                  <Option key={c.id} value={c.id}><span style={{ fontSize:13 }}>{c.name}</span></Option>
+                  <Option key={c.id} value={c.id} label={c.name}><span style={{ fontSize:13 }}>{c.name}</span></Option>
                 ))}
               </Select>
             </div>
@@ -718,19 +808,35 @@ const FormPendaftaran = () => {
             <div style={fieldWrapper}>
               <Text style={labelStyle}>Kecamatan *</Text>
               <Select
-                placeholder="Pilih Kecamatan"
+                placeholder="Ketik untuk cari kecamatan..."
                 style={{ width: '100%' }}
                 size="large"
                 showSearch
-                optionFilterProp="children"
+                optionFilterProp="label"
+                filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                 value={formData.districtId}
                 onChange={handleDistrictChange}
+                onSearch={(val) => debounce('district', () => formData.cityId && fetchDistricts(formData.cityId, val), 500)}
                 disabled={!formData.cityId}
                 loading={loadingDistricts}
                 notFoundContent={loadingDistricts ? 'Memuat data...' : 'Tidak ada data'}
+                allowClear
+                onClear={() => { setFormData(prev => ({ ...prev, districtId: null, districtName: '', villageRegionId: null, villageRegionName: '' })); setDesaOptions([]); setDistrictOptions([]); }}
+                dropdownRender={(menu) => (
+                  <div>
+                    {menu}
+                    {districtHasMore && (
+                      <div style={{ padding: '8px 12px', textAlign: 'center', borderTop: '1px solid #f0f0f0' }}>
+                        <Button type="link" size="small" loading={loadingDistricts} onClick={() => fetchDistricts(formData.cityId, districtSearch, districtPage + 1, true)}>
+                          Muat Lainnya...
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
               >
                 {districtOptions.map(d => (
-                  <Option key={d.id} value={d.id}><span style={{ fontSize:13 }}>{d.name}</span></Option>
+                  <Option key={d.id} value={d.id} label={d.name}><span style={{ fontSize:13 }}>{d.name}</span></Option>
                 ))}
               </Select>
             </div>
@@ -740,19 +846,35 @@ const FormPendaftaran = () => {
             <div style={fieldWrapper}>
               <Text style={labelStyle}>Desa / Kelurahan *</Text>
               <Select
-                placeholder="Pilih Desa / Kelurahan"
+                placeholder="Ketik untuk cari desa..."
                 style={{ width: '100%' }}
                 size="large"
                 showSearch
-                optionFilterProp="children"
+                optionFilterProp="label"
+                filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                 value={formData.villageRegionId}
                 onChange={handleVillageChange}
+                onSearch={(val) => debounce('village', () => formData.districtId && fetchVillages(formData.districtId, val), 500)}
                 disabled={!formData.districtId}
                 loading={loadingDesa}
                 notFoundContent={loadingDesa ? 'Memuat data...' : 'Tidak ada data desa'}
+                allowClear
+                onClear={() => { updateField('villageRegionId', null); setDesaOptions([]); }}
+                dropdownRender={(menu) => (
+                  <div>
+                    {menu}
+                    {desaHasMore && (
+                      <div style={{ padding: '8px 12px', textAlign: 'center', borderTop: '1px solid #f0f0f0' }}>
+                        <Button type="link" size="small" loading={loadingDesa} onClick={() => fetchVillages(formData.districtId, desaSearch, desaPage + 1, true)}>
+                          Muat Lainnya...
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
               >
                 {desaOptions.map(d => (
-                  <Option key={d.id} value={d.id}><span style={{ fontSize:13 }}>{d.name}</span></Option>
+                  <Option key={d.id} value={d.id} label={d.name}><span style={{ fontSize:13 }}>{d.name}</span></Option>
                 ))}
               </Select>
             </div>
@@ -833,7 +955,9 @@ const FormPendaftaran = () => {
     </Col>
   );
 
-  const grupLabel = astraGroups.find(g => g.id === formData.grup_astra_id)?.name;
+  const grupLabel = formData.grup_astra_id === 'others'
+    ? formData.binaan_custom || 'Lainnya'
+    : astraGroups.find(g => g.id === formData.grup_astra_id)?.name || null;
   const kategoriLabel = allCategories.find(c => c.id === selectedKategoriId)?.name;
 
   const renderStep4 = () => (

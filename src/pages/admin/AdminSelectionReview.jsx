@@ -45,11 +45,16 @@ const AdminSelectionReview = () => {
   const [durasiFilter, setDurasiFilter] = useState(null);
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
 
-  // Detail modal
+  // Detail modal (penilaian juri)
   const [detailVisible, setDetailVisible] = useState(false);
   const [detailData, setDetailData] = useState([]);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailPeserta, setDetailPeserta] = useState(null);
+
+  // Detail modal (registrasi peserta)
+  const [regDetailVisible, setRegDetailVisible] = useState(false);
+  const [regDetailData, setRegDetailData] = useState(null);
+  const [regDetailLoading, setRegDetailLoading] = useState(false);
 
   // ── Fetch data ────────────────────────────────────────────────────────────
   const fetchData = useCallback(async (page = 1, limit = 10) => {
@@ -188,6 +193,21 @@ const AdminSelectionReview = () => {
     });
   };
 
+  // ── Detail Registrasi Peserta ────────────────────────────────────────────
+  const showRegDetail = async (record) => {
+    setRegDetailVisible(true);
+    setRegDetailLoading(true);
+    try {
+      const detail = await adminService.getRegistrationDetail(record.id);
+      setRegDetailData(detail);
+    } catch (error) {
+      message.error('Gagal memuat detail peserta');
+      setRegDetailData(null);
+    } finally {
+      setRegDetailLoading(false);
+    }
+  };
+
   // ── Detail Assessment ─────────────────────────────────────────────────────
   const showDetail = async (record) => {
     setDetailPeserta(record);
@@ -220,7 +240,11 @@ const AdminSelectionReview = () => {
       title: 'Nama DSA',
       dataIndex: 'namaDsa',
       key: 'namaDsa',
-      render: (text) => <Text strong>{text}</Text>,
+      render: (text, record) => (
+        <Button type="link" onClick={() => showRegDetail(record)} style={{ padding: 0, fontWeight: 600 }}>
+          {text}
+        </Button>
+      ),
     },
     {
       title: 'Pilar',
@@ -507,6 +531,110 @@ const AdminSelectionReview = () => {
                 </div>
               ))}
             </>
+          )}
+        </Spin>
+      </Modal>
+
+      {/* Detail Registrasi Modal */}
+      <Modal
+        open={regDetailVisible}
+        closable={false}
+        onCancel={() => { setRegDetailVisible(false); setRegDetailData(null); }}
+        footer={[
+          <Button key="close" onClick={() => { setRegDetailVisible(false); setRegDetailData(null); }}>Tutup</Button>,
+        ]}
+        width={720}
+        styles={{ body: { padding: 0 } }}
+      >
+        <Spin spinning={regDetailLoading}>
+          {regDetailData && (
+            <div>
+              {/* Header */}
+              <div style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', padding: '24px 28px', borderRadius: '12px 12px 0 0', position: 'relative' }}>
+                <div style={{ position: 'absolute', right: -30, top: -30, width: 120, height: 120, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)' }} />
+                <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Detail Pendaftaran</Text>
+                <Title level={4} style={{ color: '#fff', margin: 0, fontWeight: 600, fontSize: 20 }}>{regDetailData.villageName || '-'}</Title>
+                <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13, marginTop: 6, display: 'block' }}>{regDetailData.groupName || '-'}</Text>
+              </div>
+
+              {/* Content */}
+              <div style={{ padding: '24px 28px 28px' }}>
+                {/* Identitas */}
+                <div style={{ marginBottom: 24 }}>
+                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>🏷️ Identitas Pendaftar</Text>
+                  <Row gutter={[20, 16]}>
+                    {[
+                      { label: 'Jenis DSA', value: regDetailData.dsaType },
+                      { label: 'Nomor HP', value: regDetailData.phoneNumber },
+                      { label: 'Nama Kontak Darurat', value: regDetailData.emergencyContactName },
+                      { label: 'No HP Kontak Darurat', value: regDetailData.emergencyContactPhone },
+                    ].map((item, idx) => (
+                      <Col xs={12} sm={8} key={idx}>
+                        <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>{item.label}</Text>
+                        <Text strong style={{ fontSize: 13 }}>{item.value || '—'}</Text>
+                      </Col>
+                    ))}
+                  </Row>
+                </div>
+
+                {/* Informasi Program */}
+                <div style={{ marginBottom: 24 }}>
+                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>📋 Informasi Program</Text>
+                  <Row gutter={[20, 16]}>
+                    {[
+                      { label: 'Pilar', value: regDetailData.pillar?.name },
+                      { label: 'Kategori', value: regDetailData.category?.name },
+                      { label: 'Binaan', value: regDetailData.astraGroup?.name },
+                      { label: 'Durasi Program', value: regDetailData.programDuration },
+                    ].map((item, idx) => (
+                      <Col xs={12} sm={6} key={idx}>
+                        <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>{item.label}</Text>
+                        <Text strong style={{ fontSize: 13 }}>{item.value || '—'}</Text>
+                      </Col>
+                    ))}
+                  </Row>
+                </div>
+
+                {/* Wilayah */}
+                <div style={{ marginBottom: 24 }}>
+                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>📍 Lokasi & Wilayah</Text>
+                  <Row gutter={[20, 16]}>
+                    {[
+                      { label: 'Provinsi', value: regDetailData.province?.name },
+                      { label: 'Kabupaten / Kota', value: regDetailData.city?.name },
+                      { label: 'Kecamatan', value: regDetailData.district?.name },
+                      { label: 'Desa / Kelurahan', value: regDetailData.villageRegion?.name },
+                    ].map((item, idx) => (
+                      <Col xs={12} sm={6} key={idx}>
+                        <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>{item.label}</Text>
+                        <Text strong style={{ fontSize: 13 }}>{item.value || '—'}</Text>
+                      </Col>
+                    ))}
+                    <Col span={24}>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Alamat Lengkap</Text>
+                      <Text style={{ fontSize: 13, lineHeight: 1.6 }}>{regDetailData.address || '—'}</Text>
+                    </Col>
+                  </Row>
+                </div>
+
+                {/* Deskripsi Program */}
+                <div>
+                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>📝 Deskripsi Program</Text>
+                  {[
+                    { label: 'Latar Belakang', value: regDetailData.background, color: '#1890ff' },
+                    { label: 'Dampak Yang Sudah Terealisasi', value: regDetailData.programImpact, color: '#52c41a' },
+                    { label: 'Rencana Pengembangan', value: regDetailData.developmentPlan, color: '#722ed1' },
+                  ].map((item, idx) => (
+                    <div key={idx} style={{ marginBottom: idx < 2 ? 12 : 0 }}>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>{item.label}</Text>
+                      <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: `3px solid ${item.color}` }}>
+                        <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{item.value || '—'}</Text>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           )}
         </Spin>
       </Modal>

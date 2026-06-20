@@ -598,15 +598,6 @@ const FormPendaftaran = () => {
 
     return (
       <div style={{ width: '100%', maxWidth: 800, marginBottom: 32, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, padding: 32 }}>
-        <div style={{...fieldWrapper, visibility :'hidden'}}>
-          <Text style={labelStyle}>Jenis DSA *</Text>
-          <Select placeholder="Pilih kategori terlebih dahulu" style={{ width: '100%' }} size="large"
-            value={formData.jenis_dsa} disabled>
-            <Option value="kelompok">Kelompok</Option>
-            <Option value="individu">Individu</Option>
-          </Select>
-        </div>
-
         <div style={{ marginBottom: 24 }}>
           <Text style={{ ...labelStyle, fontSize: 15 }}>Data Desa & Kelompok</Text>
           <Text type="secondary" style={{ fontSize: 13 }}>Isi informasi identitas desa dan kelompok yang mendaftar</Text>
@@ -647,7 +638,7 @@ const FormPendaftaran = () => {
               <Text style={labelStyle}>Binaan (Opsional)</Text>
               <Select placeholder="Pilih perusahaan/grup Group Astra (Pembina) jika ada..." style={{ width: '100%' }} size="large" allowClear showSearch optionFilterProp="children"
                 value={formData.grup_astra_id} onChange={val => updateField('grup_astra_id', val)}>
-                {astraGroups.map(g => <Option key={g.id} value={g.id}>{g.name}</Option>)}
+                {astraGroups.map(g => <Option key={g.id} value={g.id}><span style={{ fontSize:13 }}>{g.name}</span></Option>)}
               </Select>
             </div>
           </Col>
@@ -695,7 +686,7 @@ const FormPendaftaran = () => {
                 notFoundContent="Memuat data..."
               >
                 {provinceOptions.map(p => (
-                  <Option key={p.id} value={p.id}>{p.name}</Option>
+                  <Option key={p.id} value={p.id}><span style={{ fontSize:13 }}>{p.name}</span></Option>
                 ))}
               </Select>
             </div>
@@ -717,7 +708,7 @@ const FormPendaftaran = () => {
                 notFoundContent={loadingCities ? 'Memuat data...' : 'Tidak ada data'}
               >
                 {cityOptions.map(c => (
-                  <Option key={c.id} value={c.id}>{c.name}</Option>
+                  <Option key={c.id} value={c.id}><span style={{ fontSize:13 }}>{c.name}</span></Option>
                 ))}
               </Select>
             </div>
@@ -739,7 +730,7 @@ const FormPendaftaran = () => {
                 notFoundContent={loadingDistricts ? 'Memuat data...' : 'Tidak ada data'}
               >
                 {districtOptions.map(d => (
-                  <Option key={d.id} value={d.id}>{d.name}</Option>
+                  <Option key={d.id} value={d.id}><span style={{ fontSize:13 }}>{d.name}</span></Option>
                 ))}
               </Select>
             </div>
@@ -761,11 +752,19 @@ const FormPendaftaran = () => {
                 notFoundContent={loadingDesa ? 'Memuat data...' : 'Tidak ada data desa'}
               >
                 {desaOptions.map(d => (
-                  <Option key={d.id} value={d.id}>{d.name}</Option>
+                  <Option key={d.id} value={d.id}><span style={{ fontSize:13 }}>{d.name}</span></Option>
                 ))}
               </Select>
             </div>
           </Col>
+          <div style={{visibility :'hidden'}}>
+            <Text >Jenis DSA *</Text>
+            <Select placeholder="Pilih kategori terlebih dahulu"
+              value={formData.jenis_dsa} disabled>
+              <Option value="kelompok"><span style={{ fontSize:13 }}>Kelompok</span></Option>
+              <Option value="individu"><span style={{ fontSize:13 }}>Individu</span></Option>
+            </Select>
+          </div>
         </Row>
       </div>
     );
@@ -784,10 +783,10 @@ const FormPendaftaran = () => {
         <Text style={labelStyle}>Durasi Program *</Text>
         <Select placeholder="Pilih durasi program..." style={{ width: '100%' }} size="large"
           value={formData.durasi_program} onChange={val => updateField('durasi_program', val)}>
-          <Option value="<1 Tahun">&lt;1 Tahun</Option>
-          <Option value="1-3 Tahun">1-3 Tahun</Option>
-          <Option value="3-5 Tahun">3-5 Tahun</Option>
-          <Option value=">5 Tahun">&gt;5 Tahun</Option>
+          <Option value="<1 Tahun"><span style={{ fontSize:13 }}>&lt;1 Tahun</span></Option>
+          <Option value="1-3 Tahun"><span style={{ fontSize:13 }}>1-3 Tahun</span></Option>
+          <Option value="3-5 Tahun"><span style={{ fontSize:13 }}>3-5 Tahun</span></Option>
+          <Option value=">5 Tahun"><span style={{ fontSize:13 }}>&gt;5 Tahun</span></Option>
         </Select>
       </div>
 

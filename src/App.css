@@ -61,3 +61,12 @@ h1 {
 .ant-form-item-label > label {
   font-weight: 500;
 }
+
+.custom-font-select .ant-select-selection-item {
+  font-size: 13px !important;
+}
+
+/* 2. Mengubah font teks daftar pilihan di dalam dropdown */
+.custom-dropdown-font .ant-select-item-option-content {
+  font-size: 13px !important;
+}

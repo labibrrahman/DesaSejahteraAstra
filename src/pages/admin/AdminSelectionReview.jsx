@@ -23,6 +23,11 @@ const getScoreIndicator = (score) => {
   return { label: 'Sangat Baik', color: '#2563eb' };
 };
 
+const getStatusSend = (isSend) => {
+  if (isSend) return { label: 'Terkirim', color: '#22c55e', bgColor:'' };
+  if (isSend) return { label: 'Baik', color: '#94a3b8' };
+};
+
 const STATUS_MAP = {
   'belum_diputuskan': { label: 'Belum Diputuskan', color: 'warning' },
   'lolos': { label: 'Lolos', color: 'success' },
@@ -238,6 +243,9 @@ const AdminSelectionReview = () => {
   const columns = [
     {
       title: 'Nama DSA',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       dataIndex: 'namaDsa',
       key: 'namaDsa',
       render: (text, record) => (
@@ -248,12 +256,18 @@ const AdminSelectionReview = () => {
     },
     {
       title: 'Pilar',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       dataIndex: 'pillar',
       key: 'pillar',
       render: (p) => p?.name || '-',
     },
     {
       title: 'Wilayah',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       key: 'wilayah',
       render: (_, r) => {
         const w = [r.province?.name, r.city?.name, r.district?.name].filter(Boolean).join(', ');
@@ -262,6 +276,9 @@ const AdminSelectionReview = () => {
     },
     {
       title: 'Jumlah Juri',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       dataIndex: 'jurorCount',
       key: 'jurorCount',
       align: 'center',
@@ -269,6 +286,9 @@ const AdminSelectionReview = () => {
     },
     {
       title: 'Rata-rata',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       dataIndex: 'averageScore',
       key: 'averageScore',
       align: 'center',
@@ -285,6 +305,9 @@ const AdminSelectionReview = () => {
     },
     {
       title: 'Status',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       dataIndex: 'statusLabel',
       key: 'statusLabel',
       render: (label, record) => {
@@ -294,18 +317,29 @@ const AdminSelectionReview = () => {
     },
     {
       title: 'Status Email',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       key: 'emailStatus',
       align: 'center',
       render: (_, record) => {
         if (record.status !== 'finalist' && record.status !== 'rejected') {
           return <Text type="secondary" style={{ fontSize: 12 }}>—</Text>;
         }
-        // Placeholder: status email akan ditambahkan di BE nanti
-        return <Tag color="default" style={{ fontSize: 11 }}>Belum Dikirim</Tag>;
+
+        const ind = getStatusSend(record.isEmailSent);
+        return (
+          <div>
+            <Tag color={ind.color} style={{ fontSize: 11, marginTop: 4 }}>{record.isEmailSent ? 'Terkirim':'Belum Dikirim'}</Tag>
+          </div>
+        );
       },
     },
     {
       title: 'Aksi',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       key: 'action',
       width: 140,
       align: 'center',
@@ -350,7 +384,7 @@ const AdminSelectionReview = () => {
           <Button icon={<ExportOutlined />} onClick={handleExport}>Export Excel</Button>
           {summary.lolosCount > 0 && (
             <Button icon={<ExportOutlined />} onClick={handleSendEmailAllLolos} style={{ background: '#2563eb', borderColor: '#2563eb', color: '#fff' }}>
-              Kirim Email Semua Lolos ({summary.lolosCount})
+              kirim email (untuk semua yang lolos) 
             </Button>
           )}
         </Space>

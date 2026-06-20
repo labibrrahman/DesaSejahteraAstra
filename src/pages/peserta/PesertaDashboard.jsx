@@ -60,7 +60,7 @@ const PesertaDashboard = () => {
   const nama = reg?.user?.name || 'Peserta';
   const namaDesa = reg?.villageName || '—';
   const namaKelompok = reg?.groupName || '—';
-  const namaLabel = reg?.dsaType === 'Individu' ? 'Nama Peserta' : 'Nama Penanggung Jawab';
+  const namaLabel = 'Nama Peserta / Penanggung Jawab';
   const pilar = reg?.pillar?.name || '—';
   const status = dash?.registration?.status || 'draft';
 
@@ -422,7 +422,7 @@ const PesertaDashboard = () => {
                   <span style={{ fontWeight: 600 }}>Jadwal Acara</span>
                 </div>
               }
-              style={{ borderRadius: 12, border: '1px solid #e2e8f0' }}
+              style={{ borderRadius: 12, border: '1px solid #e2e8f0', marginBottom:'20px' }}
               bodyStyle={{ padding: 0 }}
             >
               {/* Tahap 1 */}

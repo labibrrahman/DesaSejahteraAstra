@@ -7,6 +7,7 @@ import {
   Button,
   Input,
   Select,
+  Form,
   Row,
   Col,
   Typography,
@@ -18,6 +19,7 @@ import {
 import {
   SearchOutlined,
   EyeOutlined,
+  EditOutlined,
   ExportOutlined,
   CloseOutlined,
 } from '@ant-design/icons';
@@ -97,6 +99,13 @@ const AdminPesertaList = () => {
   const [selectedPeserta, setSelectedPeserta] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
+  // Edit modal
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editRecord, setEditRecord] = useState(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editSubmitting, setEditSubmitting] = useState(false);
+  const [editForm] = Form.useForm();
+
   /** Fetch registrations dari API */
   const fetchRegistrations = useCallback(async (page = 1, limit = 10) => {
     setLoading(true);
@@ -170,6 +179,49 @@ const AdminPesertaList = () => {
     }
   };
 
+  /** Buka modal edit */
+  const showEditModal = async (record) => {
+    setEditLoading(true);
+    setEditModalVisible(true);
+    try {
+      const detail = await adminService.getRegistrationDetail(record.id);
+      setEditRecord(detail);
+      editForm.setFieldsValue({
+        status: detail.status,
+        villageName: detail.villageName,
+        groupName: detail.groupName,
+        phoneNumber: detail.phoneNumber,
+        dsaType: detail.dsaType,
+        leaderName: detail.leaderName,
+      });
+    } catch (error) {
+      message.error('Gagal memuat data');
+      setEditModalVisible(false);
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  /** Submit edit */
+  const handleEditSubmit = async () => {
+    try {
+      const values = await editForm.validateFields();
+      setEditSubmitting(true);
+      await adminService.updateRegistrationStatus(editRecord.id, {
+        status: values.status,
+      });
+      message.success('Data berhasil diperbarui');
+      setEditModalVisible(false);
+      editForm.resetFields();
+      setEditRecord(null);
+      fetchRegistrations(pagination.current, pagination.pageSize);
+    } catch (error) {
+      message.error(error.response?.data?.message || 'Gagal memperbarui data');
+    } finally {
+      setEditSubmitting(false);
+    }
+  };
+
   /** Handle perubahan halaman */
   const handleTableChange = (pag) => {
     fetchRegistrations(pag.current, pag.pageSize);
@@ -216,6 +268,9 @@ const AdminPesertaList = () => {
   const columns = [
     {
       title: 'Nama DSA',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       dataIndex: 'nama_desa',
       key: 'nama_desa',
       render: (text, record) => (
@@ -224,12 +279,39 @@ const AdminPesertaList = () => {
         </Button>
       ),
     },
-    { title: 'Nama Peserta/Penanggung Jawab', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
-    { title: 'Pilar', dataIndex: 'pilar', key: 'pilar' },
-    { title: 'Kategori', dataIndex: 'kategori', key: 'kategori' },
-    { title: 'Wilayah', dataIndex: 'wilayah', key: 'wilayah' },
+    { 
+      title: 'Nama Peserta/Penanggung Jawab', 
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
+      dataIndex: 'nama_kelompok', 
+      key: 'nama_kelompok' },
+    { 
+      title: 'Pilar', 
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
+      dataIndex: 'pilar', 
+      key: 'pilar' },
+    { 
+      title: 'Kategori', 
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
+      dataIndex: 'kategori', 
+      key: 'kategori' },
+    { 
+      title: 'Wilayah', 
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
+      dataIndex: 'wilayah', 
+      key: 'wilayah' },
     {
       title: 'Status',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       dataIndex: 'status',
       key: 'status',
       render: (status) => {
@@ -242,15 +324,29 @@ const AdminPesertaList = () => {
         </Tag>)
       },
     },
-    // { title: 'Juri', dataIndex: 'juri', key: 'juri' },
-    { title: 'Tanggal', dataIndex: 'tanggal_daftar', key: 'tanggal_daftar' },
+    { 
+      title: 'Tanggal', 
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
+      dataIndex: 'tanggal_daftar', 
+      key: 'tanggal_daftar' },
     {
       title: 'Aksi',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       key: 'action',
+      width: 200,
       render: (_, record) => (
-        <Button type="link" icon={<EyeOutlined />} onClick={() => showDetail(record)}>
-          Detail
-        </Button>
+        <Space>
+          <Button type="link" icon={<EyeOutlined />} onClick={() => showDetail(record)} style={{ padding: '0 4px' }}>
+            Detail
+          </Button>
+          <Button type="link" icon={<EditOutlined />} onClick={() => showEditModal(record)} style={{ padding: '0 4px' }}>
+            Edit
+          </Button>
+        </Space>
       ),
     },
   ];
@@ -509,6 +605,69 @@ const AdminPesertaList = () => {
               </div>
             </div>
           )}
+        </Spin>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        title="Edit Data Peserta"
+        open={editModalVisible}
+        onOk={handleEditSubmit}
+        confirmLoading={editSubmitting}
+        onCancel={() => { setEditModalVisible(false); editForm.resetFields(); setEditRecord(null); }}
+        okText="Simpan"
+        cancelText="Batal"
+        width={600}
+      >
+        <Spin spinning={editLoading}>
+          <Form form={editForm} layout="vertical">
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="status" label="Status Pendaftaran" rules={[{ required: true, message: 'Pilih status' }]}>
+                  <Select placeholder="Pilih status">
+                    <Option value="draft">Draft</Option>
+                    <Option value="waiting_screening">Menunggu Screening</Option>
+                    <Option value="being_assessed">Sedang Dinilai</Option>
+                    <Option value="assessed">Selesai Dinilai</Option>
+                    <Option value="finalist">Finalis</Option>
+                    <Option value="rejected">Ditolak</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="dsaType" label="Jenis DSA">
+                  <Select placeholder="Pilih jenis DSA" disabled>
+                    <Option value="Kelompok">Kelompok</Option>
+                    <Option value="Individu">Individu</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="villageName" label="Nama DSA">
+                  <Input disabled />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="groupName" label="Nama Kelompok">
+                  <Input disabled />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item name="leaderName" label="Nama Penanggung Jawab">
+                  <Input disabled />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item name="phoneNumber" label="Nomor HP">
+                  <Input disabled />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
         </Spin>
       </Modal>
     </div>

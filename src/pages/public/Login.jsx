@@ -108,7 +108,7 @@ const Login = ({ adminMode = false }) => {
     }
 
     return (
-      <Layout style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
+      <Layout style={{ minHeight: '60vh', background: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
         <div style={{ background: '#fff', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', flexShrink: 0 }}>
           <img src={astraLogo} alt="Astra" style={{ height: 24, objectFit: 'contain' }} />
           {/* <Text strong style={{ fontSize: 16, color: '#005BAA', letterSpacing: 0.5 }}>ASTRA</Text> */}

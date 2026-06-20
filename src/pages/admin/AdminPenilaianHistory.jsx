@@ -13,6 +13,7 @@ import {
   Descriptions,
   Spin,
   message,
+  Select
 } from 'antd';
 import {
   SearchOutlined,
@@ -20,6 +21,7 @@ import {
   ExportOutlined,
 } from '@ant-design/icons';
 import adminService from '../../services/adminService';
+import masterService from '../../services/masterService';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -48,6 +50,8 @@ const AdminPenilaianHistory = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [pilarFilter, setPilarFilter] = useState(null);
+  const [pilarOptions, setPilarOptions] = useState([]);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -63,6 +67,7 @@ const AdminPenilaianHistory = () => {
     try {
       const params = { page, limit };
       if (searchText) params.search = searchText;
+      if (pilarFilter) params.pillar_id = pilarFilter;
 
       const result = await adminService.getAssessments(params);
 
@@ -90,11 +95,20 @@ const AdminPenilaianHistory = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchText]);
+  }, [searchText, pilarFilter]);
+
+  /** Fetch pilar untuk filter */
+  const fetchPilars = useCallback(async () => {
+    try {
+      const result = await masterService.getPillars();
+      setPilarOptions((result || []).map(p => ({ id: p.id, name: p.name })));
+    } catch { /* ignore */ }
+  }, []);
 
   useEffect(() => {
     fetchAssessments(1, pagination.pageSize);
-  }, [fetchAssessments, pagination.pageSize]);
+    fetchPilars();
+  }, [fetchAssessments, pagination.pageSize, fetchPilars]);
 
   /** Fetch detail assessment */
   const showDetail = async (record) => {
@@ -166,6 +180,9 @@ const AdminPenilaianHistory = () => {
   const columns = [
     {
       title: 'Nama DSA',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       dataIndex: 'nama_desa',
       key: 'nama_desa',
       render: (text, record) => (
@@ -174,17 +191,41 @@ const AdminPenilaianHistory = () => {
         </Button>
       ),
     },
-    { title: 'Nama Peserta/Penanggung Jawab', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
-    { title: 'Pilar', dataIndex: 'pilar', key: 'pilar' },
-    { title: 'Kategori', dataIndex: 'kategori', key: 'kategori' },
+    { 
+      title: 'Nama Peserta/Penanggung Jawab', 
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
+      dataIndex: 'nama_kelompok', 
+      key: 'nama_kelompok' },
+    { 
+      title: 'Pilar', 
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
+      dataIndex: 'pilar', 
+      key: 'pilar' },
+    { 
+      title: 'Kategori', 
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
+      dataIndex: 'kategori', 
+      key: 'kategori' },
     {
       title: 'Juri',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       dataIndex: 'juri',
       key: 'juri',
       render: (juri) => <Tag color="blue">{juri}</Tag>,
     },
     {
       title: 'Kriteria 1',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       dataIndex: 'kriteria1',
       key: 'kriteria1',
       render: (score) => (
@@ -193,6 +234,9 @@ const AdminPenilaianHistory = () => {
     },
     {
       title: 'Kriteria 2',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       dataIndex: 'kriteria2',
       key: 'kriteria2',
       render: (score) => (
@@ -201,6 +245,9 @@ const AdminPenilaianHistory = () => {
     },
     {
       title: 'Kriteria 3',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       dataIndex: 'kriteria3',
       key: 'kriteria3',
       render: (score) => (
@@ -209,6 +256,9 @@ const AdminPenilaianHistory = () => {
     },
     {
       title: 'Total',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       dataIndex: 'total',
       key: 'total',
       render: (total) => (
@@ -219,9 +269,19 @@ const AdminPenilaianHistory = () => {
       ),
       sorter: (a, b) => a.total - b.total,
     },
-    { title: 'Tanggal', dataIndex: 'tanggal_nilai', key: 'tanggal_nilai' },
+    { 
+      title: 'Tanggal', 
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
+      dataIndex: 'tanggal_nilai', 
+      key: 'tanggal_nilai' 
+    },
     {
       title: 'Aksi',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       key: 'action',
       render: (_, record) => (
         <Button type="link" icon={<EyeOutlined />} onClick={() => showDetail(record)}>
@@ -279,20 +339,28 @@ const AdminPenilaianHistory = () => {
 
       {/* Filters */}
       <Card style={{ marginBottom: 24 }}>
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} lg={8}>
-            <Input
-              placeholder="Cari nama DSA atau Nama Peserta/Penanggung Jawab..."
-              prefix={<SearchOutlined />}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              allowClear
-            />
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Button onClick={() => setSearchText('')}>Reset</Button>
-          </Col>
-        </Row>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+          <Input
+            placeholder="Cari nama DSA..."
+            prefix={<SearchOutlined />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            allowClear
+            style={{ flex: '1 1 200px', minWidth: 180 }}
+          />
+          <Select
+            placeholder="Filter Pilar"
+            style={{ flex: '1 1 140px', minWidth: 130 }}
+            allowClear
+            value={pilarFilter}
+            onChange={(v) => setPilarFilter(v)}
+          >
+            {pilarOptions.map(p => (
+              <Option key={p.id} value={p.name}>{p.name}</Option>
+            ))}
+          </Select>
+          <Button onClick={() => { setSearchText(''); setPilarFilter(null); }}>Reset</Button>
+        </div>
       </Card>
 
       {/* Table */}

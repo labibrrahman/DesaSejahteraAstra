@@ -31,7 +31,6 @@ const useRegistration = () => {
 
         // Parse dashboard data (steps, status_label, support)
         if (dashRes.status === 'fulfilled') {
-          console.log(dashRes);
           const dashData = dashRes.value?.data?.data ?? dashRes.value?.data;
           if (dashData) {
             setDashboardData(dashData);

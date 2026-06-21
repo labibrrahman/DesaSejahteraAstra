@@ -20,6 +20,9 @@ import {
   ArrowRightOutlined,
   InfoCircleOutlined,
   CloseOutlined,
+  TagOutlined,
+  EnvironmentOutlined,
+  EditOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import useRegistration from '../../hooks/useRegistration';
@@ -52,7 +55,7 @@ const PesertaDashboard = () => {
 
   // Belum ada registrasi → redirect ke form
   if (!hasRegistration) {
-    navigate('/peserta/pendaftaran', { replace: true });
+    navigate('/register', { replace: true });
     return null;
   }
 
@@ -150,7 +153,7 @@ const PesertaDashboard = () => {
         <Row gutter={[16, 16]} justify="space-between" align="middle">
           <Col xs={24} sm={24} md={16}>
             <Title level={3} style={{ color: '#fff', margin: 0, marginBottom: 8, fontWeight: 600, fontSize: 22 }}>
-              Selamat Datang, {nama}!
+              Selamat Datang, <span style={{ whiteSpace: 'nowrap' }}>{nama}</span>!
             </Title>
             <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, lineHeight: 1.6 }}>
               Pantau kemajuan seleksi dan ikuti perkembangan Lomba 4 Pilar Astra Anda di sini.
@@ -533,7 +536,7 @@ const PesertaDashboard = () => {
                   Tim pendamping Astra siap membantu Anda dalam setiap tahapan program.
                 </Text>
                 <Button
-                  onClick={() => window.open(`https://wa.me/${dashboardData?.support?.whatsapp || '6285713043230'}`, '_blank')}
+                  onClick={() => window.open(`${dashboardData?.support?.whatsapp || 'https://wa.me/6285713043230'}`, '_blank')}
                   style={{
                     background: '#fff',
                     borderColor: '#fff',
@@ -682,7 +685,7 @@ const PesertaDashboard = () => {
             {/* Identitas Pendaftar */}
             <div style={{ marginBottom: 24 }}>
               <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                🏷️ Identitas Pendaftar
+                <TagOutlined style={{ marginRight: 6 }} /> Identitas Pendaftar
               </Text>
               <Row gutter={[20, 16]}>
                 <Col xs={12} sm={8}>
@@ -707,7 +710,7 @@ const PesertaDashboard = () => {
             {/* Informasi Program */}
             <div style={{ marginBottom: 24 }}>
               <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                📋 Informasi Program
+                <FileTextOutlined style={{ marginRight: 6 }} /> Informasi Program
               </Text>
               <Row gutter={[20, 16]}>
                 <Col xs={12} sm={8}>
@@ -732,7 +735,7 @@ const PesertaDashboard = () => {
             {/* Lokasi & Wilayah */}
             <div style={{ marginBottom: 24 }}>
               <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                📍 Lokasi & Wilayah
+                <EnvironmentOutlined style={{ marginRight: 6 }} /> Lokasi & Wilayah
               </Text>
               <Row gutter={[20, 16]}>
                 <Col xs={12} sm={8}>
@@ -761,7 +764,7 @@ const PesertaDashboard = () => {
             {/* Deskripsi Program */}
             <div style={{ marginBottom: 8 }}>
               <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                📝 Deskripsi Program
+                <EditOutlined style={{ marginRight: 6 }} /> Deskripsi Program
               </Text>
               <div style={{ marginBottom: 16 }}>
                 <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Latar Belakang</Text>

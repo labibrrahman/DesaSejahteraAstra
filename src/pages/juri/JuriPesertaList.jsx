@@ -20,6 +20,9 @@ import {
   EditOutlined,
   EyeOutlined,
   FilterOutlined,
+  TagOutlined,
+  FileTextOutlined,
+  EnvironmentOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import adminService from '../../services/adminService';
@@ -294,7 +297,7 @@ const JuriPesertaList = () => {
               {/* Informasi Program */}
               <div style={{ marginBottom: 24 }}>
                 <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                  📋 Informasi Program
+                  <span style={{ marginRight: 6 }}><FileTextOutlined /></span> Informasi Program
                 </Text>
                 <Row gutter={[20, 12]}>
                   {[
@@ -318,7 +321,7 @@ const JuriPesertaList = () => {
               {/* Identitas Pendaftar */}
               <div style={{ marginBottom: 24 }}>
                 <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                  🏷️ Identitas Pendaftar
+                  <span style={{ marginRight: 6 }}><TagOutlined /></span> Identitas Pendaftar
                 </Text>
                 <Row gutter={[20, 12]}>
                   {[
@@ -342,7 +345,7 @@ const JuriPesertaList = () => {
               {/* Wilayah */}
               <div>
                 <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                  📍 Wilayah
+                  <span style={{ marginRight: 6 }}><EnvironmentOutlined /></span> Wilayah
                 </Text>
                 <div
                   style={{
@@ -363,7 +366,7 @@ const JuriPesertaList = () => {
                 paddingTop:'20px'
                }}>
                 <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                  📝 Deskripsi Program
+                  <span style={{ marginRight: 6 }}><EditOutlined /></span> Deskripsi Program
                 </Text>
                 <div style={{ marginBottom: 16 }}>
                   <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Latar Belakang</Text>

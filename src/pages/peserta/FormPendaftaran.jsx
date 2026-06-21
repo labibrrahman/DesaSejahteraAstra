@@ -526,7 +526,7 @@ const FormPendaftaran = () => {
             const hasSelected = pilarCategories.some(c => c.id === selectedKategoriId);
 
             return (
-              <Col xs={24} sm={12} key={pilar.id}>
+              <Col xs={24} sm={12} key={pilar.id} style={{ display: 'flex' }}>
                 <div
                   style={{
                     border: `1.5px solid ${hasSelected ? color : '#e2e8f0'}`,
@@ -534,6 +534,7 @@ const FormPendaftaran = () => {
                     background: hasSelected ? `${color}08` : '#fff',
                     overflow: 'hidden',
                     transition: 'all 0.25s ease',
+                    width: '100%',
                   }}
                 >
                   {/* Pilar Header */}
@@ -699,8 +700,17 @@ const FormPendaftaran = () => {
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
               <Text style={labelStyle}>Binaan (Opsional)</Text>
-              <Select placeholder="Pilih Binaan..." style={{ width: '100%' }} size="large" allowClear showSearch optionFilterProp="children"
-                value={formData.grup_astra_id} onChange={val => updateField('grup_astra_id', val)}>
+              <Select 
+                placeholder="Pilih Binaan..." 
+                style={{ width: '100%' }} 
+                size="large" 
+                allowClear 
+                showSearch 
+                optionFilterProp="children"
+                value={formData.grup_astra_id} 
+                onChange={val => updateField('grup_astra_id', val)}
+                virtual={false}
+              >
                 {astraGroups.map(g => <Option key={g.id} value={g.id}><span style={{ fontSize:13 }}>{g.name}</span></Option>)}
                 <Option value="others"><span style={{ fontSize:13, fontWeight: 600 }}>Lainnya...</span></Option>
               </Select>
@@ -1053,7 +1063,7 @@ const FormPendaftaran = () => {
           {/* Stepper */}
           <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: 520, marginBottom: 48 }}>
             <div style={{ position: 'absolute', top: 16, left: 40, right: 40, height: 2, background: '#e2e8f0', zIndex: 0 }} />
-            <div style={{ position: 'absolute', top: 16, left: 40, width: `calc(${((currentStep - 1) / (STEPS.length - 1)) * 100}%)`, height: 2, background: '#002444', zIndex: 0, transition: 'width 0.3s ease' }} />
+            <div style={{ position: 'absolute', top: 16, left: 40, width: `calc(${Math.min(((currentStep - 1) / (STEPS.length - 1)) * 100, 100)}% - 40px)`, height: 2, background: '#002444', zIndex: 0, transition: 'width 0.3s ease' }} />
             {STEPS.map((step, i) => {
               const stepNum = i + 1;
               const isActive = currentStep === stepNum;

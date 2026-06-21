@@ -7,6 +7,7 @@ import {
   SearchOutlined, ExportOutlined, CheckCircleOutlined, CloseCircleOutlined,
   UndoOutlined, EyeOutlined, FilterOutlined, TrophyOutlined,
   ClockCircleOutlined, TeamOutlined, BarChartOutlined,
+  TagOutlined, FileTextOutlined, EnvironmentOutlined, EditOutlined,
 } from '@ant-design/icons';
 import adminService from '../../services/adminService';
 import masterService from '../../services/masterService';
@@ -595,7 +596,7 @@ const AdminSelectionReview = () => {
               <div style={{ padding: '24px 28px 28px' }}>
                 {/* Identitas */}
                 <div style={{ marginBottom: 24 }}>
-                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>🏷️ Identitas Pendaftar</Text>
+                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}><span style={{ marginRight: 6 }}><TagOutlined /></span> Identitas Pendaftar</Text>
                   <Row gutter={[20, 16]}>
                     {[
                       { label: 'Jenis DSA', value: regDetailData.dsaType },
@@ -613,7 +614,7 @@ const AdminSelectionReview = () => {
 
                 {/* Informasi Program */}
                 <div style={{ marginBottom: 24 }}>
-                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>📋 Informasi Program</Text>
+                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}><span style={{ marginRight: 6 }}><FileTextOutlined /></span> Informasi Program</Text>
                   <Row gutter={[20, 16]}>
                     {[
                       { label: 'Pilar', value: regDetailData.pillar?.name },
@@ -631,7 +632,7 @@ const AdminSelectionReview = () => {
 
                 {/* Wilayah */}
                 <div style={{ marginBottom: 24 }}>
-                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>📍 Lokasi & Wilayah</Text>
+                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}><span style={{ marginRight: 6 }}><EnvironmentOutlined /></span> Lokasi & Wilayah</Text>
                   <Row gutter={[20, 16]}>
                     {[
                       { label: 'Provinsi', value: regDetailData.province?.name },
@@ -653,7 +654,7 @@ const AdminSelectionReview = () => {
 
                 {/* Deskripsi Program */}
                 <div>
-                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>📝 Deskripsi Program</Text>
+                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}><span style={{ marginRight: 6 }}><EditOutlined /></span> Deskripsi Program</Text>
                   {[
                     { label: 'Latar Belakang', value: regDetailData.background, color: '#1890ff' },
                     { label: 'Dampak Yang Sudah Terealisasi', value: regDetailData.programImpact, color: '#52c41a' },

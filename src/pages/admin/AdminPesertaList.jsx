@@ -22,6 +22,10 @@ import {
   EditOutlined,
   ExportOutlined,
   CloseOutlined,
+  TagOutlined,
+  FileTextOutlined,
+  EnvironmentOutlined,
+  TeamOutlined,
 } from '@ant-design/icons';
 import adminService from '../../services/adminService';
 import masterService from '../../services/masterService';
@@ -681,7 +685,7 @@ const AdminPesertaList = () => {
                 {/* Section: Program */}
                 <div style={{ marginBottom: 24 }}>
                   <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                    📋 Informasi Program
+                    <span style={{ marginRight: 6 }}><FileTextOutlined /></span> Informasi Program
                   </Text>
                   <Row gutter={[20, 16]}>
                     <Col xs={12} sm={8}>
@@ -706,7 +710,7 @@ const AdminPesertaList = () => {
                 {/* Section: Identitas Pendaftar */}
                 <div style={{ marginBottom: 24 }}>
                   <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                    🏷️ Identitas Pendaftar
+                    <span style={{ marginRight: 6 }}><TagOutlined /></span> Identitas Pendaftar
                   </Text>
                   <Row gutter={[20, 16]}>
                     <Col xs={12} sm={8}>
@@ -731,7 +735,7 @@ const AdminPesertaList = () => {
                 {/* Section: Wilayah */}
                 <div style={{ marginBottom: 24 }}>
                   <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                    📍 Lokasi & Wilayah
+                    <span style={{ marginRight: 6 }}><EnvironmentOutlined /></span> Lokasi & Wilayah
                   </Text>
                   <Row gutter={[20, 16]}>
                     <Col xs={12} sm={8}>
@@ -760,7 +764,7 @@ const AdminPesertaList = () => {
                 {/* Section: Penilaian */}
                 <div style={{ marginBottom: 24 }}>
                   <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                    👨‍⚖️ Penilaian
+                    <span style={{ marginRight: 6 }}><TeamOutlined /></span> Penilaian
                   </Text>
                   <Row gutter={[20, 16]}>
                     <Col xs={12} sm={12}>
@@ -777,7 +781,7 @@ const AdminPesertaList = () => {
                 {/* Section: Deskripsi Program */}
                 <div style={{ marginBottom: 8 }}>
                   <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                    📝 Deskripsi Program
+                    <span style={{ marginRight: 6 }}><EditOutlined /></span> Deskripsi Program
                   </Text>
                   <div style={{ marginBottom: 16 }}>
                     <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Latar Belakang</Text>
@@ -819,7 +823,7 @@ const AdminPesertaList = () => {
           {editRecord && (
             <Form form={editForm} layout="vertical">
               {/* Status */}
-              <Form.Item name="status" label="Status Pendaftaran" rules={[{ required: true, message: 'Pilih status' }]}>
+              {/* <Form.Item name="status" label="Status Pendaftaran" rules={[{ required: true, message: 'Pilih status' }]}>
                 <Select placeholder="Pilih status">
                   <Option value="draft">Draft</Option>
                   <Option value="waiting_screening">Menunggu Screening</Option>
@@ -828,7 +832,7 @@ const AdminPesertaList = () => {
                   <Option value="finalist">Finalis</Option>
                   <Option value="rejected">Ditolak</Option>
                 </Select>
-              </Form.Item>
+              </Form.Item> */}
 
               {/* Pilar & Kategori */}
               <Row gutter={16}>

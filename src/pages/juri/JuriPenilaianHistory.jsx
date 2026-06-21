@@ -17,6 +17,9 @@ import {
   SearchOutlined,
   EyeOutlined,
   FilterOutlined,
+  FileTextOutlined,
+  EditOutlined,
+  StarOutlined,
 } from '@ant-design/icons';
 import adminService from '../../services/adminService';
 
@@ -286,7 +289,7 @@ const JuriPenilaianHistory = () => {
               {/* Info Section */}
               <div style={{ marginBottom: 24 }}>
                 <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                  📋 Informasi Penilaian
+                  <span style={{ marginRight: 6 }}><FileTextOutlined /></span> Informasi Penilaian
                 </Text>
                 <Row gutter={[20, 12]}>
                   {[
@@ -310,7 +313,7 @@ const JuriPenilaianHistory = () => {
               {/* Score Section */}
               <div style={{ marginBottom: 24 }}>
                 <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                  ⭐ Rincian Nilai
+                  <span style={{ marginRight: 6 }}><StarOutlined /></span> Rincian Nilai
                 </Text>
 
                 <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
@@ -389,7 +392,7 @@ const JuriPenilaianHistory = () => {
               {/* Catatan */}
               <div>
                 <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                  📝 Catatan Juri
+                  <span style={{ marginRight: 6 }}><EditOutlined /></span> Catatan Juri
                 </Text>
                 <div style={{
                   background: '#f8fafc',

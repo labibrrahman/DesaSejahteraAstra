@@ -26,36 +26,37 @@ const { Header, Content, Footer } = Layout;
 
 const pilarData = [
   {
-    icon: <ReadOutlined />,
-    title: 'Pendidikan',
-    description: 'Meningkatkan kualitas sumber daya manusia melalui akses pendidikan yang merata dan bermutu.',
+    icon: <HeartOutlined />,
+    title: 'Kesehatan',
+    description: 'Meningkatkan Kesehatan Ibu & Anak.',
     color: '#1870F0',
   },
   {
-    icon: <HeartOutlined />,
-    title: 'Kesehatan',
-    description: 'Mendorong gaya hidup sehat dan ketersediaan layanan kesehatan primer yang berkualitas.',
+    icon: <ReadOutlined />,
+    title: 'Pendidikan',
+    description: 'Meningkatkan Kualitas Pendidikan & Keterampilan Generasi Muda',
     color: '#1870F0',
   },
+
   {
     icon: <GlobalOutlined />,
     title: 'Lingkungan',
-    description: 'Konservasi alam dan pengurangan jejak karbon untuk masa depan bumi yang lebih hijau.',
+    description: 'Menjaga Lingkungan & Meningkatkan Ketahanan Terhadap Perubahan Iklim',
     color: '#1870F0',
   },
   {
     icon: <ShopOutlined />,
     title: 'Kewirausahaan',
-    description: 'Pemberdayaan UMKM dan ekonomi lokal untuk menciptakan kemandirian finansial masyarakat.',
+    description: 'Meningkatkan Kesejahteraan Masyarakat',
     color: '#1870F0',
   },
 ];
 
 const statsData = [
-  { number: '900+', label: 'Desa Terbina' },
-  { number: '4.5M', label: 'Penerima Manfaat' },
-  { number: '34', label: 'Provinsi Terjangkau' },
-  { number: '15k', label: 'UMKM Berkembang' },
+  { number: '3,01 Jt', label: 'Penerima Manfaat Program (2025)' },
+  { number: '1533', label: 'Desa Sejahtera Astra di 35 Provinsi' },
+  { number: '492', label: 'Desa Ekspor ke 26 Negara' },
+  { number: 'Rp 411 M', label: 'Valuasi Ekspor Produk DSA (kumulatif s/d 2025)' },
 ];
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -417,7 +418,7 @@ const LandingPage = () => {
           <div style={{ maxWidth: 1280, margin: '0 auto' }}>
             <Row gutter={[isMobile ? 16 : 32, isMobile ? 32 : 40]} justify="center">
               {statsData.map((stat, index) => (
-                <Col xs={12} sm={6} key={index} style={{ textAlign: 'center' }}>
+                <Col xs={24} sm={6} key={index} style={{ textAlign: 'center' }}>
                   <span
                     style={{
                       fontSize: isMobile ? 40 : 56,

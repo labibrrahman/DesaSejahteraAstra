@@ -100,7 +100,7 @@ function App() {
 
           {/* Form Pendaftaran — guard cek status registrasi */}
           <Route
-            path="/peserta/pendaftaran"
+            path="/register"
             element={
               <ProtectedRoute allowedRoles={['peserta']}>
                 <PendaftaranGuard />

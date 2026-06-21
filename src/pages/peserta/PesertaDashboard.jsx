@@ -149,7 +149,7 @@ const PesertaDashboard = () => {
               <img src={satuIndoLogo} alt="Satu Indonesia Logo" style={{ height: 35, objectFit: 'contain' }} />
           </Col>
         </Row>
-
+ 
         <Row gutter={[16, 16]} justify="space-between" align="middle">
           <Col xs={24} sm={24} md={16}>
             <Title level={3} style={{ color: '#fff', margin: 0, marginBottom: 8, fontWeight: 600, fontSize: 22 }}>

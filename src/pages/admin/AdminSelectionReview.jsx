@@ -24,8 +24,8 @@ const getScoreIndicator = (score) => {
 };
 
 const getStatusSend = (isSend) => {
-  if (isSend) return { label: 'Terkirim', color: '#22c55e', bgColor:'' };
-  if (isSend) return { label: 'Baik', color: '#94a3b8' };
+  if (isSend) return { label: 'Terkirim', color: '#22c55e' };
+  return { label: 'Belum Dikirim', color: '#94a3b8' };
 };
 
 const STATUS_MAP = {

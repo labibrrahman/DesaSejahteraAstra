@@ -3,11 +3,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ConfigProvider } from 'antd';
 import idID from 'antd/locale/id_ID';
 import useAuthStore from './stores/authStore';
+import useMenuStore from './stores/menuStore';
 
 // Public Pages
 import LandingPage from './pages/public/LandingPage';
 import Login from './pages/public/Login';
 import AuthCallback from './pages/public/AuthCallback';
+import MaintenancePage from './pages/public/MaintenancePage';
 
 // Peserta Pages
 import AppLayout from './components/layouts/AppLayout';
@@ -33,12 +35,29 @@ import JuriPenilaianHistory from './pages/juri/JuriPenilaianHistory';
 
 import './App.css';
 
+// Menu key mapping
+const MENU_KEY_MAP = {
+  admin: 'menu_admin',
+  juri: 'menu_juri',
+  peserta: 'menu_peserta',
+};
+
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { isAuthenticated, role } = useAuthStore();
+  const { getMenuState } = useMenuStore();
 
   if (!isAuthenticated || !allowedRoles.includes(role)) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Cek status menu
+  const menuKey = MENU_KEY_MAP[role];
+  if (menuKey) {
+    const state = getMenuState(menuKey);
+    if (state.maintenance) {
+      return <Navigate to="/maintenance" state={{ message: state.description }} replace />;
+    }
   }
 
   return children;
@@ -46,8 +65,10 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
 function App() {
   const { fetchProfile, accessToken } = useAuthStore();
+  const { fetchMenuStatus } = useMenuStore();
 
   useEffect(() => {
+    fetchMenuStatus();
     if (accessToken) {
       fetchProfile();
     }
@@ -62,6 +83,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/login/admin" element={<Login adminMode />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/maintenance" element={<MaintenancePage />} />
 
           {/* Peserta Routes — dengan sidebar */}
           <Route

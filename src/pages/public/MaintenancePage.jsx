@@ -98,6 +98,7 @@ const MaintenancePage = () => {
               <Text style={{ fontSize: 13, color: '#92400e' }}>{customMessage}</Text>
             </div>
           )} */}
+          
 
           {/* Buttons */}
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>

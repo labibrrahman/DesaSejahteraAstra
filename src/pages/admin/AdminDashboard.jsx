@@ -1,114 +1,131 @@
-import React from 'react';
-import { Card, Row, Col, Typography, Statistic, Table, Tag, Progress } from 'antd';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Card, Row, Col, Typography, Statistic, Table, Tag, Progress, Spin, message } from 'antd';
 import {
   TeamOutlined,
   FileTextOutlined,
   ClockCircleOutlined,
   CheckCircleOutlined,
+  CloseCircleOutlined,
 } from '@ant-design/icons';
+import adminService from '../../services/adminService';
+import masterService from '../../services/masterService';
 
 const { Title, Text } = Typography;
 
-// Dummy data - will be replaced with API calls
-const statisticsData = {
-  total_pendaftar: 156,
-  menunggu_screening: 23,
-  sedang_dinilai: 45,
-  selesai_dinilai: 88,
+/** Mapping status dari backend ke label & warna */
+const STATUS_MAP = {
+  draft: { label: 'Draft', color: 'default' },
+  waiting_screening: { label: 'Menunggu Screening', color: 'processing' },
+  being_assessed: { label: 'Sedang Dinilai', color: 'warning' },
+  assessed: { label: 'Selesai Dinilai', color: 'success' },
+  finalist: { label: 'Finalis', color: 'purple' },
 };
 
-const pilarStats = [
-  { name: 'Pilar Ekonomi', count: 45, color: '#1890ff' },
-  { name: 'Pilar Sosial', count: 38, color: '#52c41a' },
-  { name: 'Pilar Lingkungan', count: 35, color: '#faad14' },
-  { name: 'Pilar Infrastruktur', count: 38, color: '#722ed1' },
-];
+/** Warna default untuk progress bar pilar */
+const PILAR_COLORS = ['#1890ff', '#52c41a', '#faad14', '#722ed1', '#eb2f96', '#13c2c2'];
 
-const recentRegistrations = [
-  {
-    key: '1',
-    nama_desa: 'Desa Sukamaju',
-    pilar: 'Pilar Ekonomi',
-    kategori: 'UMKM',
-    status: 2,
-    tanggal: '2026-01-15',
-  },
-  {
-    key: '2',
-    nama_desa: 'Desa Makmur',
-    pilar: 'Pilar Sosial',
-    kategori: 'Pendidikan',
-    status: 3,
-    tanggal: '2026-01-14',
-  },
-  {
-    key: '3',
-    nama_desa: 'Desa Sejahtera',
-    pilar: 'Pilar Lingkungan',
-    kategori: 'Konservasi',
-    status: 4,
-    tanggal: '2026-01-13',
-  },
-  {
-    key: '4',
-    nama_desa: 'Desa Damai',
-    pilar: 'Pilar Infrastruktur',
-    kategori: 'Jalan & Jembatan',
-    status: 2,
-    tanggal: '2026-01-12',
-  },
-  {
-    key: '5',
-    nama_desa: 'Desa Sentosa',
-    pilar: 'Pilar Ekonomi',
-    kategori: 'Koperasi',
-    status: 3,
-    tanggal: '2026-01-11',
-  },
-];
+/**
+ * Mapping data dashboard dari API ke format UI.
+ */
+const mapDashboardFromApi = (data) => {
+  const byStatus = data.by_status || {};
 
-const statusMap = {
-  1: { label: 'Draft', color: 'default' },
-  2: { label: 'Menunggu Screening', color: 'processing' },
-  3: { label: 'Sedang Dinilai', color: 'warning' },
-  4: { label: 'Selesai Dinilai', color: 'success' },
-  5: { label: 'Finalis', color: 'purple' },
+  return {
+    statistics: {
+      total_pendaftar: data.total_registrants || 0,
+      menunggu_screening: byStatus.waiting_screening || 0,
+      sedang_dinilai: byStatus.being_assessed || 0,
+      selesai_dinilai: byStatus.assessed || 0,
+      lolos: data.total_finalist || 0,
+      tidak_lolos: data.total_rejected || 0,
+    },
+    pilarStats: (data.by_pillar || []).map((item, index) => ({
+      name: item.pillar || `Pilar ${index + 1}`,
+      count: item.count || 0,
+      color: PILAR_COLORS[index % PILAR_COLORS.length],
+    })),
+    recentRegistrations: (data.recent_registrations || []).map((item) => ({
+      key: item.id,
+      nama_desa: item.villageName || '-',
+      pilar: item.pillar?.name || '-',
+      kategori: item.category?.name || '-',
+      status: item.status,
+      tanggal: item.submittedAt
+        ? new Date(item.submittedAt).toLocaleDateString('id-ID')
+        : '-',
+    })),
+  };
 };
-
-const columns = [
-  {
-    title: 'Nama Desa',
-    dataIndex: 'nama_desa',
-    key: 'nama_desa',
-  },
-  {
-    title: 'Pilar',
-    dataIndex: 'pilar',
-    key: 'pilar',
-  },
-  {
-    title: 'Kategori',
-    dataIndex: 'kategori',
-    key: 'kategori',
-  },
-  {
-    title: 'Status',
-    dataIndex: 'status',
-    key: 'status',
-    render: (status) => (
-      <Tag color={statusMap[status]?.color}>
-        {statusMap[status]?.label}
-      </Tag>
-    ),
-  },
-  {
-    title: 'Tanggal',
-    dataIndex: 'tanggal',
-    key: 'tanggal',
-  },
-];
 
 const AdminDashboard = () => {
+  const [statistics, setStatistics] = useState({
+    total_pendaftar: 0,
+    menunggu_screening: 0,
+    sedang_dinilai: 0,
+    selesai_dinilai: 0,
+  });
+  const [pilarStats, setPilarStats] = useState([]);
+  const [recentRegistrations, setRecentRegistrations] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchDashboard = useCallback(async () => {
+    setLoading(true);
+    try {
+      const result = await adminService.getDashboard();
+      const mapped = mapDashboardFromApi(result);
+
+      // Fetch master pilar (independen, tidak block dashboard)
+      let pillarsData = [];
+      try {
+        pillarsData = await masterService.getPillars();
+      } catch {
+        // Gagal fetch pilar, gunakan data dari dashboard saja
+      }
+
+      // Merge: semua pilar dari master data, count dari dashboard
+      const allPillars = Array.isArray(pillarsData) && pillarsData.length > 0
+        ? pillarsData.map((p, index) => {
+            const found = mapped.pilarStats.find(s => s.name === p.name);
+            return {
+              name: p.name,
+              count: found ? found.count : 0,
+              color: PILAR_COLORS[index % PILAR_COLORS.length],
+            };
+          })
+        : mapped.pilarStats; // fallback ke data dari dashboard
+
+      setStatistics(mapped.statistics);
+      setPilarStats(allPillars);
+      setRecentRegistrations(mapped.recentRegistrations);
+    } catch (error) {
+      message.error('Gagal memuat data dashboard');
+      console.error('Fetch dashboard error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchDashboard();
+  }, [fetchDashboard]);
+
+  const columns = [
+    { title: 'Nama DSA', dataIndex: 'nama_desa', key: 'nama_desa' },
+    { title: 'Pilar', dataIndex: 'pilar', key: 'pilar' },
+    { title: 'Kategori', dataIndex: 'kategori', key: 'kategori' },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status) => (
+        <Tag color={STATUS_MAP[status]?.color || 'default'}>
+          {STATUS_MAP[status]?.label || status}
+        </Tag>
+      ),
+    },
+    { title: 'Tanggal', dataIndex: 'tanggal', key: 'tanggal' },
+  ];
+
   return (
     <div>
       <div style={{ marginBottom: 24 }}>
@@ -116,61 +133,87 @@ const AdminDashboard = () => {
         <Text type="secondary">Ringkasan data pendaftaran Desa Sejahtera Astra</Text>
       </div>
 
-      {/* Statistics Cards */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={12} sm={6}>
-          <Card>
-            <Statistic title="Total Pendaftar" value={statisticsData.total_pendaftar} prefix={<TeamOutlined />} valueStyle={{ color: '#1890ff' }} />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card>
-            <Statistic title="Menunggu Screening" value={statisticsData.menunggu_screening} prefix={<ClockCircleOutlined />} valueStyle={{ color: '#faad14' }} />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card>
-            <Statistic title="Sedang Dinilai" value={statisticsData.sedang_dinilai} prefix={<FileTextOutlined />} valueStyle={{ color: '#1890ff' }} />
-          </Card>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Card>
-            <Statistic title="Selesai Dinilai" value={statisticsData.selesai_dinilai} prefix={<CheckCircleOutlined />} valueStyle={{ color: '#52c41a' }} />
-          </Card>
-        </Col>
+      <Spin spinning={loading}>
+        {/* Statistics Cards */}
+        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        {[
+          { title: "Total Pendaftar", value: statistics.total_pendaftar, icon: <TeamOutlined />, color: '#1890ff' },
+          { title: "Menunggu Screening", value: statistics.menunggu_screening, icon: <ClockCircleOutlined />, color: '#faad14' },
+          { title: "Sedang Dinilai", value: statistics.sedang_dinilai, icon: <FileTextOutlined />, color: '#1890ff' },
+          { title: "Lolos", value: statistics.lolos, icon: <CheckCircleOutlined />, color: '#10b981' },
+          { title: "Tidak Lolos", value: statistics.tidak_lolos, icon: <CloseCircleOutlined />, color: '#ef4444' }
+        ].map((item, index) => (
+          <Col key={index} xs={index === 0 ? 24 : 12} sm={{ flex: '1 0 20%' }}>
+            <Card>
+              <Statistic
+                title={item.title}
+                value={item.value}
+                prefix={item.icon}
+                valueStyle={{ color: item.color }}
+              />
+            </Card>
+          </Col>
+        ))}
       </Row>
 
-      <Row gutter={[24, 24]}>
-        {/* Pilar Statistics */}
-        <Col xs={24} lg={8}>
-          <Card title="Statistik per Pilar" style={{ marginBottom: 24 }}>
-            {pilarStats.map((pilar, index) => (
-              <div key={index} style={{ marginBottom: 16 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                  <Text>{pilar.name}</Text>
-                  <Text strong>{pilar.count}</Text>
+        <Row gutter={[24, 24]}>
+          {/* Pilar Statistics */}
+          <Col xs={24} lg={8}>
+            <Card title="Statistik per Pilar" style={{ marginBottom: 24 }}>
+              {pilarStats.map((pilar, index) => (
+                <div key={index} style={{ marginBottom: 16 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                    <Text>{pilar.name}</Text>
+                    <Text strong>{pilar.count}</Text>
+                  </div>
+                  <Progress
+                    percent={
+                      statistics.total_pendaftar > 0
+                        ? Math.round((pilar.count / statistics.total_pendaftar) * 100)
+                        : 0
+                    }
+                    strokeColor={pilar.color}
+                    showInfo={false}
+                  />
                 </div>
-                <Progress percent={Math.round((pilar.count / statisticsData.total_pendaftar) * 100)} strokeColor={pilar.color} showInfo={false} />
+              ))}
+              {pilarStats.length === 0 && !loading && (
+                <Text type="secondary">Belum ada data pilar</Text>
+              )}
+            </Card>
+            <Card title="Distribusi Status">
+              <div style={{ textAlign: 'center' }}>
+                <Progress
+                  type="circle"
+                  percent={
+                    statistics.total_pendaftar > 0
+                      ? Math.round((statistics.selesai_dinilai / statistics.total_pendaftar) * 100)
+                      : 0
+                  }
+                  format={(percent) => `${percent}%`}
+                  strokeColor="#52c41a"
+                />
+                <div style={{ marginTop: 16 }}>
+                  <Text type="secondary">Pendaftaran Selesai Dinilai</Text>
+                </div>
               </div>
-            ))}
-          </Card>
-          <Card title="Distribusi Status">
-            <div style={{ textAlign: 'center' }}>
-              <Progress type="circle" percent={Math.round((statisticsData.selesai_dinilai / statisticsData.total_pendaftar) * 100)} format={(percent) => `${percent}%`} strokeColor="#52c41a" />
-              <div style={{ marginTop: 16 }}>
-                <Text type="secondary">Pendaftaran Selesai Dinilai</Text>
-              </div>
-            </div>
-          </Card>
-        </Col>
+            </Card>
+          </Col>
 
-        {/* Recent Registrations */}
-        <Col xs={24} lg={16}>
-          <Card title="Pendaftaran Terbaru">
-            <Table columns={columns} dataSource={recentRegistrations} pagination={false} size="middle" scroll={{ x: 600 }} />
-          </Card>
-        </Col>
-      </Row>
+          {/* Recent Registrations */}
+          <Col xs={24} lg={16}>
+            <Card title="Pendaftaran Terbaru">
+              <Table
+                columns={columns}
+                dataSource={recentRegistrations}
+                pagination={false}
+                size="middle"
+                scroll={{ x: 600 }}
+              />
+            </Card>
+          </Col>
+        </Row>
+      </Spin>
     </div>
   );
 };

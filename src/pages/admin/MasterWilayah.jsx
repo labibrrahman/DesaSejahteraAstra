@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   Table,
@@ -11,226 +11,264 @@ import {
   Typography,
   Popconfirm,
   message,
-  Tag,
   Tabs,
+  Spin,
 } from 'antd';
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
+import masterService from '../../services/masterService';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-// Dummy data - will be replaced with API calls
-const provinsiData = [
-  { key: '1', kode: '33', nama: 'Jawa Tengah', status: 'active' },
-  { key: '2', kode: '32', nama: 'Jawa Barat', status: 'active' },
-  { key: '3', kode: '35', nama: 'Jawa Timur', status: 'active' },
-  { key: '4', kode: '51', nama: 'Bali', status: 'active' },
-];
+/** Mapping tab key ke tipe region di backend */
+const TAB_TYPE_MAP = {
+  provinsi: 'province',
+  kabupaten: 'city',
+  kecamatan: 'district',
+  desa: 'village',
+};
 
-const kabupatenData = [
-  { key: '1', kode: '33.01', nama: 'Cilacap', provinsi: 'Jawa Tengah', status: 'active' },
-  { key: '2', kode: '33.02', nama: 'Banyumas', provinsi: 'Jawa Tengah', status: 'active' },
-  { key: '3', kode: '32.01', nama: 'Bandung', provinsi: 'Jawa Barat', status: 'active' },
-];
+/** Mapping tab key ke label */
+const TAB_LABEL_MAP = {
+  provinsi: 'Provinsi',
+  kabupaten: 'Kabupaten/Kota',
+  kecamatan: 'Kecamatan',
+  desa: 'Desa/Kelurahan',
+};
 
-const kecamatanData = [
-  { key: '1', kode: '33.01.01', nama: 'Kedungreja', kabupaten: 'Cilacap', status: 'active' },
-  { key: '2', kode: '33.01.02', nama: 'Cilacap Selatan', kabupaten: 'Cilacap', status: 'active' },
-];
+/** Mapping tab key ke tab parent */
+const TAB_PARENT_MAP = {
+  kabupaten: 'provinsi',
+  kecamatan: 'kabupaten',
+  desa: 'kecamatan',
+};
 
-const desaData = [
-  { key: '1', kode: '33.01.01.2001', nama: 'Desa Sukamaju', kecamatan: 'Kedungreja', status: 'active' },
-  { key: '2', kode: '33.01.01.2002', nama: 'Desa Makmur', kecamatan: 'Kedungreja', status: 'active' },
-];
+/**
+ * Mapping data region dari API ke format UI.
+ */
+const mapFromApi = (item, parentName) => ({
+  id: item.id,
+  kode: item.code || '-',
+  nama: item.name,
+  parentId: item.parentId,
+  parentNama: parentName || '-',
+});
 
 const MasterWilayah = () => {
   const [activeTab, setActiveTab] = useState('provinsi');
+  const [searchText, setSearchText] = useState('');
+  const [dataByTab, setDataByTab] = useState({
+    provinsi: [],
+    kabupaten: [],
+    kecamatan: [],
+    desa: [],
+  });
+  const [parentOptions, setParentOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [form] = Form.useForm();
 
+  /** Fetch data wilayah per tab */
+  const fetchRegions = useCallback(async (tabKey) => {
+    setLoading(true);
+    try {
+      const type = TAB_TYPE_MAP[tabKey];
+      const result = await masterService.getRegions({ type });
+      const list = Array.isArray(result) ? result : [];
+
+      // Untuk tab selain provinsi, kita perlu nama parent
+      let parentMap = {};
+      if (TAB_PARENT_MAP[tabKey]) {
+        const parentType = TAB_TYPE_MAP[TAB_PARENT_MAP[tabKey]];
+        const parentResult = await masterService.getRegions({ type: parentType });
+        const parentList = Array.isArray(parentResult) ? parentResult : [];
+        parentMap = parentList.reduce((acc, item) => {
+          acc[item.id] = item.name;
+          return acc;
+        }, {});
+      }
+
+      const mapped = list.map((item) =>
+        mapFromApi(item, item.parentId ? parentMap[item.parentId] : null)
+      );
+
+      setDataByTab((prev) => ({ ...prev, [tabKey]: mapped }));
+    } catch (error) {
+      message.error(`Gagal memuat data ${TAB_LABEL_MAP[tabKey]}`);
+      console.error('Fetch regions error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  /** Fetch parent options untuk dropdown */
+  const fetchParentOptions = useCallback(async (tabKey) => {
+    const parentTab = TAB_PARENT_MAP[tabKey];
+    if (!parentTab) {
+      setParentOptions([]);
+      return;
+    }
+    try {
+      const parentType = TAB_TYPE_MAP[parentTab];
+      const result = await masterService.getRegions({ type: parentType });
+      const list = Array.isArray(result) ? result : [];
+      setParentOptions(list.map((item) => ({ id: item.id, name: item.name })));
+    } catch (error) {
+      console.error('Fetch parent options error:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchRegions(activeTab);
+  }, [activeTab, fetchRegions]);
+
+  /** Buka modal tambah/edit */
   const showModal = (record = null) => {
     setEditingRecord(record);
+    fetchParentOptions(activeTab);
     if (record) {
-      form.setFieldsValue(record);
+      form.setFieldsValue({
+        kode: record.kode === '-' ? '' : record.kode,
+        nama: record.nama,
+        parentId: record.parentId,
+      });
     } else {
       form.resetFields();
     }
     setModalVisible(true);
   };
 
+  /** Submit form (create / update) */
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
-      console.log('Form values:', values);
-      message.success(editingRecord ? 'Data berhasil diperbarui' : 'Data berhasil ditambahkan');
+      setSubmitting(true);
+
+      const payload = {
+        name: values.nama,
+        type: TAB_TYPE_MAP[activeTab],
+      };
+      if (values.kode) payload.code = values.kode;
+      if (values.parentId) payload.parentId = values.parentId;
+
+      if (editingRecord) {
+        await masterService.updateRegion(editingRecord.id, payload);
+        message.success('Data berhasil diperbarui');
+      } else {
+        await masterService.createRegion(payload);
+        message.success('Data berhasil ditambahkan');
+      }
+
       setModalVisible(false);
       form.resetFields();
+      setEditingRecord(null);
+      fetchRegions(activeTab);
     } catch (error) {
-      console.log('Validation failed:', error);
+      if (error.response) {
+        message.error(error.response.data?.message || 'Gagal menyimpan data');
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleDelete = (key) => {
-    message.success('Data berhasil dihapus');
+  /** Hapus wilayah */
+  const handleDelete = async (id) => {
+    try {
+      await masterService.deleteRegion(id);
+      message.success('Data berhasil dihapus');
+      fetchRegions(activeTab);
+    } catch (error) {
+      message.error(error.response?.data?.message || 'Gagal menghapus data');
+    }
   };
 
+  /** Kolom tabel berdasarkan tab aktif */
   const getColumns = () => {
     const baseColumns = [
-      {
-        title: 'No',
-        key: 'no',
-        render: (_, __, index) => index + 1,
-        width: 60,
-      },
-      {
-        title: 'Kode',
-        dataIndex: 'kode',
-        key: 'kode',
-      },
-      {
-        title: 'Nama',
-        dataIndex: 'nama',
-        key: 'nama',
-      },
+      { title: 'No', key: 'no', render: (_, __, index) => index + 1, width: 60 },
+      { title: 'Kode', dataIndex: 'kode', key: 'kode', width: 120 },
+      { title: 'Nama', dataIndex: 'nama', key: 'nama' },
     ];
 
-    if (activeTab === 'kabupaten') {
+    if (activeTab !== 'provinsi') {
+      const parentLabel = TAB_LABEL_MAP[TAB_PARENT_MAP[activeTab]];
       baseColumns.push({
-        title: 'Provinsi',
-        dataIndex: 'provinsi',
-        key: 'provinsi',
-      });
-    } else if (activeTab === 'kecamatan') {
-      baseColumns.push({
-        title: 'Kabupaten',
-        dataIndex: 'kabupaten',
-        key: 'kabupaten',
-      });
-    } else if (activeTab === 'desa') {
-      baseColumns.push({
-        title: 'Kecamatan',
-        dataIndex: 'kecamatan',
-        key: 'kecamatan',
+        title: parentLabel,
+        dataIndex: 'parentNama',
+        key: 'parentNama',
       });
     }
 
-    baseColumns.push(
-      {
-        title: 'Status',
-        dataIndex: 'status',
-        key: 'status',
-        render: (status) => (
-          <Tag color={status === 'active' ? 'green' : 'red'}>
-            {status === 'active' ? 'Aktif' : 'Nonaktif'}
-          </Tag>
-        ),
-      },
-      {
-        title: 'Aksi',
-        key: 'action',
-        render: (_, record) => (
-          <Space>
-            <Button type="link" icon={<EditOutlined />} onClick={() => showModal(record)}>
-              Edit
+    baseColumns.push({
+      title: 'Aksi',
+      key: 'action',
+      width: 180,
+      render: (_, record) => (
+        <Space>
+          <Button type="link" icon={<EditOutlined />} onClick={() => showModal(record)}>
+            Edit
+          </Button>
+          <Popconfirm
+            title="Yakin ingin menghapus?"
+            description="Data child juga akan terhapus."
+            onConfirm={() => handleDelete(record.id)}
+          >
+            <Button type="link" danger icon={<DeleteOutlined />}>
+              Hapus
             </Button>
-            <Popconfirm title="Yakin ingin menghapus?" onConfirm={() => handleDelete(record.key)}>
-              <Button type="link" danger icon={<DeleteOutlined />}>
-                Hapus
-              </Button>
-            </Popconfirm>
-          </Space>
-        ),
-      }
-    );
+          </Popconfirm>
+        </Space>
+      ),
+    });
 
     return baseColumns;
   };
 
-  const getData = () => {
-    switch (activeTab) {
-      case 'provinsi': return provinsiData;
-      case 'kabupaten': return kabupatenData;
-      case 'kecamatan': return kecamatanData;
-      case 'desa': return desaData;
-      default: return [];
-    }
-  };
-
+  /** Form fields berdasarkan tab aktif */
   const getFormFields = () => {
-    switch (activeTab) {
-      case 'provinsi':
-        return (
-          <>
-            <Form.Item name="kode" label="Kode Provinsi" rules={[{ required: true }]}>
-              <Input placeholder="Masukkan kode provinsi" />
-            </Form.Item>
-            <Form.Item name="nama" label="Nama Provinsi" rules={[{ required: true }]}>
-              <Input placeholder="Masukkan nama provinsi" />
-            </Form.Item>
-          </>
-        );
-      case 'kabupaten':
-        return (
-          <>
-            <Form.Item name="provinsi" label="Provinsi" rules={[{ required: true }]}>
-              <Select placeholder="Pilih Provinsi">
-                {provinsiData.map((item) => (
-                  <Option key={item.key} value={item.nama}>{item.nama}</Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item name="kode" label="Kode Kabupaten" rules={[{ required: true }]}>
-              <Input placeholder="Masukkan kode kabupaten" />
-            </Form.Item>
-            <Form.Item name="nama" label="Nama Kabupaten" rules={[{ required: true }]}>
-              <Input placeholder="Masukkan nama kabupaten" />
-            </Form.Item>
-          </>
-        );
-      case 'kecamatan':
-        return (
-          <>
-            <Form.Item name="kabupaten" label="Kabupaten" rules={[{ required: true }]}>
-              <Select placeholder="Pilih Kabupaten">
-                {kabupatenData.map((item) => (
-                  <Option key={item.key} value={item.nama}>{item.nama}</Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item name="kode" label="Kode Kecamatan" rules={[{ required: true }]}>
-              <Input placeholder="Masukkan kode kecamatan" />
-            </Form.Item>
-            <Form.Item name="nama" label="Nama Kecamatan" rules={[{ required: true }]}>
-              <Input placeholder="Masukkan nama kecamatan" />
-            </Form.Item>
-          </>
-        );
-      case 'desa':
-        return (
-          <>
-            <Form.Item name="kecamatan" label="Kecamatan" rules={[{ required: true }]}>
-              <Select placeholder="Pilih Kecamatan">
-                {kecamatanData.map((item) => (
-                  <Option key={item.key} value={item.nama}>{item.nama}</Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <Form.Item name="kode" label="Kode Desa" rules={[{ required: true }]}>
-              <Input placeholder="Masukkan kode desa" />
-            </Form.Item>
-            <Form.Item name="nama" label="Nama Desa" rules={[{ required: true }]}>
-              <Input placeholder="Masukkan nama desa" />
-            </Form.Item>
-          </>
-        );
-      default:
-        return null;
-    }
+    const parentTab = TAB_PARENT_MAP[activeTab];
+    const parentLabel = parentTab ? TAB_LABEL_MAP[parentTab] : null;
+
+    return (
+      <>
+        {parentLabel && (
+          <Form.Item
+            name="parentId"
+            label={parentLabel}
+            rules={[{ required: true, message: `Pilih ${parentLabel}` }]}
+          >
+            <Select placeholder={`Pilih ${parentLabel}`} showSearch optionFilterProp="children">
+              {parentOptions.map((item) => (
+                <Option key={item.id} value={item.id}>
+                  {item.name}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+        )}
+        <Form.Item
+          name="kode"
+          label={`Kode ${TAB_LABEL_MAP[activeTab]}`}
+        >
+          <Input placeholder={`Masukkan kode (opsional)`} />
+        </Form.Item>
+        <Form.Item
+          name="nama"
+          label={`Nama ${TAB_LABEL_MAP[activeTab]}`}
+          rules={[{ required: true, message: 'Masukkan nama' }]}
+        >
+          <Input placeholder={`Masukkan nama ${TAB_LABEL_MAP[activeTab].toLowerCase()}`} />
+        </Form.Item>
+      </>
+    );
   };
 
   const tabItems = [
@@ -248,22 +286,47 @@ const MasterWilayah = () => {
           <Text type="secondary">Kelola data wilayah administratif</Text>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
-          Tambah {activeTab === 'provinsi' ? 'Provinsi' : activeTab === 'kabupaten' ? 'Kabupaten' : activeTab === 'kecamatan' ? 'Kecamatan' : 'Desa'}
+          Tambah {TAB_LABEL_MAP[activeTab]}
         </Button>
       </div>
 
       <Card>
-        <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} />
-        <Table columns={getColumns()} dataSource={getData()} pagination={false} scroll={{ x: 500 }} />
+        <Tabs activeKey={activeTab} onChange={(tab) => { setActiveTab(tab); setSearchText(''); }} items={tabItems} />
+        <div style={{ marginBottom: 16 }}>
+          <Input
+            placeholder="Cari kode atau nama..."
+            prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            allowClear
+            style={{ maxWidth: 300 }}
+          />
+        </div>
+        <Spin spinning={loading}>
+          <Table
+            columns={getColumns()}
+            dataSource={(dataByTab[activeTab] || []).filter((item) =>
+              !searchText ||
+              item.kode?.toLowerCase().includes(searchText.toLowerCase()) ||
+              item.nama?.toLowerCase().includes(searchText.toLowerCase()) ||
+              item.parentNama?.toLowerCase().includes(searchText.toLowerCase())
+            )}
+            rowKey="id"
+            pagination={false}
+            scroll={{ x: 500 }}
+          />
+        </Spin>
       </Card>
 
       <Modal
-        title={editingRecord ? 'Edit' : 'Tambah'}
+        title={editingRecord ? `Edit ${TAB_LABEL_MAP[activeTab]}` : `Tambah ${TAB_LABEL_MAP[activeTab]}`}
         open={modalVisible}
         onOk={handleOk}
+        confirmLoading={submitting}
         onCancel={() => {
           setModalVisible(false);
           form.resetFields();
+          setEditingRecord(null);
         }}
       >
         <Form form={form} layout="vertical">

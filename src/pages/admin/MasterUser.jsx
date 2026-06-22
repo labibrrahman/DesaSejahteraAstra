@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   Table,
@@ -12,69 +12,191 @@ import {
   Popconfirm,
   message,
   Tag,
+  Spin,
 } from 'antd';
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
   UserOutlined,
+  KeyOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
+import adminService from '../../services/adminService';
+import masterService from '../../services/masterService';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
-// Dummy data - will be replaced with API calls
-const initialData = [
-  { key: '1', username: 'admin1', nama: 'Administrator', role: 'admin', status: 'active' },
-  { key: '2', username: 'juri1', nama: 'Juri Satu', role: 'juri', status: 'active' },
-  { key: '3', username: 'juri2', nama: 'Juri Dua', role: 'juri', status: 'active' },
-  { key: '4', username: 'juri3', nama: 'Juri Tiga', role: 'juri', status: 'inactive' },
-];
+/**
+ * Mapping data user dari API ke format UI.
+ */
+const mapFromApi = (item) => ({
+  id: item.id,
+  username: item.email,
+  nama: item.name,
+  role: item.role,
+  pillarId: item.pillarId,
+  status: item.isActive ? 'active' : 'inactive',
+});
+
+/**
+ * Mapping form values ke payload API untuk create.
+ */
+const mapToCreateApi = (values) => ({
+  name: values.nama,
+  email: values.username,
+  password: values.password,
+  role: values.role,
+  ...(values.role === 'juri' && values.pillarId ? { pillarId: values.pillarId } : {}),
+});
+
+/**
+ * Mapping form values ke payload API untuk update.
+ */
+const mapToUpdateApi = (values) => {
+  const dto = {
+    name: values.nama,
+    email: values.username,
+    role: values.role,
+  };
+  if (values.role === 'juri' && values.pillarId) {
+    dto.pillarId = values.pillarId;
+  }
+  return dto;
+};
 
 const MasterUser = () => {
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState([]);
+  const [pilarOptions, setPilarOptions] = useState([]);
+  const [searchText, setSearchText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [form] = Form.useForm();
+  const [passwordModalVisible, setPasswordModalVisible] = useState(false);
+  const [passwordSubmitting, setPasswordSubmitting] = useState(false);
+  const [selectedUserForPassword, setSelectedUserForPassword] = useState(null);
+  const [passwordForm] = Form.useForm();
 
+  /** Fetch users dari API */
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const result = await adminService.getUsers();
+      const list = Array.isArray(result) ? result : result?.data || [];
+      setData(list.map(mapFromApi));
+    } catch (error) {
+      message.error('Gagal memuat data user');
+      console.error('Fetch users error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  /** Fetch pilar untuk dropdown juri */
+  const fetchPillars = useCallback(async () => {
+    try {
+      const result = await masterService.getPillars();
+      const list = Array.isArray(result) ? result : [];
+      setPilarOptions(list.map((item) => ({ id: item.id, name: item.name })));
+    } catch (error) {
+      console.error('Fetch pilar error:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUsers();
+    fetchPillars();
+  }, [fetchUsers, fetchPillars]);
+
+  /** Buka modal tambah/edit */
   const showModal = (record = null) => {
     setEditingRecord(record);
     if (record) {
-      form.setFieldsValue(record);
+      form.setFieldsValue({
+        username: record.username,
+        nama: record.nama,
+        role: record.role,
+        pillarId: record.pillarId,
+      });
     } else {
       form.resetFields();
     }
     setModalVisible(true);
   };
 
+  /** Submit form (create / update) */
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
+      setSubmitting(true);
+
       if (editingRecord) {
-        setData(data.map((item) =>
-          item.key === editingRecord.key ? { ...item, ...values } : item
-        ));
+        await adminService.updateUser(editingRecord.id, mapToUpdateApi(values));
         message.success('Data berhasil diperbarui');
       } else {
-        const newItem = {
-          key: String(data.length + 1),
-          ...values,
-          status: 'active',
-        };
-        setData([...data, newItem]);
+        await adminService.createUser(mapToCreateApi(values));
         message.success('Data berhasil ditambahkan');
       }
+
       setModalVisible(false);
       form.resetFields();
+      setEditingRecord(null);
+      fetchUsers();
     } catch (error) {
-      console.log('Validation failed:', error);
+      if (error.response) {
+        message.error(error.response.data?.message || 'Gagal menyimpan data');
+      }
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleDelete = (key) => {
-    setData(data.filter((item) => item.key !== key));
-    message.success('Data berhasil dihapus');
+  /** Nonaktifkan user (soft delete) */
+  const handleDelete = async (id) => {
+    try {
+      await adminService.deleteUser(id);
+      message.success('User berhasil dinonaktifkan');
+      fetchUsers();
+    } catch (error) {
+      message.error(error.response?.data?.message || 'Gagal menonaktifkan user');
+    }
   };
+
+  /** Buka modal ganti password */
+  const showPasswordModal = (record) => {
+    setSelectedUserForPassword(record);
+    passwordForm.resetFields();
+    setPasswordModalVisible(true);
+  };
+
+  /** Submit ganti password */
+  const handlePasswordSubmit = async () => {
+    try {
+      const values = await passwordForm.validateFields();
+      setPasswordSubmitting(true);
+
+      await adminService.updateUser(selectedUserForPassword.id, {
+        password: values.newPassword,
+      });
+
+      message.success(`Password ${selectedUserForPassword.nama} berhasil diubah`);
+      setPasswordModalVisible(false);
+      passwordForm.resetFields();
+      setSelectedUserForPassword(null);
+    } catch (error) {
+      if (error.response) {
+        message.error(error.response.data?.message || 'Gagal mengubah password');
+      }
+    } finally {
+      setPasswordSubmitting(false);
+    }
+  };
+
+  /** Pantau perubahan role di form untuk show/hide pillar field */
+  const selectedRole = Form.useWatch('role', form);
 
   const columns = [
     {
@@ -84,7 +206,7 @@ const MasterUser = () => {
       width: 60,
     },
     {
-      title: 'Username',
+      title: 'Email',
       dataIndex: 'username',
       key: 'username',
     },
@@ -98,8 +220,8 @@ const MasterUser = () => {
       dataIndex: 'role',
       key: 'role',
       render: (role) => (
-        <Tag color={role === 'admin' ? 'blue' : 'green'}>
-          {role === 'admin' ? 'Admin' : 'Juri'}
+        <Tag color={role === 'admin' ? 'blue' : role === 'juri' ? 'green' : 'orange'}>
+          {role === 'admin' ? 'Admin' : role === 'juri' ? 'Juri' : 'Peserta'}
         </Tag>
       ),
     },
@@ -116,6 +238,7 @@ const MasterUser = () => {
     {
       title: 'Aksi',
       key: 'action',
+      width: 260,
       render: (_, record) => (
         <Space>
           <Button
@@ -125,12 +248,21 @@ const MasterUser = () => {
           >
             Edit
           </Button>
+          <Button
+            disabled={record.role === 'peserta'}
+            type="link"
+            icon={<KeyOutlined />}
+            onClick={() => showPasswordModal(record)}
+          >
+            Password
+          </Button>
           <Popconfirm
-            title="Yakin ingin menghapus?"
-            onConfirm={() => handleDelete(record.key)}
+            title="Yakin ingin menonaktifkan user ini?"
+            description="User yang dinonaktifkan tidak dapat login."
+            onConfirm={() => handleDelete(record.id)}
           >
             <Button type="link" danger icon={<DeleteOutlined />}>
-              Hapus
+              Nonaktifkan
             </Button>
           </Popconfirm>
         </Space>
@@ -145,29 +277,59 @@ const MasterUser = () => {
           <Title level={3} style={{ margin: 0 }}>Master User</Title>
           <Text type="secondary">Kelola data admin dan juri</Text>
         </div>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>Tambah User</Button>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
+          Tambah User
+        </Button>
       </div>
 
       <Card>
-        <Table columns={columns} dataSource={data} pagination={false} scroll={{ x: 500 }} />
+        <div style={{ marginBottom: 16 }}>
+          <Input
+            placeholder="Cari nama, email, atau role..."
+            prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            allowClear
+            style={{ maxWidth: 300 }}
+          />
+        </div>
+        <Spin spinning={loading}>
+          <Table
+            columns={columns}
+            dataSource={data.filter((item) =>
+              !searchText ||
+              item.nama?.toLowerCase().includes(searchText.toLowerCase()) ||
+              item.username?.toLowerCase().includes(searchText.toLowerCase()) ||
+              item.role?.toLowerCase().includes(searchText.toLowerCase())
+            )}
+            rowKey="id"
+            pagination={false}
+            scroll={{ x: 500 }}
+          />
+        </Spin>
       </Card>
 
       <Modal
         title={editingRecord ? 'Edit User' : 'Tambah User'}
         open={modalVisible}
         onOk={handleOk}
+        confirmLoading={submitting}
         onCancel={() => {
           setModalVisible(false);
           form.resetFields();
+          setEditingRecord(null);
         }}
       >
         <Form form={form} layout="vertical">
           <Form.Item
             name="username"
-            label="Username"
-            rules={[{ required: true, message: 'Masukkan username' }]}
+            label="Email"
+            rules={[
+              { required: true, message: 'Masukkan email' },
+              { type: 'email', message: 'Format email tidak valid' },
+            ]}
           >
-            <Input prefix={<UserOutlined />} placeholder="Masukkan username" />
+            <Input prefix={<UserOutlined />} placeholder="Masukkan email" />
           </Form.Item>
           <Form.Item
             name="nama"
@@ -184,17 +346,97 @@ const MasterUser = () => {
             <Select placeholder="Pilih Role">
               <Option value="admin">Admin</Option>
               <Option value="juri">Juri</Option>
+              <Option value="peserta">Peserta</Option>
             </Select>
           </Form.Item>
+
+          {selectedRole === 'juri' && (
+            <Form.Item
+              name="pillarId"
+              label="Pilar"
+              rules={[{ required: true, message: 'Pilih pilar untuk juri' }]}
+            >
+              <Select placeholder="Pilih Pilar">
+                {pilarOptions.map((pilar) => (
+                  <Option key={pilar.id} value={pilar.id}>
+                    {pilar.name}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+          )}
+
           {!editingRecord && (
             <Form.Item
               name="password"
               label="Password"
-              rules={[{ required: true, message: 'Masukkan password' }]}
+              rules={[
+                { required: true, message: 'Masukkan password' },
+                { min: 6, message: 'Password minimal 6 karakter' },
+              ]}
             >
               <Input.Password placeholder="Masukkan password" />
             </Form.Item>
           )}
+        </Form>
+      </Modal>
+
+      {/* Modal Ganti Password */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <KeyOutlined />
+            <span>Ganti Password</span>
+          </div>
+        }
+        open={passwordModalVisible}
+        onOk={handlePasswordSubmit}
+        confirmLoading={passwordSubmitting}
+        onCancel={() => {
+          setPasswordModalVisible(false);
+          passwordForm.resetFields();
+          setSelectedUserForPassword(null);
+        }}
+        okText="Simpan Password"
+        cancelText="Batal"
+      >
+        {selectedUserForPassword && (
+          <div style={{ marginBottom: 16, padding: 12, background: '#f6f8fa', borderRadius: 8 }}>
+            <Text type="secondary">Mengubah password untuk:</Text>
+            <br />
+            <Text strong>{selectedUserForPassword.nama}</Text>
+            <Text type="secondary" style={{ marginLeft: 8 }}>({selectedUserForPassword.username})</Text>
+          </div>
+        )}
+        <Form form={passwordForm} layout="vertical">
+          <Form.Item
+            name="newPassword"
+            label="Password Baru"
+            rules={[
+              { required: true, message: 'Masukkan password baru' },
+              { min: 6, message: 'Password minimal 6 karakter' },
+            ]}
+          >
+            <Input.Password placeholder="Masukkan password baru" />
+          </Form.Item>
+          <Form.Item
+            name="confirmPassword"
+            label="Konfirmasi Password"
+            dependencies={['newPassword']}
+            rules={[
+              { required: true, message: 'Konfirmasi password' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('newPassword') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('Password tidak cocok'));
+                },
+              }),
+            ]}
+          >
+            <Input.Password placeholder="Ulangi password baru" />
+          </Form.Item>
         </Form>
       </Modal>
     </div>

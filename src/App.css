@@ -1,5 +1,3 @@
-@import 'antd/dist/reset.css';
-
 /* Custom styles */
 .site-layout-content {
   padding: 24px;
@@ -60,4 +58,22 @@ h1 {
 /* Form styles */
 .ant-form-item-label > label {
   font-weight: 500;
+}
+
+.custom-font-select .ant-select-selection-item {
+  font-size: 13px !important;
+}
+
+/* 2. Mengubah font teks daftar pilihan di dalam dropdown */
+.custom-dropdown-font .ant-select-item-option-content {
+  font-size: 13px !important;
+}
+
+/* Fix: Select dropdown scroll di mobile */
+.ant-select-dropdown {
+  overscroll-behavior: contain;
+}
+
+.ant-select-dropdown .ant-select-item-group {
+  overflow: visible;
 }

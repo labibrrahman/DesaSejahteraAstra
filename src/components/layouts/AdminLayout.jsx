@@ -20,6 +20,7 @@ import {
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import useIsMobile from '../../hooks/useIsMobile';
+import useAuthStore from '../../stores/authStore';
 
 const { Header, Sider, Content } = Layout;
 
@@ -55,7 +56,7 @@ const AdminLayout = () => {
         { key: '/admin/master/kategori', icon: <TagsOutlined />, label: 'Kategori' },
         { key: '/admin/master/user', icon: <UserOutlined />, label: 'User (Admin/Juri)' },
         { key: '/admin/master/wilayah', icon: <EnvironmentOutlined />, label: 'Wilayah' },
-        { key: '/admin/master/grup-astra', icon: <ShopOutlined />, label: 'Grup Astra' },
+        { key: '/admin/master/grup-astra', icon: <ShopOutlined />, label: 'Binaan' },
       ],
     },
   ];
@@ -71,9 +72,10 @@ const AdminLayout = () => {
     navigate(key);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('token');
+  const { logout, user, role } = useAuthStore();
+
+  const handleLogout = async () => {
+    await logout();
     navigate('/login/admin');
   };
 
@@ -124,10 +126,10 @@ const AdminLayout = () => {
         {(!collapsed || isMobile) && (
           <div>
             <div style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', lineHeight: 1.3 }}>
-              Astra CSR
+              DSA Platform
             </div>
             <div style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.3 }}>
-              Rural Development
+              Desa Sejahtera Astra
             </div>
           </div>
         )}
@@ -170,7 +172,7 @@ const AdminLayout = () => {
       </div>
 
       {/* Bottom Items */}
-      {!isMobile && (
+      {/* {!isMobile && ( */}
         <div
           style={{
             position: 'absolute',
@@ -183,7 +185,8 @@ const AdminLayout = () => {
           }}
         >
           <div
-            style={{ ...bottomItemStyle, marginBottom: 4 }}
+            style={{ ...bottomItemStyle, marginBottom: 4, cursor: 'pointer' }}
+            onClick={() => window.open('https://wa.me/6285713043230', '_blank')}
             onMouseEnter={e => (e.currentTarget.style.background = '#f1f5f9')}
             onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
@@ -191,16 +194,16 @@ const AdminLayout = () => {
             {!collapsed && <span>Support</span>}
           </div>
           <div
-            style={bottomItemStyle}
+            style={{ ...bottomItemStyle, color: '#dc2626' }}
             onClick={handleLogout}
-            onMouseEnter={e => (e.currentTarget.style.background = '#f1f5f9')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            onMouseEnter={e => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.color = '#dc2626'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#dc2626'; }}
           >
             <LogoutOutlined style={{ fontSize: 16 }} />
-            {!collapsed && <span>Sign Out</span>}
+            {!collapsed && <span>Keluar</span>}
           </div>
         </div>
-      )}
+      {/* )} */}
     </>
   );
 
@@ -261,17 +264,13 @@ const AdminLayout = () => {
             {isMobile || collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </div>
           <Space size={16}>
-            <BellOutlined style={{ fontSize: 18, color: '#64748b', cursor: 'pointer' }} />
-            {!isMobile && <QuestionCircleOutlined style={{ fontSize: 18, color: '#64748b', cursor: 'pointer' }} />}
-            <Dropdown
-              menu={{ items: userMenuItems, onClick: handleUserMenuClick }}
-              placement="bottomRight"
-            >
-              <Avatar
-                icon={<UserOutlined />}
-                style={{ backgroundColor: '#1e293b', cursor: 'pointer' }}
-              />
-            </Dropdown>
+            {/* {!isMobile && ( */}
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontWeight: 600, fontSize: 13, color: '#1e293b', lineHeight: 1.3 }}>{user?.name || 'Admin'}</div>
+                <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'capitalize', lineHeight: 1.3 }}>{role || 'admin'}</div>
+              </div>
+            {/* )} */}
+            <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#1e293b', cursor: 'pointer' }} />
           </Space>
         </Header>
         <Content

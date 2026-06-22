@@ -14,6 +14,7 @@ import {
 } from '@ant-design/icons';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import useIsMobile from '../../hooks/useIsMobile';
+import useAuthStore from '../../stores/authStore';
 
 const { Header, Sider, Content } = Layout;
 
@@ -48,10 +49,11 @@ const JuriLayout = () => {
     navigate(key);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('token');
-    navigate('/login/juri');
+  const { logout, user, role } = useAuthStore();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login/admin');
   };
 
   const handleUserMenuClick = ({ key }) => {
@@ -79,8 +81,8 @@ const JuriLayout = () => {
         </div>
         {(!collapsed || isMobile) && (
           <div>
-            <div style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', lineHeight: 1.3 }}>Astra CSR</div>
-            <div style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.3 }}>Rural Development</div>
+            <div style={{ fontWeight: 700, fontSize: 14, color: '#1e293b', lineHeight: 1.3 }}>DSA Platform</div>
+            <div style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.3 }}>Desa Sejahtera Astra</div>
           </div>
         )}
       </div>
@@ -89,16 +91,16 @@ const JuriLayout = () => {
           <Menu mode="inline" selectedKeys={[location.pathname]} items={menuItems} onClick={(e) => { handleMenuClick(e); if (isMobile) setDrawerOpen(false); }} style={{ border: 'none', background: 'transparent' }} />
         </ConfigProvider>
       </div>
-      {!isMobile && (
+      {/* {!isMobile && ( */}
         <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '8px', borderTop: '1px solid #f0f0f0', background: '#fff' }}>
-          <div style={{ ...bottomItemStyle, marginBottom: 4 }} onMouseEnter={e => (e.currentTarget.style.background = '#f1f5f9')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+          <div style={{ ...bottomItemStyle, marginBottom: 4, cursor: 'pointer' }} onClick={() => window.open('https://wa.me/6285713043230', '_blank')} onMouseEnter={e => (e.currentTarget.style.background = '#f1f5f9')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
             <QuestionCircleOutlined style={{ fontSize: 16 }} />{!collapsed && <span>Support</span>}
           </div>
-          <div style={bottomItemStyle} onClick={handleLogout} onMouseEnter={e => (e.currentTarget.style.background = '#f1f5f9')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
-            <LogoutOutlined style={{ fontSize: 16 }} />{!collapsed && <span>Sign Out</span>}
+          <div style={{ ...bottomItemStyle, color: '#dc2626' }} onClick={handleLogout} onMouseEnter={e => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.color = '#dc2626'; }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#dc2626'; }}>
+            <LogoutOutlined style={{ fontSize: 16 }} />{!collapsed && <span>Keluar</span>}
           </div>
         </div>
-      )}
+      {/* )} */}
     </>
   );
 
@@ -118,13 +120,15 @@ const JuriLayout = () => {
           <div onClick={() => isMobile ? setDrawerOpen(true) : setCollapsed(!collapsed)} style={{ cursor: 'pointer', fontSize: 18, color: '#64748b' }}>
             {isMobile || collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </div>
-          <Space size={16}>
-            <BellOutlined style={{ fontSize: 18, color: '#64748b', cursor: 'pointer' }} />
-            {!isMobile && <QuestionCircleOutlined style={{ fontSize: 18, color: '#64748b', cursor: 'pointer' }} />}
-            <Dropdown menu={{ items: userMenuItems, onClick: handleUserMenuClick }} placement="bottomRight">
-              <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#1e293b', cursor: 'pointer' }} />
-            </Dropdown>
-          </Space>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* {!isMobile && ( */}
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontWeight: 600, fontSize: 13, color: '#1e293b', lineHeight: 1.3 }}>{user?.name || 'Juri'}</div>
+                <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'capitalize', lineHeight: 1.3 }}>{role || 'juri'}</div>
+              </div>
+            {/* )} */}
+            <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#1e293b', cursor: 'pointer' }} />
+          </div>
         </Header>
         <Content style={{ margin: isMobile ? 12 : 24, padding: isMobile ? 12 : 24, background: '#fff', borderRadius: 8, minHeight: 280, overflow: 'auto' }}>
           <Outlet />

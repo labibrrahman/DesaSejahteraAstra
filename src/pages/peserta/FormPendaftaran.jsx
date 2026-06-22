@@ -710,7 +710,7 @@ const FormPendaftaran = () => {
                 filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                 value={formData.grup_astra_id}
                 onChange={val => updateField('grup_astra_id', val)}
-                getPopupContainer={(trigger) => trigger.parentElement}
+                getPopupContainer={() => document.body}
                 dropdownStyle={{ maxHeight: 300, overflow: 'auto' }}
               >
                 {astraGroups.map(g => <Option key={g.id} value={g.id} label={g.name}><span style={{ fontSize:13 }}>{g.name}</span></Option>)}
@@ -757,7 +757,7 @@ const FormPendaftaran = () => {
                 placeholder="Ketik untuk cari provinsi..."
                 style={{ width: '100%' }}
                 size="large"
-                getPopupContainer={(trigger) => trigger.parentElement}
+                getPopupContainer={() => document.body}
                 dropdownStyle={{ maxHeight: 300, overflow: 'auto' }}
                 showSearch
                 optionFilterProp="label"
@@ -796,7 +796,7 @@ const FormPendaftaran = () => {
                 placeholder="Ketik untuk cari kabupaten..."
                 style={{ width: '100%' }}
                 size="large"
-                getPopupContainer={(trigger) => trigger.parentElement}
+                getPopupContainer={() => document.body}
                 dropdownStyle={{ maxHeight: 300, overflow: 'auto' }}
                 showSearch
                 optionFilterProp="label"
@@ -836,7 +836,7 @@ const FormPendaftaran = () => {
                 placeholder="Ketik untuk cari kecamatan..."
                 style={{ width: '100%' }}
                 size="large"
-                getPopupContainer={(trigger) => trigger.parentElement}
+                getPopupContainer={() => document.body}
                 dropdownStyle={{ maxHeight: 300, overflow: 'auto' }}
                 showSearch
                 optionFilterProp="label"
@@ -876,7 +876,7 @@ const FormPendaftaran = () => {
                 placeholder="Ketik untuk cari desa..."
                 style={{ width: '100%' }}
                 size="large"
-                getPopupContainer={(trigger) => trigger.parentElement}
+                getPopupContainer={() => document.body}
                 dropdownStyle={{ maxHeight: 300, overflow: 'auto' }}
                 showSearch
                 optionFilterProp="label"
@@ -940,7 +940,7 @@ const FormPendaftaran = () => {
       <div style={fieldWrapper}>
         <Text style={labelStyle}>Durasi Program *</Text>
         <Select placeholder="Pilih durasi program..." style={{ width: '100%' }} size="large"
-          getPopupContainer={(trigger) => trigger.parentElement}
+          getPopupContainer={() => document.body}
           dropdownStyle={{ maxHeight: 300, overflow: 'auto' }}
           value={formData.durasi_program} onChange={val => updateField('durasi_program', val)}>
           <Option value="<1 Tahun"><span style={{ fontSize:13 }}>&lt;1 Tahun</span></Option>

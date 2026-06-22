@@ -68,3 +68,12 @@ h1 {
 .custom-dropdown-font .ant-select-item-option-content {
   font-size: 13px !important;
 }
+
+/* Fix: Select dropdown scroll di mobile */
+.ant-select-dropdown {
+  overscroll-behavior: contain;
+}
+
+.ant-select-dropdown .ant-select-item-group {
+  overflow: visible;
+}

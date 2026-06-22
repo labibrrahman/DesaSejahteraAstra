@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, Spin } from 'antd';
 import idID from 'antd/locale/id_ID';
 import useAuthStore from './stores/authStore';
 import useMenuStore from './stores/menuStore';
@@ -45,18 +45,23 @@ const MENU_KEY_MAP = {
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { isAuthenticated, role } = useAuthStore();
-  const { getMenuState } = useMenuStore();
+  const { menuStatus, loading: menuLoading } = useMenuStore();
 
   if (!isAuthenticated || !allowedRoles.includes(role)) {
     return <Navigate to="/login" replace />;
   }
 
+  // Tunggu menu status di-load dulu
+  if (menuLoading) {
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}><Spin size="large" /></div>;
+  }
+
   // Cek status menu
   const menuKey = MENU_KEY_MAP[role];
   if (menuKey) {
-    const state = getMenuState(menuKey);
-    if (state.maintenance) {
-      return <Navigate to="/maintenance" state={{ message: state.description }} replace />;
+    const menu = menuStatus.find(m => m.key === menuKey);
+    if (menu && menu.value === 'maintenance') {
+      return <Navigate to="/maintenance" state={{ message: menu.description }} replace />;
     }
   }
 

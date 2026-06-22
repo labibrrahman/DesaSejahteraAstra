@@ -694,25 +694,27 @@ const FormPendaftaran = () => {
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
               <Text style={labelStyle}>Nomor HP (WhatsApp) *</Text>
-              <Input placeholder="Contoh: 08123456789" style={inputStyle} value={formData.phone_number} onChange={handlePhoneChange} maxLength={15} />
+              <Input placeholder="Contoh: 08123456789" style={inputStyle} value={formData.phone_number} onChange={handlePhoneChange} maxLength={15} inputMode="numeric" />
             </div>
           </Col>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
               <Text style={labelStyle}>Binaan (Opsional)</Text>
-              <Select 
-                placeholder="Pilih Binaan..." 
-                style={{ width: '100%' }} 
-                size="large" 
-                allowClear 
-                showSearch 
-                optionFilterProp="children"
-                value={formData.grup_astra_id} 
+              <Select
+                placeholder="Pilih Binaan..."
+                style={{ width: '100%' }}
+                size="large"
+                allowClear
+                showSearch
+                optionFilterProp="label"
+                filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
+                value={formData.grup_astra_id}
                 onChange={val => updateField('grup_astra_id', val)}
-                virtual={false}
+                getPopupContainer={(trigger) => trigger.parentElement}
+                dropdownStyle={{ maxHeight: 300, overflow: 'auto' }}
               >
-                {astraGroups.map(g => <Option key={g.id} value={g.id}><span style={{ fontSize:13 }}>{g.name}</span></Option>)}
-                <Option value="others"><span style={{ fontSize:13, fontWeight: 600 }}>Lainnya...</span></Option>
+                {astraGroups.map(g => <Option key={g.id} value={g.id} label={g.name}><span style={{ fontSize:13 }}>{g.name}</span></Option>)}
+                <Option value="others" label="Lainnya..."><span style={{ fontSize:13, fontWeight: 600 }}>Lainnya...</span></Option>
               </Select>
               {formData.grup_astra_id === 'others' && (
                 <Input placeholder="Masukkan nama binaan lainnya" style={{ ...inputStyle, marginTop: 8 }} value={formData.binaan_custom || ''} onChange={e => updateField('binaan_custom', e.target.value)} />
@@ -731,7 +733,7 @@ const FormPendaftaran = () => {
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
               <Text style={labelStyle}>Nomor HP Kontak Darurat *</Text>
-              <Input placeholder="Contoh: 08123456789" style={inputStyle} value={formData.no_hp_kontak_darurat} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); updateField('no_hp_kontak_darurat', v); }} maxLength={15} />
+              <Input placeholder="Contoh: 08123456789" style={inputStyle} value={formData.no_hp_kontak_darurat} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); updateField('no_hp_kontak_darurat', v); }} maxLength={15} inputMode="numeric" />
             </div>
           </Col>
         </Row>
@@ -755,6 +757,8 @@ const FormPendaftaran = () => {
                 placeholder="Ketik untuk cari provinsi..."
                 style={{ width: '100%' }}
                 size="large"
+                getPopupContainer={(trigger) => trigger.parentElement}
+                dropdownStyle={{ maxHeight: 300, overflow: 'auto' }}
                 showSearch
                 optionFilterProp="label"
                 filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
@@ -792,6 +796,8 @@ const FormPendaftaran = () => {
                 placeholder="Ketik untuk cari kabupaten..."
                 style={{ width: '100%' }}
                 size="large"
+                getPopupContainer={(trigger) => trigger.parentElement}
+                dropdownStyle={{ maxHeight: 300, overflow: 'auto' }}
                 showSearch
                 optionFilterProp="label"
                 filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
@@ -830,6 +836,8 @@ const FormPendaftaran = () => {
                 placeholder="Ketik untuk cari kecamatan..."
                 style={{ width: '100%' }}
                 size="large"
+                getPopupContainer={(trigger) => trigger.parentElement}
+                dropdownStyle={{ maxHeight: 300, overflow: 'auto' }}
                 showSearch
                 optionFilterProp="label"
                 filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
@@ -868,6 +876,8 @@ const FormPendaftaran = () => {
                 placeholder="Ketik untuk cari desa..."
                 style={{ width: '100%' }}
                 size="large"
+                getPopupContainer={(trigger) => trigger.parentElement}
+                dropdownStyle={{ maxHeight: 300, overflow: 'auto' }}
                 showSearch
                 optionFilterProp="label"
                 filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
@@ -930,6 +940,8 @@ const FormPendaftaran = () => {
       <div style={fieldWrapper}>
         <Text style={labelStyle}>Durasi Program *</Text>
         <Select placeholder="Pilih durasi program..." style={{ width: '100%' }} size="large"
+          getPopupContainer={(trigger) => trigger.parentElement}
+          dropdownStyle={{ maxHeight: 300, overflow: 'auto' }}
           value={formData.durasi_program} onChange={val => updateField('durasi_program', val)}>
           <Option value="<1 Tahun"><span style={{ fontSize:13 }}>&lt;1 Tahun</span></Option>
           <Option value="1-3 Tahun"><span style={{ fontSize:13 }}>1-3 Tahun</span></Option>
@@ -1122,6 +1134,7 @@ const FormPendaftaran = () => {
         okText="Ya, Kirim Data"
         cancelText="Kembali Periksa"
         confirmLoading={submitting}
+        centered
         okButtonProps={{ style: { background: '#0051d5', borderColor: '#0051d5', fontWeight: 600 } }}
         cancelButtonProps={{ style: { fontWeight: 600 } }}
       >

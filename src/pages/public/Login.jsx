@@ -85,7 +85,6 @@ const Login = ({ adminMode = false }) => {
         <Layout style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
           <div style={{ background: '#fff', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', flexShrink: 0 }}>
             <img src={astraLogo} alt="Astra" style={{ height: 24, objectFit: 'contain' }} />
-            {/* <Text strong style={{ fontSize: 16, color: '#005BAA', letterSpacing: 0.5 }}>ASTRA</Text> */}
           </div>
           <MobileBranding title="Lomba 4 Pilar" subtitle="Apresiasi untuk program binaan yang memberikan dampak sosial terbaik bagi masyarakat." />
           <MobileFormCard title="Masuk" subtitle="Gunakan akun Admin atau Juri yang telah terdaftar">
@@ -136,7 +135,16 @@ const Login = ({ adminMode = false }) => {
       <div style={{ position: 'absolute', right: -80, top: -80, width: 300, height: 300, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)' }} />
       <div style={{ position: 'absolute', right: 40, top: -120, width: 400, height: 400, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.05)' }} />
       <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 400 }}>
-        <img src={astraLogo} alt="Astra" style={{ height: 48, marginBottom: 32, filter: 'brightness(0) invert(1)' }} />
+        <img 
+  src={astraLogo} 
+  alt="Astra" 
+  style={{ 
+    height: 48, 
+    display: 'block',      // Mengubah menjadi elemen block
+    margin: '0 auto 32px auto', // Mengetengahkan secara horizontal & memberi jarak bawah 32px
+    filter: 'brightness(0) invert(1)' 
+  }} 
+/>
         <Title level={2} style={{ color: '#fff', fontWeight: 700, fontSize: 32, lineHeight: 1.2, marginBottom: 16 }}>{title}</Title>
         <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 15, lineHeight: 1.7, display: 'block' }}>{subtitle}</Text>
         {stats && (
@@ -198,9 +206,9 @@ const Login = ({ adminMode = false }) => {
     <Layout style={{ minHeight: '100vh', background: '#f8fafc' }}>
       <Content style={{ display: 'flex', minHeight: '100vh' }}>
         <DesktopBranding
-          title="Desa Sejahtera Astra"
+          title="Lomba 4 Pilar"
           subtitle="Apresiasi untuk program binaan yang memberikan dampak sosial terbaik bagi masyarakat."
-          stats={[{ num: '900+', label: 'Desa' }, { num: '4.5M', label: 'Manfaat' }, { num: '34', label: 'Provinsi' }]}
+          // stats={[{ num: '900+', label: 'Desa' }, { num: '4.5M', label: 'Manfaat' }, { num: '34', label: 'Provinsi' }]}
         />
         <DesktopFormPanel title="Masuk sebagai Peserta" subtitle="Gunakan akun Google yang terdaftar untuk mengakses dashboard peserta.">
           <Button type="default" icon={<GoogleOutlined style={{ color: '#4285f4' }} />} size="large" block onClick={loginWithGoogle} loading={loading}

@@ -62,6 +62,8 @@ const AdminSelectionReview = () => {
   const [regDetailData, setRegDetailData] = useState(null);
   const [regDetailLoading, setRegDetailLoading] = useState(false);
 
+  const [previewPhoto, setPreviewPhoto] = useState(null);
+
   // ── Fetch data ────────────────────────────────────────────────────────────
   const fetchData = useCallback(async (page = 1, limit = 10) => {
     setLoading(true);
@@ -603,8 +605,9 @@ const AdminSelectionReview = () => {
                       { label: 'Nomor HP', value: regDetailData.phoneNumber },
                       { label: 'Nama Kontak Darurat', value: regDetailData.emergencyContactName },
                       { label: 'No HP Kontak Darurat', value: regDetailData.emergencyContactPhone },
+                      ...(regDetailData.socialMedia ? [{ label: 'Media Sosial', value: regDetailData.socialMedia, span: 24 }] : []),
                     ].map((item, idx) => (
-                      <Col xs={12} sm={8} key={idx}>
+                      <Col xs={12} sm={8} key={idx} span={item.span}>
                         <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>{item.label}</Text>
                         <Text strong style={{ fontSize: 13 }}>{item.value || '—'}</Text>
                       </Col>
@@ -667,11 +670,43 @@ const AdminSelectionReview = () => {
                       </div>
                     </div>
                   ))}
+
+                  {/* Foto Dokumentasi */}
+                  {Array.isArray(regDetailData.photos) && regDetailData.photos.length > 0 && (
+                    <div style={{ marginTop: 12 }}>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 8 }}>Foto Dokumentasi</Text>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                        {regDetailData.photos.map((photo, i) => (
+                          <div key={i} onClick={() => setPreviewPhoto(photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`)} style={{ width: 80, height: 80, borderRadius: 6, overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer' }}>
+                            <img src={photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`} alt={photo.originalName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           )}
         </Spin>
+      </Modal>
+
+      {/* Modal Preview Foto */}
+      <Modal
+        open={!!previewPhoto}
+        onCancel={() => setPreviewPhoto(null)}
+        footer={null}
+        centered
+        width={600}
+        styles={{ body: { padding: 0, background: 'transparent' } }}
+      >
+        {previewPhoto && (
+          <img
+            src={previewPhoto}
+            alt="Preview"
+            style={{ width: '100%', borderRadius: 8 }}
+          />
+        )}
       </Modal>
     </div>
   );

@@ -55,8 +55,8 @@ const pilarData = [
 const statsData = [
   { number: '3,01 Jt', label: 'Penerima Manfaat Program (2025)' },
   { number: '1533', label: 'Desa Sejahtera Astra di 35 Provinsi' },
-  { number: '492', label: 'Desa Ekspor ke 26 Negara' },
-  { number: 'Rp 411 M', label: 'Valuasi Ekspor Produk DSA (kumulatif s/d 2025)' },
+  // { number: '492', label: 'Desa Ekspor ke 26 Negara' },
+  // { number: 'Rp 411 M', label: 'Valuasi Ekspor Produk DSA (kumulatif s/d 2025)' },
 ];
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -206,7 +206,7 @@ const LandingPage = () => {
                 marginBottom: isMobile ? 20 : 28,
               }}
             >
-              Astra International Present
+              Astra Present
             </div>
 
             {/* Title */}
@@ -546,32 +546,20 @@ const LandingPage = () => {
             maxWidth: 1280,
             margin: '0 auto',
             display: 'flex',
-            flexDirection: isMobile ? 'column' : 'row',
+            flexDirection: 'column',
             justifyContent: 'space-between',
-            alignItems: isMobile ? 'flex-start' : 'center',
+            alignItems: 'center',
             gap: isMobile ? 24 : 0,
           }}
         >
-          <div>
-            {/* <Text style={{ color: '#fff', fontSize: 16, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif", display: 'block', marginBottom: 4 }}>
-              Desa Sejahtera Astra
-            </Text>
-            <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>
-              Astra International CSR Division
-            </Text> */}
-          </div>
-          <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? 16 : 24 }}>
+          <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: 'center', gap: isMobile ? 16 : 24 }}>
             <div style={{ display: 'flex', gap: 24 }}>
-              {/* <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}>
-                Kebijakan Privasi
-              </Text>
-              <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 12, cursor: 'pointer' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.8)'}>
-                Syarat & Ketentuan
-              </Text> */}
             </div>
-            <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
-              © 2026 Astra International. All Rights Reserved.
-            </Text>
+            <div style={{ display: 'flex', gap: 24, textAlign:'center' }}>
+              <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
+                © 2026 Astra. All Rights Reserved.
+              </Text>
+            </div>
           </div>
         </div>
       </Footer>

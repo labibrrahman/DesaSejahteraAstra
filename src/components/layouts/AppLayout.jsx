@@ -281,12 +281,10 @@ const AppLayout = ({ role = 'admin' }) => {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {!isMobile && (
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontWeight: 600, fontSize: 13, color: '#1e293b', lineHeight: 1.3 }}>{user?.name || defaultName}</div>
                 <div style={{ fontSize: 11, color: '#94a3b8', textTransform: 'capitalize', lineHeight: 1.3 }}>{role}</div>
               </div>
-            )}
             <Avatar
               icon={<UserOutlined />}
               style={{

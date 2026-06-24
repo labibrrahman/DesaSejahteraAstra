@@ -1,25 +1,82 @@
-import React from 'react';
-import { Button, Typography, Layout } from 'antd';
-import { ToolOutlined, ArrowLeftOutlined, LogoutOutlined, ClockCircleOutlined, CheckCircleOutlined, HeartOutlined } from '@ant-design/icons';
+import React, { useEffect, useState } from 'react';
+import { Button, Typography, Layout, Spin } from 'antd';
+import { ToolOutlined, ArrowLeftOutlined, LogoutOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../../stores/authStore';
+import useMenuStore from '../../stores/menuStore';
 import useIsMobile from '../../hooks/useIsMobile';
 import astraLogo from '../../assets/images/astra-logo.png';
 
 const { Title, Text } = Typography;
 const { Content } = Layout;
 
+// Mapping role → dashboard
+const DASHBOARD_MAP = {
+  admin: '/admin',
+  juri: '/juri',
+  peserta: '/peserta',
+};
+
+// Menu key mapping (konsisten dengan App.jsx)
+const MENU_KEY_MAP = {
+  admin: 'menu_admin',
+  juri: 'menu_juri',
+  peserta: 'menu_peserta',
+};
+
 const MaintenancePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuthStore();
+  const { logout, isAuthenticated, role } = useAuthStore();
+  const { menuStatus, loading: menuLoading, fetchMenuStatus } = useMenuStore();
   const isMobile = useIsMobile();
   const customMessage = location.state?.message;
+  const [checking, setChecking] = useState(true);
+
+  // Cek ulang status maintenance saat mount / refresh
+  useEffect(() => {
+    const checkMaintenanceStatus = async () => {
+      // Jika menuStatus belum ada, fetch ulang (safety net)
+      if (menuStatus.length === 0 && !menuLoading) {
+        await fetchMenuStatus();
+        return;
+      }
+
+      // Tunggu sampai loading selesai
+      if (menuLoading) return;
+
+      // Cek apakah user terotentikasi
+      if (isAuthenticated && role) {
+        const menuKey = MENU_KEY_MAP[role];
+        const menu = menuStatus.find(m => m.key === menuKey);
+
+        // Jika menu sudah bukan maintenance, redirect ke dashboard
+        if (menu && menu.value !== 'maintenance') {
+          navigate(DASHBOARD_MAP[role] || '/', { replace: true });
+          return;
+        }
+      }
+
+      // Selesai mengecek
+      setChecking(false);
+    };
+
+    checkMaintenanceStatus();
+  }, [menuStatus, menuLoading, isAuthenticated, role, navigate, fetchMenuStatus]);
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
+
+  // Tampilkan spinner saat masih mengecek status
+  if (checking || menuLoading) {
+    return (
+      <Layout style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Spin indicator={<LoadingOutlined style={{ fontSize: 48 }} spin />} />
+      </Layout>
+    );
+  }
 
   return (
     <Layout style={{ minHeight: '100vh', background: '#f8fafc' }}>

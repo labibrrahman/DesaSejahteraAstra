@@ -74,7 +74,7 @@ const Login = ({ adminMode = false }) => {
             </Button>
           </div>
           <div style={{ textAlign: 'center', marginTop: 20, paddingTop: 16, borderTop: '1px solid #f0f0f0' }}>
-            <Text type="secondary" style={{ fontSize: 11 }}>© 2026 Astra International. All rights reserved.</Text>
+            <Text type="secondary" style={{ fontSize: 11 }}>© 2026 Astra. All rights reserved.</Text>
           </div>
         </div>
       </div>
@@ -171,7 +171,7 @@ const Login = ({ adminMode = false }) => {
         <Text type="secondary" style={{ display: 'block', marginBottom: 32, fontSize: 14 }}>{subtitle}</Text>
         {children}
         <div style={{ textAlign: 'center', marginTop: 24 }}>
-          <Text type="secondary" style={{ fontSize: 12 }}>© 2026 Astra International. All Rights Reserved.</Text>
+          <Text type="secondary" style={{ fontSize: 12 }}>© 2026 Astra. All Rights Reserved.</Text>
         </div>
       </div>
     </div>

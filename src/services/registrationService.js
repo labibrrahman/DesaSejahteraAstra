@@ -24,6 +24,24 @@ const registrationService = {
     const { data } = await api.post(`/registrations/${id}/submit`);
     return data.data || data;
   },
+
+  /** POST /api/registrations/upload-photo — upload foto (multipart/form-data) */
+  uploadPhoto: async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await api.post('/registrations/upload-photo', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data.data || data;
+  },
+
+  /** DELETE /api/registrations/upload-photo — hapus foto dari server */
+  deletePhoto: async (generatedName) => {
+    const { data } = await api.delete('/registrations/upload-photo', {
+      data: { generatedName },
+    });
+    return data.data || data;
+  },
 };
 
 export default registrationService;

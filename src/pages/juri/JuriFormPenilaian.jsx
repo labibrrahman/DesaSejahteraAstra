@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Form, Input, InputNumber, Button, Typography, Tag, Row, Col, message, Result, Spin } from 'antd';
-import { SaveOutlined, ArrowLeftOutlined, FileTextOutlined, BulbOutlined, ThunderboltOutlined, ToolOutlined, CheckCircleFilled } from '@ant-design/icons';
+import { Form, Input, InputNumber, Button, Typography, Tag, Row, Col, message, Result, Spin, Modal } from 'antd';
+import { SaveOutlined, ArrowLeftOutlined, FileTextOutlined, BulbOutlined, ThunderboltOutlined, ToolOutlined, CheckCircleFilled, CameraOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import adminService from '../../services/adminService';
 
@@ -19,6 +19,8 @@ const mapFromApi = (i) => ({
   wilayah: [i.province?.name, i.city?.name, i.district?.name, i.villageRegion?.name].filter(Boolean).join(' - ') || '-',
   grup_astra: i.astraGroupCustom || i.astraGroup?.name || '-', durasi_program: i.programDuration || '-', latar_belakang: i.background || '-', dampak_program: i.programImpact || '-',
   rencana_pengembangan: i.developmentPlan || '-',
+  social_media: i.socialMedia || '',
+  foto: Array.isArray(i.photos) ? i.photos : [],
   jenis_dsa: i.dsaType || '-', phone_number: i.phoneNumber || '-',
   nama_kontak_darurat: i.emergencyContactName || '-', no_hp_kontak_darurat: i.emergencyContactPhone || '-',
 });
@@ -31,6 +33,7 @@ const JuriFormPenilaian = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [previewPhoto, setPreviewPhoto] = useState(null);
   const [totalScore, setTotalScore] = useState(0);
 
   const fetchDetail = useCallback(async () => {
@@ -100,7 +103,53 @@ const JuriFormPenilaian = () => {
       <Row gutter={[24, 24]}>
         {/* Left */}
         <Col xs={24} lg={10}>
-          {/* Info Peserta */}
+          {/* Latar Belakang */}
+          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 15, overflow: 'hidden' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#f5f3ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><BulbOutlined style={{ color: '#8b5cf6', fontSize: 14 }} /></div>
+              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Latar Belakang Program</Text>
+            </div>
+            <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #8b5cf6' }}><Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>{peserta.latar_belakang}</Paragraph></div></div>
+          </div>
+
+          {/* Dampak */}
+          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0',marginBottom: 15, overflow: 'hidden' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ThunderboltOutlined style={{ color: '#10b981', fontSize: 14 }} /></div>
+              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Dampak Yang Sudah Terealisasi</Text>
+            </div>
+            <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #10b981' }}><Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>{peserta.dampak_program}</Paragraph></div></div>
+          </div>
+
+          {/* Rencana Pengembangan */}
+          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0',marginBottom: 15, overflow: 'hidden' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#f5f3ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ToolOutlined style={{ color: '#722ed1', fontSize: 14 }} /></div>
+              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Rencana Pengembangan</Text>
+            </div>
+            <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #722ed1' }}><Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>{peserta.rencana_pengembangan}</Paragraph></div></div>
+          </div>
+
+          {/* Foto Dokumentasi */}
+          {peserta.foto.length > 0 && (
+            <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 20, overflow: 'hidden' }}>
+              <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CameraOutlined style={{ color: '#f59e0b', fontSize: 14 }} /></div>
+                <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Foto Dokumentasi</Text>
+              </div>
+              <div style={{ padding: 20 }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {peserta.foto.map((photo, i) => (
+                    <div key={i} onClick={() => setPreviewPhoto(photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`)} style={{ width: 100, height: 100, borderRadius: 8, overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer' }}>
+                      <img src={photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`} alt={photo.originalName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+                    {/* Info Peserta */}
           <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 20, overflow: 'hidden' }}>
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ width: 32, height: 32, borderRadius: 8, background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FileTextOutlined style={{ color: '#2563eb', fontSize: 14 }} /></div>
@@ -119,59 +168,19 @@ const JuriFormPenilaian = () => {
                 { l: 'Wilayah', v: peserta.wilayah },
                 { l: 'Binaan', v: peserta.grup_astra },
                 { l: 'Durasi Program', v: peserta.durasi_program },
+                ...(peserta.social_media ? [{ l: 'Media Sosial', v: peserta.social_media }] : []),
               ].map((item, idx, arr) => (
                 <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', padding: '10px 0', borderBottom: idx < arr.length - 1 ? '1px solid #f5f5f5' : 'none' }}>
-                  <Text style={{ fontSize: 13, color: '#64748b', width: '40%', flexShrink: 0 }}>{item.l}</Text>
+                  <Text  className='pr-5' style={{ fontSize: 13, color: '#64748b', width: '40%', flexShrink: 0 }}>{item.l}</Text>
                   {item.tag ? <Tag color="blue" style={{ margin: 0 }}>{item.v}</Tag> : <Text strong style={{ fontSize: 13, color: '#1e293b', flex: 1 }}>{item.v}</Text>}
                 </div>
               ))}
             </div>
           </div>
-
-          {/* Latar Belakang */}
-          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 20, overflow: 'hidden' }}>
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#f5f3ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><BulbOutlined style={{ color: '#8b5cf6', fontSize: 14 }} /></div>
-              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Latar Belakang Program</Text>
-            </div>
-            <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #8b5cf6' }}><Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>{peserta.latar_belakang}</Paragraph></div></div>
-          </div>
-
-          {/* Dampak */}
-          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ThunderboltOutlined style={{ color: '#10b981', fontSize: 14 }} /></div>
-              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Dampak Yang Sudah Terealisasi</Text>
-            </div>
-            <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #10b981' }}><Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>{peserta.dampak_program}</Paragraph></div></div>
-          </div>
-
-          {/* Rencana Pengembangan */}
-          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#f5f3ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ToolOutlined style={{ color: '#722ed1', fontSize: 14 }} /></div>
-              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Rencana Pengembangan</Text>
-            </div>
-            <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #722ed1' }}><Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>{peserta.rencana_pengembangan}</Paragraph></div></div>
-          </div>
         </Col>
 
         {/* Right: Form */}
         <Col xs={24} lg={14}>
-          {/* Score */}
-          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', padding: 24, marginBottom: 20, textAlign: 'center' }}>
-            <Text style={{ fontSize: 12, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 12 }}>Rata-rata Nilai Sementara</Text>
-            <div style={{ fontSize: 56, fontWeight: 800, fontFamily: "'Plus Jakarta Sans', sans-serif", color: scoreColor, lineHeight: 1, marginBottom: 4, transition: 'color 0.3s' }}>{totalScore}</div>
-            <Text style={{ fontSize: 14, color: '#94a3b8' }}>/ 100</Text>
-            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <div style={{ height: 6, flex: 1, maxWidth: 300, borderRadius: 3, background: '#f1f5f9', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${totalScore}%`, background: `linear-gradient(90deg, ${scoreColor}, ${scoreColor}dd)`, borderRadius: 3, transition: 'width 0.4s ease' }} />
-              </div>
-              {/* <Text style={{ fontSize: 13, fontWeight: 600, color: scoreColor, minWidth: 40 }}>{totalScore}%</Text> */}
-            </div>
-            {totalScore > 0 && <Tag color={totalScore >= 90 ? 'blue' : totalScore >= 75 ? 'success' : totalScore >= 60 ? 'warning' : 'error'} style={{ marginTop: 12, fontSize: 12, padding: '2px 12px', borderRadius: 12 }}>{grade}</Tag>}
-          </div>
-
           <Form form={form} layout="vertical" onValuesChange={onValuesChange}>
             {KRITERIA.map((k) => (
               <div key={k.key} style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 16, overflow: 'hidden' }}>
@@ -202,6 +211,20 @@ const JuriFormPenilaian = () => {
               </div>
             </div>
 
+            {/* Score */}
+            <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', padding: 24, marginBottom: 20, textAlign: 'center' }}>
+              <Text style={{ fontSize: 12, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 12 }}>Rata-rata Nilai Sementara</Text>
+              <div style={{ fontSize: 56, fontWeight: 800, fontFamily: "'Plus Jakarta Sans', sans-serif", color: scoreColor, lineHeight: 1, marginBottom: 4, transition: 'color 0.3s' }}>{totalScore}</div>
+              <Text style={{ fontSize: 14, color: '#94a3b8' }}>/ 100</Text>
+              <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                <div style={{ height: 6, flex: 1, maxWidth: 300, borderRadius: 3, background: '#f1f5f9', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${totalScore}%`, background: `linear-gradient(90deg, ${scoreColor}, ${scoreColor}dd)`, borderRadius: 3, transition: 'width 0.4s ease' }} />
+                </div>
+                {/* <Text style={{ fontSize: 13, fontWeight: 600, color: scoreColor, minWidth: 40 }}>{totalScore}%</Text> */}
+              </div>
+              {totalScore > 0 && <Tag color={totalScore >= 90 ? 'blue' : totalScore >= 75 ? 'success' : totalScore >= 60 ? 'warning' : 'error'} style={{ marginTop: 12, fontSize: 12, padding: '2px 12px', borderRadius: 12 }}>{grade}</Tag>}
+            </div>
+
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
               <Button onClick={() => navigate('/juri/peserta')} style={{ height: 44, borderRadius: 8 }}>Batal</Button>
               <Button type="primary" icon={<SaveOutlined />} onClick={handleSubmit} loading={submitting} disabled={totalScore === 0} style={{ height: 44, borderRadius: 8, fontWeight: 600 }}>Submit Penilaian</Button>
@@ -209,6 +232,20 @@ const JuriFormPenilaian = () => {
           </Form>
         </Col>
       </Row>
+
+      {/* Modal Preview Foto */}
+      <Modal
+        open={!!previewPhoto}
+        onCancel={() => setPreviewPhoto(null)}
+        footer={null}
+        centered
+        width={600}
+        styles={{ body: { padding: 0, background: 'transparent' } }}
+      >
+        {previewPhoto && (
+          <img src={previewPhoto} alt="Preview" style={{ width: '100%', borderRadius: 8 }} />
+        )}
+      </Modal>
     </div>
   );
 };

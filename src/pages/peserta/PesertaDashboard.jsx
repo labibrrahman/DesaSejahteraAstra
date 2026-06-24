@@ -36,6 +36,7 @@ const PesertaDashboard = () => {
   const { registration, dashboardData, loading, hasRegistration } = useRegistration();
   const [detailOpen, setDetailOpen] = useState(false);
   const [statusModalOpen, setStatusModalOpen] = useState(false);
+  const [previewPhoto, setPreviewPhoto] = useState(null);
 
   // Auto-open status modal untuk finalist/rejected
   React.useEffect(() => {
@@ -43,6 +44,13 @@ const PesertaDashboard = () => {
       setStatusModalOpen(true);
     }
   }, [dashboardData?.registration?.status]);
+
+  // Belum ada registrasi → redirect ke form
+  React.useEffect(() => {
+    if (!loading && !hasRegistration) {
+      navigate('/register', { replace: true });
+    }
+  }, [loading, hasRegistration, navigate]);
 
   // Loading
   if (loading) {
@@ -53,9 +61,7 @@ const PesertaDashboard = () => {
     );
   }
 
-  // Belum ada registrasi → redirect ke form
   if (!hasRegistration) {
-    navigate('/register', { replace: true });
     return null;
   }
 
@@ -704,6 +710,10 @@ const PesertaDashboard = () => {
                   <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>No HP Kontak Darurat</Text>
                   <Text strong style={{ fontSize: 13 }}>{reg?.emergencyContactPhone || '—'}</Text>
                 </Col>
+                <Col xs={12} sm={8}>
+                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Media Sosial</Text>
+                  <Text strong style={{ fontSize: 13 }}>{reg.socialMedia}</Text>
+                </Col>
               </Row>
             </div>
 
@@ -784,6 +794,20 @@ const PesertaDashboard = () => {
                   <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{reg?.developmentPlan || '—'}</Text>
                 </div>
               </div>
+
+              {/* Foto Dokumentasi */}
+              {Array.isArray(reg?.photos) && reg.photos.length > 0 && (
+                <div style={{ marginTop: 12 }}>
+                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 8 }}>Foto Dokumentasi</Text>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {reg.photos.map((photo, i) => (
+                      <div key={i} onClick={() => setPreviewPhoto(photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`)} style={{ width: 80, height: 80, borderRadius: 6, overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer' }}>
+                        <img src={photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`} alt={photo.originalName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -827,6 +851,24 @@ const PesertaDashboard = () => {
               : 'Mohon maaf, pendaftaran Anda belum memenuhi kriteria untuk tahap berikutnya. Terima kasih telah berpartisipasi.'}
           </Text>
         </div>
+      </Modal>
+
+      {/* Modal Preview Foto */}
+      <Modal
+        open={!!previewPhoto}
+        onCancel={() => setPreviewPhoto(null)}
+        footer={null}
+        centered
+        width={600}
+        styles={{ body: { padding: 0, background: 'transparent' } }}
+      >
+        {previewPhoto && (
+          <img
+            src={previewPhoto}
+            alt="Preview"
+            style={{ width: '100%', borderRadius: 8 }}
+          />
+        )}
       </Modal>
     </div>
   );

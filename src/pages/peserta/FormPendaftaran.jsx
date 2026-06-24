@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Button, Select, Input, Row, Col, message, Modal, Spin, Radio, Card } from 'antd';
+import { Typography, Button, Select, Input, Row, Col, message, Modal, Spin, Radio, Card, Upload } from 'antd';
 import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
@@ -11,6 +11,9 @@ import {
   ExclamationCircleOutlined,
   CheckOutlined,
   LogoutOutlined,
+  QuestionCircleOutlined,
+  PlusOutlined,
+  CloseOutlined,
 } from '@ant-design/icons';
 import useAuthStore from '../../stores/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -67,6 +70,38 @@ const FormPendaftaran = () => {
 
   const DRAFT_KEY = 'form_pendaftaran_draft';
 
+  // ── Popup Konfirmasi Astra Grup ─────────────────────────────────────────────
+  const [showAstraPopup, setShowAstraPopup] = useState(false);
+  const [showDeniedPopup, setShowDeniedPopup] = useState(false);
+  const [astraChecked, setAstraChecked] = useState(false);
+
+  useEffect(() => {
+    // Cek apakah sudah pernah dicek sebelumnya di session ini
+    const alreadyChecked = sessionStorage.getItem('astra_group_checked');
+    if (alreadyChecked) {
+      setAstraChecked(true);
+      return;
+    }
+    // Tampilkan popup konfirmasi saat pertama kali mount
+    setShowAstraPopup(true);
+  }, []);
+
+  const handleAstraYes = () => {
+    setShowAstraPopup(false);
+    setAstraChecked(true);
+    sessionStorage.setItem('astra_group_checked', 'true');
+  };
+
+  const handleAstraNo = () => {
+    setShowAstraPopup(false);
+    setShowDeniedPopup(true);
+  };
+
+  const handleDeniedClose = async () => {
+    setShowDeniedPopup(false);
+    await handleLogout();
+  };
+
   // ── Load draft dari localStorage ───────────────────────────────────────────
   const loadDraft = () => {
     try {
@@ -109,6 +144,9 @@ const FormPendaftaran = () => {
   const [loadingMaster, setLoadingMaster] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [registrationId, setRegistrationId] = useState(null);
+  const [photos, setPhotos] = useState(savedDraft?.photos || []);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [previewPhoto, setPreviewPhoto] = useState(null);
 
   const updateField = (key, value) => setFormData(prev => ({ ...prev, [key]: value }));
 
@@ -116,6 +154,57 @@ const FormPendaftaran = () => {
   const handlePhoneChange = (e) => {
     const onlyNums = e.target.value.replace(/[^0-9]/g, '');
     updateField('phone_number', onlyNums);
+  };
+
+  // Hanya izinkan huruf, spasi, titik, dan strip untuk nama
+  const handleNameChange = (key, e) => {
+    const cleaned = e.target.value.replace(/[^a-zA-Z\s.\-]/g, '');
+    updateField(key, cleaned);
+  };
+
+  // ── Upload foto ────────────────────────────────────────────────────────────
+  const handlePhotoUpload = async (file) => {
+    // Validasi tipe file
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      message.error('Format foto harus JPEG, PNG, atau WEBP');
+      return false;
+    }
+    // Validasi ukuran (max 1MB)
+    if (file.size > 1024 * 1024) {
+      message.error('Ukuran foto maksimal 1 MB');
+      return false;
+    }
+    // Validasi jumlah foto (max 4)
+    if (photos.length >= 4) {
+      message.error('Maksimal 4 foto');
+      return false;
+    }
+
+    setUploadingPhoto(true);
+    try {
+      const result = await registrationService.uploadPhoto(file);
+      setPhotos(prev => [...prev, result]);
+      message.success('Foto berhasil diunggah');
+    } catch (err) {
+      message.error('Gagal mengunggah foto');
+    } finally {
+      setUploadingPhoto(false);
+    }
+    return false; // Prevent Ant Design default upload
+  };
+
+  const handlePhotoDelete = async (index) => {
+    const photo = photos[index];
+    try {
+      if (photo.generatedName) {
+        await registrationService.deletePhoto(photo.generatedName);
+      }
+    } catch {
+      // ignore delete error, still remove from state
+    }
+    setPhotos(prev => prev.filter((_, i) => i !== index));
+    message.success('Foto dihapus');
   };
 
   // ── Auto-save draft ke localStorage ────────────────────────────────────────
@@ -126,14 +215,15 @@ const FormPendaftaran = () => {
         selectedPilarId,
         selectedKategoriId,
         formData,
+        photos,
       }));
     } catch { /* quota exceeded, ignore */ }
   };
 
-  // Save setiap kali step atau formData berubah
+  // Save setiap kali step, formData, atau photos berubah
   useEffect(() => {
     saveDraft();
-  }, [currentStep, selectedPilarId, selectedKategoriId, formData]);
+  }, [currentStep, selectedPilarId, selectedKategoriId, formData, photos]);
 
   // ── Fetch master data + existing registration on mount ──────────────────────
 
@@ -292,8 +382,12 @@ const FormPendaftaran = () => {
               cityName: reg.city?.name || '',
               districtName: reg.district?.name || '',
               villageRegionName: reg.villageRegion?.name || '',
+              social_media: reg.socialMedia || '',
             });
             if (reg.categoryId) setSelectedKategoriId(reg.categoryId);
+            if (Array.isArray(reg.photos) && reg.photos.length > 0) {
+              setPhotos(reg.photos.map(p => ({ url: p.photoUrl, originalName: p.originalName, generatedName: p.generatedName })));
+            }
           }
         } catch {
           // ignore — belum ada registrasi
@@ -455,6 +549,10 @@ const FormPendaftaran = () => {
       } else if (formData.grup_astra_id) {
         payload.astraGroupId = formData.grup_astra_id;
       }
+      if (formData.social_media) payload.socialMedia = formData.social_media;
+      if (photos.length > 0) {
+        payload.photos = photos.map(p => ({ url: p.url, originalName: p.originalName, generatedName: p.generatedName }));
+      }
 
       if (registrationId) {
         // Update registrasi yang sudah ada
@@ -496,6 +594,100 @@ const FormPendaftaran = () => {
   };
 
   // ── Loading ─────────────────────────────────────────────────────────────────
+
+  // Blokir render form sampai popup konfirmasi Astra Grup dijawab
+  if (!astraChecked) {
+    return (
+      <>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#f8faff' }}>
+          <Spin size="large" description="Memeriksa akses..." />
+        </div>
+
+        {/* Popup 1: Konfirmasi Astra Grup */}
+        <Modal
+          open={showAstraPopup}
+          closable={false}
+          maskClosable={false}
+          footer={null}
+          centered
+          width={440}
+        >
+          <div style={{ textAlign: 'center', padding: '12px 0 8px' }}>
+            <div style={{
+              width: 72, height: 72, borderRadius: '50%',
+              background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 20px',
+              boxShadow: '0 8px 24px rgba(37,99,235,0.3)',
+            }}>
+              <QuestionCircleOutlined style={{ fontSize: 36, color: '#fff' }} />
+            </div>
+            <Title level={4} style={{ marginBottom: 8, color: '#1e293b' }}>
+              Konfirmasi Akses
+            </Title>
+            <Text style={{ fontSize: 14, color: '#64748b', display: 'block', marginBottom: 28, lineHeight: 1.7 }}>
+              Apakah Anda merupakan bagian dari <Text strong style={{ color: '#1e293b' }}>Astra Grup</Text>?
+            </Text>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+              <Button
+                size="large"
+                onClick={handleAstraNo}
+                style={{ fontWeight: 600, height: 44, paddingInline: 28, borderRadius: 8 }}
+              >
+                Bukan
+              </Button>
+              <Button
+                type="primary"
+                size="large"
+                onClick={handleAstraYes}
+                style={{ fontWeight: 600, height: 44, paddingInline: 28, borderRadius: 8, background: '#2563eb', borderColor: '#2563eb' }}
+              >
+                Ya, Saya Astra Grup
+              </Button>
+            </div>
+          </div>
+        </Modal>
+
+        {/* Popup 2: Informasi Ditolak */}
+        <Modal
+          open={showDeniedPopup}
+          closable={false}
+          maskClosable={false}
+          footer={null}
+          centered
+          width={440}
+        >
+          <div style={{ textAlign: 'center', padding: '12px 0 8px' }}>
+            <div style={{
+              width: 72, height: 72, borderRadius: '50%',
+              background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 20px',
+              boxShadow: '0 8px 24px rgba(239,68,68,0.3)',
+            }}>
+              <ExclamationCircleOutlined style={{ fontSize: 36, color: '#fff' }} />
+            </div>
+            <Title level={4} style={{ marginBottom: 8, color: '#1e293b' }}>
+              Akses Ditolak
+            </Title>
+            <Text style={{ fontSize: 14, color: '#64748b', display: 'block', marginBottom: 28, lineHeight: 1.7 }}>
+              Maaf, Anda <Text strong style={{ color: '#ef4444' }}>tidak berhak</Text> untuk mengisi pendaftaran ini. Program ini khusus untuk anggota Astra Grup.
+            </Text>
+            <Button
+              type="primary"
+              danger
+              size="large"
+              onClick={handleDeniedClose}
+              icon={<LogoutOutlined />}
+              style={{ fontWeight: 600, height: 44, paddingInline: 28, borderRadius: 8 }}
+            >
+              Keluar
+            </Button>
+          </div>
+        </Modal>
+      </>
+    );
+  }
 
   if (loadingMaster) {
     return (
@@ -683,7 +875,7 @@ const FormPendaftaran = () => {
                 placeholder={formData.jenis_dsa === 'individu' ? 'Otomatis dari akun login' : 'Masukan Nama Penanggung Jawab'}
                 style={inputStyle}
                 value={formData.nama_kelompok}
-                onChange={e => updateField('nama_kelompok', e.target.value)}
+                onChange={e => handleNameChange('nama_kelompok', e)}
                 // disabled={formData.jenis_dsa === 'individu'}
               />
             </div>
@@ -727,7 +919,7 @@ const FormPendaftaran = () => {
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
               <Text style={labelStyle}>Nama Kontak Darurat *</Text>
-              <Input placeholder="Contoh: Siti Aminah" style={inputStyle} value={formData.nama_kontak_darurat} onChange={e => updateField('nama_kontak_darurat', e.target.value)} />
+              <Input placeholder="Contoh: Siti Aminah" style={inputStyle} value={formData.nama_kontak_darurat} onChange={e => handleNameChange('nama_kontak_darurat', e)} />
             </div>
           </Col>
           <Col xs={24} sm={12}>
@@ -741,6 +933,12 @@ const FormPendaftaran = () => {
         <div style={fieldWrapper}>
           <Text style={labelStyle}>Alamat Lengkap *</Text>
           <TextArea rows={3} placeholder="Detail jalan, RW/RT..." style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.alamat} onChange={e => updateField('alamat', e.target.value)} />
+        </div>
+
+        <div style={fieldWrapper}>
+          <Text style={labelStyle}>Media Sosial (Opsional)</Text>
+          <TextArea rows={2} placeholder="Contoh: https://instagram.com/akun, https://facebook.com/akun" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.social_media || ''} onChange={e => updateField('social_media', e.target.value)} />
+          <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Isi dengan tautan media sosial yang relevan (pisahkan dengan koma jika lebih dari satu)</Text>
         </div>
 
         <div style={{ marginTop: 28, marginBottom: 20 }}>
@@ -962,10 +1160,78 @@ const FormPendaftaran = () => {
         <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan target dampak yang ingin dicapai</Text>
       </div>
 
-      <div>
+      <div style={fieldWrapper}>
         <Text style={labelStyle}>Rencana dan Potensi Untuk Keberlanjutan Program *</Text>
         <TextArea rows={5} placeholder="Jelaskan Rencana dan Potensi Untuk Keberlanjutan Program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.rencana_pengembangan} onChange={e => updateField('rencana_pengembangan', e.target.value)} />
         <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan rencana pengembangan program ke depan</Text>
+      </div>
+
+      {/* Upload Foto Dokumentasi */}
+      <div style={{ marginTop: 8 }}>
+        <Text style={labelStyle}>Foto Dokumentasi (Opsional)</Text>
+        <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 12 }}>
+          Unggah foto kegiatan program (maks. 4 foto, format JPEG/PNG/WEBP, maks. 1 MB per foto)
+        </Text>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+          {photos.map((photo, index) => (
+            <div
+              key={index}
+              onClick={() => setPreviewPhoto(photo.url?.startsWith('http') ? photo.url : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.url}`)}
+              style={{
+                width: 110, height: 110, borderRadius: 8, overflow: 'hidden',
+                border: '1px solid #e2e8f0', position: 'relative', cursor: 'pointer',
+              }}
+            >
+              <img
+                src={photo.url?.startsWith('http') ? photo.url : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.url}`}
+                alt={photo.originalName}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+              <Button
+                type="text"
+                size="small"
+                icon={<CloseOutlined style={{ fontSize: 12, color: '#fff' }} />}
+                onClick={() => handlePhotoDelete(index)}
+                style={{
+                  position: 'absolute', top: 4, right: 4,
+                  width: 24, height: 24, minWidth: 24,
+                  background: 'rgba(0,0,0,0.5)', borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              />
+            </div>
+          ))}
+
+          {photos.length < 4 && (
+            <Upload
+              accept=".jpg,.jpeg,.png,.webp"
+              showUploadList={false}
+              beforeUpload={handlePhotoUpload}
+              disabled={uploadingPhoto}
+            >
+              <div
+                style={{
+                  width: 110, height: 110, borderRadius: 8,
+                  border: '1.5px dashed #d1d5db', background: '#fafbfc',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  cursor: uploadingPhoto ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s',
+                  opacity: uploadingPhoto ? 0.6 : 1,
+                }}
+              >
+                {uploadingPhoto ? (
+                  <Spin size="small" />
+                ) : (
+                  <>
+                    <PlusOutlined style={{ fontSize: 20, color: '#9ca3af', marginBottom: 4 }} />
+                    <Text style={{ fontSize: 11, color: '#9ca3af' }}>Tambah Foto</Text>
+                  </>
+                )}
+              </div>
+            </Upload>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -1030,7 +1296,20 @@ const FormPendaftaran = () => {
           <ReviewField label="Latar Belakang / Rasionalisasi" value={formData.latar_belakang} span={24} />
           <ReviewField label="Dampak Yang Sudah Terealisasi" value={formData.dampak_program} span={24} />
           <ReviewField label="Rencana Pengembangan" value={formData.rencana_pengembangan} span={24} />
+          <ReviewField label="Media Sosial" value={formData.social_media || '-'} span={24} />
         </Row>
+        {photos.length > 0 && (
+          <div style={{ marginTop: 12 }}>
+            <Text style={{ color: '#94a3b8', fontSize: 11, display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Foto Dokumentasi</Text>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {photos.map((photo, i) => (
+                <div key={i} style={{ width: 80, height: 80, borderRadius: 6, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+                  <img src={photo.url?.startsWith('http') ? photo.url : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.url}`} alt={photo.originalName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </ReviewCard>
     </div>
   );
@@ -1155,6 +1434,24 @@ const FormPendaftaran = () => {
             </div>
           </div> */}
         </div>
+      </Modal>
+
+      {/* Modal Preview Foto */}
+      <Modal
+        open={!!previewPhoto}
+        onCancel={() => setPreviewPhoto(null)}
+        footer={null}
+        centered
+        width={600}
+        styles={{ body: { padding: 0, background: 'transparent' } }}
+      >
+        {previewPhoto && (
+          <img
+            src={previewPhoto}
+            alt="Preview"
+            style={{ width: '100%', borderRadius: 8 }}
+          />
+        )}
       </Modal>
     </>
   );

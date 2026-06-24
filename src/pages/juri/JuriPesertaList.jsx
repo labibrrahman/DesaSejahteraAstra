@@ -61,6 +61,8 @@ const mapFromApi = (item) => ({
   latar_belakang: item.background || '-',
   dampak_program: item.programImpact || '-',
   rencana_pengembangan: item.developmentPlan || '-',
+  social_media: item.socialMedia || '-',
+  foto: Array.isArray(item.photos) ? item.photos : [],
   status: item.status,
   tanggal_daftar: item.submittedAt
     ? new Date(item.submittedAt).toLocaleDateString('id-ID')
@@ -75,6 +77,7 @@ const JuriPesertaList = () => {
   const [durasiFilter, setDurasiFilter] = useState(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedPeserta, setSelectedPeserta] = useState(null);
+  const [previewPhoto, setPreviewPhoto] = useState(null);
   const navigate = useNavigate();
 
   /** Fetch assessment tasks dari API */
@@ -329,8 +332,9 @@ const JuriPesertaList = () => {
                     { label: 'Nomor HP', value: selectedPeserta.phone_number },
                     { label: 'Nama Kontak Darurat', value: selectedPeserta.nama_kontak_darurat },
                     { label: 'No HP Kontak Darurat', value: selectedPeserta.no_hp_kontak_darurat },
+                    ...(selectedPeserta.social_media && selectedPeserta.social_media !== '-' ? [{ label: 'Media Sosial', value: selectedPeserta.social_media, full: true }] : []),
                   ].filter(item => item.value).map((item, idx) => (
-                    <Col xs={12} sm={8} key={idx}>
+                    <Col xs={12} sm={8} key={idx} {...(item.full ? { xs: 24 } : {})}>
                       <Text style={{ fontSize: 11, color: '#94a3b8', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                         {item.label}
                       </Text>
@@ -386,9 +390,41 @@ const JuriPesertaList = () => {
                     <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.rencana_pengembangan}</Text>
                   </div>
                 </div>
+
+                {/* Foto Dokumentasi */}
+                {Array.isArray(selectedPeserta.foto) && selectedPeserta.foto.length > 0 && (
+                  <div style={{ marginTop: 12 }}>
+                    <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 8 }}>Foto Dokumentasi</Text>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {selectedPeserta.foto.map((photo, i) => (
+                        <div key={i} onClick={() => setPreviewPhoto(photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`)} style={{ width: 80, height: 80, borderRadius: 6, overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer' }}>
+                          <img src={photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`} alt={photo.originalName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
+        )}
+      </Modal>
+
+      {/* Modal Preview Foto */}
+      <Modal
+        open={!!previewPhoto}
+        onCancel={() => setPreviewPhoto(null)}
+        footer={null}
+        centered
+        width={600}
+        styles={{ body: { padding: 0, background: 'transparent' } }}
+      >
+        {previewPhoto && (
+          <img
+            src={previewPhoto}
+            alt="Preview"
+            style={{ width: '100%', borderRadius: 8 }}
+          />
         )}
       </Modal>
     </div>

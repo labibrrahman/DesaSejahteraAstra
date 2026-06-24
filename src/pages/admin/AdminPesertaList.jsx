@@ -15,6 +15,7 @@ import {
   Descriptions,
   Spin,
   message,
+  Upload,
 } from 'antd';
 import {
   SearchOutlined,
@@ -26,9 +27,11 @@ import {
   FileTextOutlined,
   EnvironmentOutlined,
   TeamOutlined,
+  PlusOutlined,
 } from '@ant-design/icons';
 import adminService from '../../services/adminService';
 import masterService from '../../services/masterService';
+import registrationService from '../../services/registrationService';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -82,6 +85,8 @@ const mapFromApi = (item) => ({
   latar_belakang: item.background || '-',
   dampak_program: item.programImpact || '-',
   rencana_pengembangan: item.developmentPlan || '-',
+  social_media: item.socialMedia || '-',
+  foto: Array.isArray(item.photos) ? item.photos : [],
   kecamatan: item.district?.name || '-',
   desa: item.villageRegion?.name || '-',
 });
@@ -111,6 +116,8 @@ const AdminPesertaList = () => {
   const [editLoading, setEditLoading] = useState(false);
   const [editSubmitting, setEditSubmitting] = useState(false);
   const [editForm] = Form.useForm();
+  const [editPhotos, setEditPhotos] = useState([]);
+  const [uploadingEditPhoto, setUploadingEditPhoto] = useState(false);
 
   // Region options & loading for Edit Modal
   const [provinceOptions, setProvinceOptions] = useState([]);
@@ -122,6 +129,8 @@ const AdminPesertaList = () => {
   const [loadingCities, setLoadingCities] = useState(false);
   const [loadingDistricts, setLoadingDistricts] = useState(false);
   const [loadingDesa, setLoadingDesa] = useState(false);
+
+  const [previewPhoto, setPreviewPhoto] = useState(null);
 
   /** Fetch registrations dari API */
   const fetchRegistrations = useCallback(async (page = 1, limit = 10) => {
@@ -360,7 +369,13 @@ const AdminPesertaList = () => {
           cityId: detail.cityId || null,
           districtId: detail.districtId || null,
           villageRegionId: detail.villageRegionId || null,
+          socialMedia: detail.socialMedia || '',
         });
+        if (Array.isArray(detail.photos) && detail.photos.length > 0) {
+          setEditPhotos(detail.photos.map(p => ({ url: p.photoUrl, originalName: p.originalName, generatedName: p.generatedName })));
+        } else {
+          setEditPhotos([]);
+        }
       }, 100);
     } catch (error) {
       message.error('Gagal memuat data');
@@ -403,6 +418,10 @@ const AdminPesertaList = () => {
         payload.astraGroupId = null;
         payload.astraGroupCustom = '';
       }
+      if (values.socialMedia) payload.socialMedia = values.socialMedia;
+      if (editPhotos.length > 0) {
+        payload.photos = editPhotos.map(p => ({ url: p.url, originalName: p.originalName, generatedName: p.generatedName }));
+      }
       await adminService.updateRegistrationByAdmin(editRecord.id, payload);
 
       // Update status jika berubah (endpoint terpisah)
@@ -414,12 +433,53 @@ const AdminPesertaList = () => {
       setEditModalVisible(false);
       editForm.resetFields();
       setEditRecord(null);
+      setEditPhotos([]);
       fetchRegistrations(pagination.current, pagination.pageSize);
     } catch (error) {
       message.error(error.response?.data?.message || 'Gagal memperbarui data');
     } finally {
       setEditSubmitting(false);
     }
+  };
+
+  /** Upload foto untuk edit */
+  const handleEditPhotoUpload = async (file) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      message.error('Format foto harus JPEG, PNG, atau WEBP');
+      return false;
+    }
+    if (file.size > 1024 * 1024) {
+      message.error('Ukuran foto maksimal 1 MB');
+      return false;
+    }
+    if (editPhotos.length >= 4) {
+      message.error('Maksimal 4 foto');
+      return false;
+    }
+    setUploadingEditPhoto(true);
+    try {
+      const result = await registrationService.uploadPhoto(file);
+      setEditPhotos(prev => [...prev, result]);
+      message.success('Foto berhasil diunggah');
+    } catch {
+      message.error('Gagal mengunggah foto');
+    } finally {
+      setUploadingEditPhoto(false);
+    }
+    return false;
+  };
+
+  /** Hapus foto edit */
+  const handleEditPhotoDelete = async (index) => {
+    const photo = editPhotos[index];
+    try {
+      if (photo.generatedName) {
+        await registrationService.deletePhoto(photo.generatedName);
+      }
+    } catch { /* ignore */ }
+    setEditPhotos(prev => prev.filter((_, i) => i !== index));
+    message.success('Foto dihapus');
   };
 
   /** Handle perubahan halaman */
@@ -729,6 +789,10 @@ const AdminPesertaList = () => {
                       <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>No HP Kontak Darurat</Text>
                       <Text strong style={{ fontSize: 13 }}>{selectedPeserta.no_hp_kontak_darurat}</Text>
                     </Col>
+                    <Col xs={12} sm={8}>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Media Sosial</Text>
+                      <Text strong style={{ fontSize: 13 }}>{selectedPeserta.social_media}</Text>
+                    </Col>
                   </Row>
                 </div>
 
@@ -801,6 +865,20 @@ const AdminPesertaList = () => {
                       <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.rencana_pengembangan}</Text>
                     </div>
                   </div>
+
+                  {/* Foto Dokumentasi */}
+                  {Array.isArray(selectedPeserta.foto) && selectedPeserta.foto.length > 0 && (
+                    <div style={{ marginTop: 12 }}>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 8 }}>Foto Dokumentasi</Text>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                        {selectedPeserta.foto.map((photo, i) => (
+                          <div key={i} onClick={() => setPreviewPhoto(photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`)} style={{ width: 80, height: 80, borderRadius: 6, overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer' }}>
+                            <img src={photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`} alt={photo.originalName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -814,7 +892,7 @@ const AdminPesertaList = () => {
         open={editModalVisible}
         onOk={handleEditSubmit}
         confirmLoading={editSubmitting}
-        onCancel={() => { setEditModalVisible(false); editForm.resetFields(); setEditRecord(null); }}
+        onCancel={() => { setEditModalVisible(false); editForm.resetFields(); setEditRecord(null); setEditPhotos([]); }}
         okText="Simpan"
         cancelText="Batal"
         width={680}
@@ -1023,9 +1101,61 @@ const AdminPesertaList = () => {
               <Form.Item name="developmentPlan" label="Rencana dan Potensi Untuk Keberlanjutan Program">
                 <Input.TextArea rows={5} placeholder="Jelaskan Rencana dan Potensi Untuk Keberlanjutan Program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
               </Form.Item>
+
+              <Form.Item name="socialMedia" label="Media Sosial">
+                <Input.TextArea rows={2} placeholder="Contoh: https://instagram.com/akun, https://facebook.com/akun" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
+              </Form.Item>
+
+              {/* Foto Dokumentasi */}
+              <div style={{ marginBottom: 24 }}>
+                <Text style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>Foto Dokumentasi (Maks. 4 foto, 1 MB per foto)</Text>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                  {editPhotos.map((photo, index) => (
+                    <div key={index} style={{ width: 100, height: 100, borderRadius: 8, overflow: 'hidden', border: '1px solid #e2e8f0', position: 'relative' }}>
+                      <img
+                        src={photo.url?.startsWith('http') ? photo.url : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.url}`}
+                        alt={photo.originalName}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<CloseOutlined style={{ fontSize: 12, color: '#fff' }} />}
+                        onClick={() => handleEditPhotoDelete(index)}
+                        style={{ position: 'absolute', top: 4, right: 4, width: 24, height: 24, minWidth: 24, background: 'rgba(0,0,0,0.5)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      />
+                    </div>
+                  ))}
+                  {editPhotos.length < 4 && (
+                    <Upload accept=".jpg,.jpeg,.png,.webp" showUploadList={false} beforeUpload={handleEditPhotoUpload} disabled={uploadingEditPhoto}>
+                      <div style={{ width: 100, height: 100, borderRadius: 8, border: '1.5px dashed #d1d5db', background: '#fafbfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: uploadingEditPhoto ? 'not-allowed' : 'pointer', opacity: uploadingEditPhoto ? 0.6 : 1 }}>
+                        {uploadingEditPhoto ? <Spin size="small" /> : <><PlusOutlined style={{ fontSize: 20, color: '#9ca3af', marginBottom: 4 }} /><Text style={{ fontSize: 11, color: '#9ca3af' }}>Tambah</Text></>}
+                      </div>
+                    </Upload>
+                  )}
+                </div>
+              </div>
             </Form>
           )}
         </Spin>
+      </Modal>
+
+      {/* Modal Preview Foto */}
+      <Modal
+        open={!!previewPhoto}
+        onCancel={() => setPreviewPhoto(null)}
+        footer={null}
+        centered
+        width={600}
+        styles={{ body: { padding: 0, background: 'transparent' } }}
+      >
+        {previewPhoto && (
+          <img
+            src={previewPhoto}
+            alt="Preview"
+            style={{ width: '100%', borderRadius: 8 }}
+          />
+        )}
       </Modal>
     </div>
   );

@@ -513,12 +513,7 @@ const FormPendaftaran = () => {
       const dsaType = cat.dsaType || '';
       if (dsaType) {
         updateField('jenis_dsa', dsaType.toLowerCase());
-        // Jika individu, auto-fill nama dengan nama user
-        if (dsaType.toLowerCase() === 'individu') {
-          updateField('nama_kelompok', user?.name || '');
-        } else {
-          updateField('nama_kelompok', '');
-        }
+        updateField('nama_kelompok', '');
       }
     }
   };
@@ -652,7 +647,7 @@ const FormPendaftaran = () => {
                 onClick={handleAstraYes}
                 style={{ fontWeight: 600, height: 44, paddingInline: 28, borderRadius: 8, background: '#2563eb', borderColor: '#2563eb' }}
               >
-                Ya, Saya Astra Grup
+                Ya, Saya Binaan Grup Astra
               </Button>
             </div>
           </div>
@@ -681,7 +676,7 @@ const FormPendaftaran = () => {
               Akses Ditolak
             </Title>
             <Text style={{ fontSize: 14, color: '#64748b', display: 'block', marginBottom: 28, lineHeight: 1.7 }}>
-              Maaf, Anda <Text strong style={{ color: '#ef4444' }}>tidak berhak</Text> untuk mengisi pendaftaran ini. Program ini khusus untuk anggota Astra Grup.
+              Maaf, Anda <Text strong style={{ color: '#ef4444' }}>tidak berhak</Text> untuk mengisi pendaftaran ini. program ini khusus untuk binaan Astra Grup.
             </Text>
             <Button
               type="primary"
@@ -879,10 +874,10 @@ const FormPendaftaran = () => {
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
               <Text style={labelStyle}>
-                {formData.jenis_dsa === 'individu' ? 'Nama Ketua Kelompok *' : 'Nama Ketua Kelompok *'}
+                Nama Ketua Kelompok *
               </Text>
               <Input
-                placeholder={formData.jenis_dsa === 'individu' ? 'Otomatis dari akun login' : 'Nama Ketua Kelompok'}
+                placeholder={'Nama Ketua Kelompok'}
                 style={inputStyle}
                 value={formData.nama_kelompok}
                 onChange={e => handleNameChange('nama_kelompok', e)}

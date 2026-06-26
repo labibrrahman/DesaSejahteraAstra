@@ -72,6 +72,7 @@ const MasterUser = () => {
   const [searchText, setSearchText] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
   const [modalVisible, setModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [form] = Form.useForm();
@@ -81,19 +82,25 @@ const MasterUser = () => {
   const [passwordForm] = Form.useForm();
 
   /** Fetch users dari API */
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = useCallback(async (params = {}) => {
     setLoading(true);
     try {
-      const result = await adminService.getUsers();
-      const list = Array.isArray(result) ? result : result?.data || [];
+      const result = await adminService.getUsers({
+        page: params.page || pagination.current,
+        limit: params.limit || pagination.pageSize,
+        search: params.search || undefined,
+      });
+      const list = Array.isArray(result?.data) ? result.data : [];
+      const meta = result?.meta || {};
       setData(list.map(mapFromApi));
+      setPagination(prev => ({ ...prev, total: meta.total || list.length }));
     } catch (error) {
       message.error('Gagal memuat data user');
       console.error('Fetch users error:', error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [pagination.current, pagination.pageSize]);
 
   /** Fetch pilar untuk dropdown juri */
   const fetchPillars = useCallback(async () => {
@@ -284,11 +291,12 @@ const MasterUser = () => {
 
       <Card>
         <div style={{ marginBottom: 16 }}>
-          <Input
+          <Input.Search
             placeholder="Cari nama, email, atau role..."
             prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
+            onSearch={(val) => fetchUsers({ page: 1, search: val })}
             allowClear
             style={{ maxWidth: 300 }}
           />
@@ -296,14 +304,20 @@ const MasterUser = () => {
         <Spin spinning={loading}>
           <Table
             columns={columns}
-            dataSource={data.filter((item) =>
-              !searchText ||
-              item.nama?.toLowerCase().includes(searchText.toLowerCase()) ||
-              item.username?.toLowerCase().includes(searchText.toLowerCase()) ||
-              item.role?.toLowerCase().includes(searchText.toLowerCase())
-            )}
+            dataSource={data}
             rowKey="id"
-            pagination={false}
+            pagination={{
+              current: pagination.current,
+              pageSize: pagination.pageSize,
+              total: pagination.total,
+              showSizeChanger: true,
+              pageSizeOptions: ['10', '20', '50'],
+              showTotal: (total) => `Total ${total} data`,
+              onChange: (page, pageSize) => {
+                setPagination(prev => ({ ...prev, current: page, pageSize }));
+                fetchUsers({ page, limit: pageSize, search: searchText });
+              },
+            }}
             scroll={{ x: 500 }}
           />
         </Spin>

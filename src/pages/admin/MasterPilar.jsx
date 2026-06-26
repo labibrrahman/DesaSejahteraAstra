@@ -197,7 +197,7 @@ const MasterPilar = () => {
               item.deskripsi?.toLowerCase().includes(searchText.toLowerCase())
             )}
             rowKey="id"
-            pagination={false}
+            pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50'], showTotal: (total) => `Total ${total} data` }}
             scroll={{ x: 500 }}
           />
         </Spin>

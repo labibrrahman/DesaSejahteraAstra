@@ -5,12 +5,12 @@ import {
 } from 'antd';
 import {
   SearchOutlined, ExportOutlined, CheckCircleOutlined, CloseCircleOutlined,
-  UndoOutlined, EyeOutlined, FilterOutlined, TrophyOutlined,
+  UndoOutlined, EyeOutlined,
   ClockCircleOutlined, TeamOutlined, BarChartOutlined,
-  TagOutlined, FileTextOutlined, EnvironmentOutlined, EditOutlined,
 } from '@ant-design/icons';
 import adminService from '../../services/adminService';
 import masterService from '../../services/masterService';
+import RegistrationDetailModal from '../../components/RegistrationDetailModal';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -61,8 +61,6 @@ const AdminSelectionReview = () => {
   const [regDetailVisible, setRegDetailVisible] = useState(false);
   const [regDetailData, setRegDetailData] = useState(null);
   const [regDetailLoading, setRegDetailLoading] = useState(false);
-
-  const [previewPhoto, setPreviewPhoto] = useState(null);
 
   // ── Fetch data ────────────────────────────────────────────────────────────
   const fetchData = useCallback(async (page = 1, limit = 10) => {
@@ -574,145 +572,12 @@ const AdminSelectionReview = () => {
       </Modal>
 
       {/* Detail Registrasi Modal */}
-      <Modal
+      <RegistrationDetailModal
         open={regDetailVisible}
-        closable={false}
-        onCancel={() => { setRegDetailVisible(false); setRegDetailData(null); }}
-        footer={[
-          <Button key="close" onClick={() => { setRegDetailVisible(false); setRegDetailData(null); }}>Tutup</Button>,
-        ]}
-        width={720}
-        styles={{ body: { padding: 0 } }}
-      >
-        <Spin spinning={regDetailLoading}>
-          {regDetailData && (
-            <div>
-              {/* Header */}
-              <div style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', padding: '24px 28px', borderRadius: '12px 12px 0 0', position: 'relative' }}>
-                <div style={{ position: 'absolute', right: -30, top: -30, width: 120, height: 120, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)' }} />
-                <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Detail Pendaftaran</Text>
-                <Title level={4} style={{ color: '#fff', margin: 0, fontWeight: 600, fontSize: 20 }}>{regDetailData.villageName || '-'}</Title>
-                <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13, marginTop: 6, display: 'block' }}>{regDetailData.groupName || '-'}</Text>
-              </div>
-
-              {/* Content */}
-              <div style={{ padding: '24px 28px 28px' }}>
-                {/* Identitas */}
-                <div style={{ marginBottom: 24 }}>
-                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}><span style={{ marginRight: 6 }}><TagOutlined /></span> Identitas Pendaftar</Text>
-                  <Row gutter={[20, 16]}>
-                    {[
-                      { label: 'Jenis DSA', value: regDetailData.dsaType },
-                      { label: 'Nomor HP Ketua Kelompok', value: regDetailData.phoneNumber },
-                      { label: 'Nama Kontak Lainnya', value: regDetailData.emergencyContactName },
-                      { label: 'No Kontak Lainnya', value: regDetailData.emergencyContactPhone },
-                      ...(regDetailData.socialMedia ? [{ label: 'Media Sosial', value: regDetailData.socialMedia, span: 24 }] : []),
-                    ].map((item, idx) => (
-                      <Col xs={12} sm={8} key={idx} span={item.span}>
-                        <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>{item.label}</Text>
-                        <Text strong style={{ fontSize: 13 }}>{item.value || '—'}</Text>
-                      </Col>
-                    ))}
-                  </Row>
-                </div>
-
-                {/* Informasi Program */}
-                <div style={{ marginBottom: 24 }}>
-                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}><span style={{ marginRight: 6 }}><FileTextOutlined /></span> Informasi Program</Text>
-                  <Row gutter={[20, 16]}>
-                    {[
-                      { label: 'Pilar', value: regDetailData.pillar?.name },
-                      { label: 'Kategori', value: regDetailData.category?.name },
-                      { label: 'Perusahaan/Yayasan Pembina', value: regDetailData.astraGroupCustom || regDetailData.astraGroup?.name },
-                      { label: 'Durasi Program', value: regDetailData.programDuration },
-                    ].map((item, idx) => (
-                      <Col xs={12} sm={6} key={idx}>
-                        <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>{item.label}</Text>
-                        <Text strong style={{ fontSize: 13 }}>{item.value || '—'}</Text>
-                      </Col>
-                    ))}
-                  </Row>
-                </div>
-
-                {/* Wilayah */}
-                <div style={{ marginBottom: 24 }}>
-                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}><span style={{ marginRight: 6 }}><EnvironmentOutlined /></span> Lokasi & Wilayah</Text>
-                  <Row gutter={[20, 16]}>
-                    {[
-                      { label: 'Provinsi', value: regDetailData.province?.name },
-                      { label: 'Kabupaten / Kota', value: regDetailData.city?.name },
-                      { label: 'Kecamatan', value: regDetailData.district?.name },
-                      { label: 'Desa / Kelurahan', value: regDetailData.villageRegion?.name },
-                    ].map((item, idx) => (
-                      <Col xs={12} sm={6} key={idx}>
-                        <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>{item.label}</Text>
-                        <Text strong style={{ fontSize: 13 }}>{item.value || '—'}</Text>
-                      </Col>
-                    ))}
-                    <Col span={24}>
-                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Alamat Lengkap</Text>
-                      <Text style={{ fontSize: 13, lineHeight: 1.6 }}>{regDetailData.address || '—'}</Text>
-                    </Col>
-                  </Row>
-                </div>
-
-                {/* Deskripsi Program */}
-                <div>
-                  <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}><span style={{ marginRight: 6 }}><EditOutlined /></span> Deskripsi Program</Text>
-                  {[
-                    { label: 'Latar Belakang', value: regDetailData.background, color: '#1890ff' },
-                    { label: 'Metode Pelaksanaan Program', value: regDetailData.implementationMethod, color: '#0ea5e9' },
-                    { label: 'Dampak Yang Sudah Terealisasi', value: regDetailData.programImpact, color: '#52c41a' },
-                    { label: 'Rencana dan Potensi Pengembangan', value: regDetailData.developmentPlan, color: '#722ed1' },
-                    { label: 'Keberlanjutan Program', value: regDetailData.sustainabilityPlan, color: '#10b981' },
-                    { label: 'Evaluasi Program', value: regDetailData.programEvaluation, color: '#f59e0b' },
-                  ].map((item, idx) => (
-                    <div key={idx} style={{ marginBottom: idx < 2 ? 12 : 0 }}>
-                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>{item.label}</Text>
-                      <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: `3px solid ${item.color}` }}>
-                        <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{item.value || '—'}</Text>
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Foto Dokumentasi */}
-                  {Array.isArray(regDetailData.photos) && regDetailData.photos.length > 0 && (
-                    <div style={{ marginTop: 12 }}>
-                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 8 }}>Foto Dokumentasi</Text>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                        {regDetailData.photos.map((photo, i) => (
-                          <div key={i} onClick={() => setPreviewPhoto(photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`)} style={{ width: 80, height: 80, borderRadius: 6, overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer' }}>
-                            <img src={photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`} alt={photo.originalName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </Spin>
-      </Modal>
-
-      {/* Modal Preview Foto */}
-      <Modal
-        open={!!previewPhoto}
-        onCancel={() => setPreviewPhoto(null)}
-        footer={null}
-        centered
-        width={'90vw'}
-        style={{ maxWidth: 900 }}
-        styles={{ body: { padding: 0, background: 'transparent' } }}
-      >
-        {previewPhoto && (
-          <img
-            src={previewPhoto}
-            alt="Preview"
-            style={{ width: '100%', height: 'auto', maxHeight: '80vh', objectFit: 'contain', borderRadius: 8 }}
-          />
-        )}
-      </Modal>
+        onClose={() => setRegDetailVisible(false)}
+        registration={regDetailData}
+        title="Detail Registrasi"
+      />
     </div>
   );
 };

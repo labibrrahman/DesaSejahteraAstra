@@ -2,16 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   Table,
-  Tag,
   Button,
   Input,
   Select,
-  Row,
-  Col,
   Typography,
   Space,
-  Modal,
-  Descriptions,
   Spin,
   message,
 } from 'antd';
@@ -20,12 +15,10 @@ import {
   EditOutlined,
   EyeOutlined,
   FilterOutlined,
-  TagOutlined,
-  FileTextOutlined,
-  EnvironmentOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import adminService from '../../services/adminService';
+import RegistrationDetailModal from '../../components/RegistrationDetailModal';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -80,7 +73,7 @@ const JuriPesertaList = () => {
   const [durasiFilter, setDurasiFilter] = useState(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedPeserta, setSelectedPeserta] = useState(null);
-  const [previewPhoto, setPreviewPhoto] = useState(null);
+  const [selectedPesertaRaw, setSelectedPesertaRaw] = useState(null);
   const navigate = useNavigate();
 
   /** Fetch assessment tasks dari API */
@@ -127,9 +120,15 @@ const JuriPesertaList = () => {
   /** Ambil daftar pilar unik dari data */
   const pilarOptions = [...new Set(data.map((item) => item.pilar))].filter(Boolean);
 
-  const showDetail = (record) => {
+  const showDetail = async (record) => {
     setSelectedPeserta(record);
     setDetailModalVisible(true);
+    try {
+      const detail = await adminService.getRegistrationDetail(record.id);
+      setSelectedPesertaRaw(detail);
+    } catch (error) {
+      message.error('Gagal memuat detail peserta');
+    }
   };
 
   const handleScore = (record) => {
@@ -240,215 +239,12 @@ const JuriPesertaList = () => {
       </Card>
 
       {/* Detail Modal */}
-      <Modal
+      <RegistrationDetailModal
         open={detailModalVisible}
-        closable={false}
-        onCancel={() => setDetailModalVisible(false)}
-        footer={[
-          <Button key="close" onClick={() => setDetailModalVisible(false)}>
-            Tutup
-          </Button>,
-          <Button
-            key="score"
-            type="primary"
-            icon={<EditOutlined />}
-            onClick={() => {
-              setDetailModalVisible(false);
-              handleScore(selectedPeserta);
-            }}
-            style={{ background: '#1890ff', borderColor: '#1890ff', fontWeight: 600 }}
-          >
-            Beri Nilai
-          </Button>,
-        ]}
-        width={720}
-        styles={{ body: { padding: 0 } }}
-      >
-        {selectedPeserta && (
-          <div>
-            {/* Header */}
-            <div style={{
-              background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-              padding: '24px 28px',
-              borderRadius: '12px 12px 0 0',
-              position: 'relative',
-            }}>
-              <div style={{
-                position: 'absolute',
-                right: -30,
-                top: -30,
-                width: 120,
-                height: 120,
-                borderRadius: '50%',
-                border: '1px solid rgba(255,255,255,0.08)',
-              }} />
-              <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
-                Detail Peserta
-              </Text>
-              <Title level={4} style={{ color: '#fff', margin: 0, fontWeight: 600, fontSize: 20 }}>
-                {selectedPeserta.nama_desa}
-              </Title>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
-                <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13 }}>
-                  {selectedPeserta.nama_kelompok}
-                </Text>
-                {/* <Tag color={STATUS_MAP[selectedPeserta.status]?.color || 'default'} style={{ margin: 0, fontSize: 11 }}>
-                  {STATUS_MAP[selectedPeserta.status]?.label || selectedPeserta.status}
-                </Tag> */}
-              </div>
-            </div>
-
-            {/* Content */}
-            <div style={{ padding: '24px 28px 28px' }}>
-              {/* Informasi Program */}
-              <div style={{ marginBottom: 24 }}>
-                <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                  <span style={{ marginRight: 6 }}><FileTextOutlined /></span> Informasi Program
-                </Text>
-                <Row gutter={[20, 12]}>
-                  {[
-                    { label: 'Pilar', value: selectedPeserta.pilar },
-                    { label: 'Kategori', value: selectedPeserta.kategori },
-                    { label: 'Durasi Program', value: selectedPeserta.durasi_program },
-                    { label: 'Tanggal Daftar', value: selectedPeserta.tanggal_daftar },
-                  ].map((item, idx) => (
-                    <Col xs={12} sm={8} key={idx}>
-                      <Text style={{ fontSize: 11, color: '#94a3b8', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                        {item.label}
-                      </Text>
-                      <Text strong style={{ fontSize: 13, color: '#1e293b' }}>
-                        {item.value || '-'}
-                      </Text>
-                    </Col>
-                  ))}
-                </Row>
-              </div>
-
-              {/* Identitas Pendaftar */}
-              <div style={{ marginBottom: 24 }}>
-                <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                  <span style={{ marginRight: 6 }}><TagOutlined /></span> Identitas Pendaftar
-                </Text>
-                <Row gutter={[20, 12]}>
-                  {[
-                    { label: 'Jenis DSA', value: selectedPeserta.jenis_dsa },
-                    { label: 'Nomor HP Ketua Kelompok', value: selectedPeserta.phone_number },
-                    { label: 'Nama Kontak Lainnya', value: selectedPeserta.nama_kontak_darurat },
-                    { label: 'No Kontak Lainnya', value: selectedPeserta.no_hp_kontak_darurat },
-                    ...(selectedPeserta.social_media && selectedPeserta.social_media !== '-' ? [{ label: 'Media Sosial', value: selectedPeserta.social_media, full: true }] : []),
-                  ].filter(item => item.value).map((item, idx) => (
-                    <Col xs={12} sm={8} key={idx} {...(item.full ? { xs: 24 } : {})}>
-                      <Text style={{ fontSize: 11, color: '#94a3b8', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                        {item.label}
-                      </Text>
-                      <Text strong style={{ fontSize: 13, color: '#1e293b' }}>
-                        {item.value || '-'}
-                      </Text>
-                    </Col>
-                  ))}
-                </Row>
-              </div>
-
-              {/* Wilayah */}
-              <div>
-                <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                  <span style={{ marginRight: 6 }}><EnvironmentOutlined /></span> Wilayah
-                </Text>
-                <div
-                  style={{
-                    background: '#f8fafc',
-                    borderRadius: 8,
-                    padding: '12px 16px',
-                    borderLeft: '3px solid #1890ff',
-                  }}
-                >
-                  <Text style={{ fontSize: 13, color: '#475569', lineHeight: 1.6 }}>
-                    {selectedPeserta.wilayah}
-                  </Text>
-                </div>
-              </div>
-
-              {/* Deskripsi Program */}
-              <div style={{ 
-                paddingTop:'20px'
-               }}>
-                <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                  <span style={{ marginRight: 6 }}><EditOutlined /></span> Deskripsi Program
-                </Text>
-                <div style={{ marginBottom: 16 }}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Latar Belakang</Text>
-                  <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #1890ff' }}>
-                    <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.latar_belakang}</Text>
-                  </div>
-                </div>
-                <div style={{ marginTop: 12 }}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Metode Pelaksanaan Program</Text>
-                  <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #0ea5e9' }}>
-                    <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.metode_pelaksanaan}</Text>
-                  </div>
-                </div>
-                <div style={{ marginBottom: 16 }}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Dampak Yang Sudah Terealisasi</Text>
-                  <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #52c41a' }}>
-                    <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.dampak_program}</Text>
-                  </div>
-                </div>
-                <div>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Rencana dan Potensi Pengembangan</Text>
-                  <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #722ed1' }}>
-                    <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.rencana_pengembangan}</Text>
-                  </div>
-                </div>
-                <div style={{ marginTop: 12 }}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Keberlanjutan Program</Text>
-                  <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #10b981' }}>
-                    <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.keberlanjutan_program}</Text>
-                  </div>
-                </div>
-                <div style={{ marginTop: 12 }}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Evaluasi Program</Text>
-                  <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #f59e0b' }}>
-                    <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.evaluasi_program}</Text>
-                  </div>
-                </div>
-
-                {/* Foto Dokumentasi */}
-                {Array.isArray(selectedPeserta.foto) && selectedPeserta.foto.length > 0 && (
-                  <div style={{ marginTop: 12 }}>
-                    <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 8 }}>Foto Dokumentasi</Text>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                      {selectedPeserta.foto.map((photo, i) => (
-                        <div key={i} onClick={() => setPreviewPhoto(photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`)} style={{ width: 80, height: 80, borderRadius: 6, overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer' }}>
-                          <img src={photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`} alt={photo.originalName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-      </Modal>
-
-      {/* Modal Preview Foto */}
-      <Modal
-        open={!!previewPhoto}
-        onCancel={() => setPreviewPhoto(null)}
-        footer={null}
-        centered
-        width={'90vw'}
-        style={{ maxWidth: 900 }}
-        styles={{ body: { padding: 0, background: 'transparent' } }}
-      >
-        {previewPhoto && (
-          <img
-            src={previewPhoto}
-            alt="Preview"
-            style={{ width: '100%', height: 'auto', maxHeight: '80vh', objectFit: 'contain', borderRadius: 8 }}
-          />
-        )}
-      </Modal>
+        onClose={() => { setDetailModalVisible(false); setSelectedPeserta(null); }}
+        registration={selectedPesertaRaw}
+        title="Detail Peserta"
+      />
     </div>
   );
 };

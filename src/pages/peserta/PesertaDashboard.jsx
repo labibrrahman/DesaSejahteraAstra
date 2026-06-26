@@ -28,6 +28,7 @@ import { useNavigate } from 'react-router-dom';
 import useRegistration from '../../hooks/useRegistration';
 import astraLogo from '../../assets/images/astra-logo.png';
 import satuIndoLogo from '../../assets/images/satu-indonesia-logo.png';
+import RegistrationDetailModal from '../../components/RegistrationDetailModal';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -36,7 +37,6 @@ const PesertaDashboard = () => {
   const { registration, dashboardData, loading, hasRegistration } = useRegistration();
   const [detailOpen, setDetailOpen] = useState(false);
   const [statusModalOpen, setStatusModalOpen] = useState(false);
-  const [previewPhoto, setPreviewPhoto] = useState(null);
 
   // Auto-open status modal untuk finalist/rejected
   React.useEffect(() => {
@@ -629,207 +629,11 @@ const PesertaDashboard = () => {
       </div>
 
       {/* Modal Detail Pendaftaran */}
-      <Modal
+      <RegistrationDetailModal
         open={detailOpen}
-        closable={false}
-        onCancel={() => setDetailOpen(false)}
-        footer={[
-          <Button key="close" onClick={() => setDetailOpen(false)}>
-            Tutup
-          </Button>,
-        ]}
-        width={720}
-        styles={{ body: { padding: 0 } }}
-      >
-        <div>
-          {/* Header */}
-          <div style={{
-            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-            padding: '24px 28px',
-            borderRadius: '12px 12px 0 0',
-            position: 'relative',
-          }}>
-            <Button
-              type="text"
-              icon={<CloseOutlined style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)' }} />}
-              onClick={() => setDetailOpen(false)}
-              style={{
-                position: 'absolute',
-                top: 12,
-                right: 12,
-                width: 32,
-                height: 32,
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '1px solid rgba(255,255,255,0.15)',
-                background: 'rgba(255,255,255,0.05)',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)';
-              }}
-            />
-            <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>
-              Detail Pendaftaran
-            </Text>
-            <Title level={4} style={{ color: '#fff', margin: 0, fontWeight: 600, fontSize: 20 }}>
-              {namaDesa}
-            </Title>
-            <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13, marginTop: 6, display: 'block' }}>
-              {namaKelompok}
-            </Text>
-          </div>
-
-          {/* Content */}
-          <div style={{ padding: '24px 28px 28px' }}>
-            {/* Identitas Pendaftar */}
-            <div style={{ marginBottom: 24 }}>
-              <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                <TagOutlined style={{ marginRight: 6 }} /> Identitas Pendaftar
-              </Text>
-              <Row gutter={[20, 16]}>
-                <Col xs={12} sm={8}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Jenis DSA</Text>
-                  <Text strong style={{ fontSize: 13 }}>{reg?.dsaType || '—'}</Text>
-                </Col>
-                <Col xs={12} sm={8}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nomor HP</Text>
-                  <Text strong style={{ fontSize: 13 }}>{reg?.phoneNumber || '—'}</Text>
-                </Col>
-                <Col xs={12} sm={8}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nama Kontak Lainnya</Text>
-                  <Text strong style={{ fontSize: 13 }}>{reg?.emergencyContactName || '—'}</Text>
-                </Col>
-                <Col xs={12} sm={8}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>No Kontak Lainnya</Text>
-                  <Text strong style={{ fontSize: 13 }}>{reg?.emergencyContactPhone || '—'}</Text>
-                </Col>
-                <Col xs={12} sm={8}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Media Sosial</Text>
-                  <Text strong style={{ fontSize: 13 }}>{reg.socialMedia}</Text>
-                </Col>
-              </Row>
-            </div>
-
-            {/* Informasi Program */}
-            <div style={{ marginBottom: 24 }}>
-              <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                <FileTextOutlined style={{ marginRight: 6 }} /> Informasi Program
-              </Text>
-              <Row gutter={[20, 16]}>
-                <Col xs={12} sm={8}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Pilar</Text>
-                  <Text strong style={{ fontSize: 13 }}>{reg?.pillar?.name || '—'}</Text>
-                </Col>
-                <Col xs={12} sm={8}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Kategori</Text>
-                  <Text strong style={{ fontSize: 13 }}>{reg?.category?.name || '—'}</Text>
-                </Col>
-                <Col xs={12} sm={8}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Perusahaan/Yayasan Pembina</Text>
-                  <Text strong style={{ fontSize: 13 }}>{reg?.astraGroupCustom || reg?.astraGroup?.name || '—'}</Text>
-                </Col>
-                <Col xs={12} sm={8}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Durasi Program</Text>
-                  <Text strong style={{ fontSize: 13 }}>{reg?.programDuration || '—'}</Text>
-                </Col>
-              </Row>
-            </div>
-
-            {/* Lokasi & Wilayah */}
-            <div style={{ marginBottom: 24 }}>
-              <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                <EnvironmentOutlined style={{ marginRight: 6 }} /> Lokasi & Wilayah
-              </Text>
-              <Row gutter={[20, 16]}>
-                <Col xs={12} sm={8}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Provinsi</Text>
-                  <Text strong style={{ fontSize: 13 }}>{reg?.province?.name || '—'}</Text>
-                </Col>
-                <Col xs={12} sm={8}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Kabupaten / Kota</Text>
-                  <Text strong style={{ fontSize: 13 }}>{reg?.city?.name || '—'}</Text>
-                </Col>
-                <Col xs={12} sm={8}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Kecamatan</Text>
-                  <Text strong style={{ fontSize: 13 }}>{reg?.district?.name || '—'}</Text>
-                </Col>
-                <Col xs={12} sm={8}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Desa / Kelurahan</Text>
-                  <Text strong style={{ fontSize: 13 }}>{reg?.villageRegion?.name || '—'}</Text>
-                </Col>
-                <Col span={24}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Alamat Lengkap</Text>
-                  <Text style={{ fontSize: 13, lineHeight: 1.6 }}>{reg?.address || '—'}</Text>
-                </Col>
-              </Row>
-            </div>
-
-            {/* Deskripsi Program */}
-            <div style={{ marginBottom: 8 }}>
-              <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}>
-                <EditOutlined style={{ marginRight: 6 }} /> Deskripsi Program
-              </Text>
-              <div style={{ marginBottom: 16 }}>
-                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Latar Belakang</Text>
-                <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #1890ff' }}>
-                  <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{reg?.background || '—'}</Text>
-                </div>
-              </div>
-              <div style={{ marginTop: 12 }}>
-                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Metode Pelaksanaan Program</Text>
-                <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #0ea5e9' }}>
-                  <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{reg?.implementationMethod || '—'}</Text>
-                </div>
-              </div>
-              <div>
-                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Dampak Yang Sudah Terealisasi</Text>
-                <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #52c41a' }}>
-                  <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{reg?.programImpact || '—'}</Text>
-                </div>
-              </div>
-              <div style={{ marginTop: 12 }}>
-                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Rencana dan Potensi Pengembangan</Text>
-                <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #722ed1' }}>
-                  <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{reg?.developmentPlan || '—'}</Text>
-                </div>
-              </div>
-              <div style={{ marginTop: 12 }}>
-                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Keberlanjutan Program</Text>
-                <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #10b981' }}>
-                  <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{reg?.sustainabilityPlan || '—'}</Text>
-                </div>
-              </div>
-              <div style={{ marginTop: 12 }}>
-                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Evaluasi Program</Text>
-                <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #f59e0b' }}>
-                  <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{reg?.programEvaluation || '—'}</Text>
-                </div>
-              </div>
-
-              {/* Foto Dokumentasi */}
-              {Array.isArray(reg?.photos) && reg.photos.length > 0 && (
-                <div style={{ marginTop: 12 }}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 8 }}>Foto Dokumentasi</Text>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    {reg.photos.map((photo, i) => (
-                      <div key={i} onClick={() => setPreviewPhoto(photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`)} style={{ width: 80, height: 80, borderRadius: 6, overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer' }}>
-                        <img src={photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`} alt={photo.originalName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </Modal>
+        onClose={() => setDetailOpen(false)}
+        registration={reg}
+      />
 
       {/* Status Modal — Finalist / Rejected */}
       <Modal
@@ -869,25 +673,6 @@ const PesertaDashboard = () => {
               : 'Mohon maaf, pendaftaran Anda belum memenuhi kriteria untuk tahap berikutnya. Terima kasih telah berpartisipasi.'}
           </Text>
         </div>
-      </Modal>
-
-      {/* Modal Preview Foto */}
-      <Modal
-        open={!!previewPhoto}
-        onCancel={() => setPreviewPhoto(null)}
-        footer={null}
-        centered
-        width={'90vw'}
-        style={{ maxWidth: 900 }}
-        styles={{ body: { padding: 0, background: 'transparent' } }}
-      >
-        {previewPhoto && (
-          <img
-            src={previewPhoto}
-            alt="Preview"
-            style={{ width: '100%', height: 'auto', maxHeight: '80vh', objectFit: 'contain', borderRadius: 8 }}
-          />
-        )}
       </Modal>
     </div>
   );

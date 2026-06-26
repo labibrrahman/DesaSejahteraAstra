@@ -162,7 +162,7 @@ const PesertaDashboard = () => {
               Selamat Datang, <span style={{ whiteSpace: 'nowrap' }}>{nama}</span>!
             </Title>
             <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, lineHeight: 1.6 }}>
-              Pantau kemajuan seleksi dan ikuti perkembangan Lomba 4 Pilar Astra Anda di sini.
+              Pantau kemajuan seleksi dan ikuti perkembangan Lomba Apresiasi Desa Sejahtera Astra Anda di sini.
             </Text>
           </Col>
           <Col xs={24} sm={24} md={8}>
@@ -449,13 +449,12 @@ const PesertaDashboard = () => {
                 <Text strong style={{ color: '#fff', fontSize: 13, letterSpacing: 0.5 }}>TAHAP 1 — PENDAFTARAN & SOSIALISASI</Text>
               </div>
               {[
-                { date: '22 Juni', desc: 'Kick Off & Pembukaan Pendaftaran Lomba Inovasi', active: status === 'draft' },
-                { date: '22 Juni – 11 Juli', desc: 'Open Registration', active: ['draft', 'waiting_screening'].includes(status) },
-                { date: '30 Juni', desc: 'Sosialisasi Lomba Inovasi', active: false },
-                { date: '13 – 17 Juli', desc: 'Proses Seleksi & Penilaian Tahap 1', active: ['waiting_screening', 'being_assessed'].includes(status) },
-                { date: '21 – 23 Juli', desc: 'Pengumuman Hasil Seleksi Tahap 1 & Pengumuman Linimasa Tahap 2', active: ['assessed', 'finalist', 'rejected'].includes(status) },
+                { date: '25 Juni', desc: 'Kick Off & Pembukaan Pendaftaran Lomba Inovasi', active: status === 'draft' },
+                { date: '29 Juni – 17 Juli', desc: 'Open Registration', active: ['draft', 'waiting_screening'].includes(status) },
+                { date: '7 Juli', desc: 'Sosialisasi Lomba Inovasi', active: false },
+                { date: '28 – 30 Juli', desc: 'Pengumuman Hasil Seleksi Tahap 1 & Pengumuman Linimasa Tahap 2', active: ['assessed', 'finalist', 'rejected'].includes(status) },
               ].map((item, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '14px 20px', borderBottom: idx < 4 ? '1px solid #f1f5f9' : 'none', background: item.active ? '#f0f7ff' : 'transparent' }}>
+                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '14px 20px', borderBottom: idx < 3 ? '1px solid #f1f5f9' : 'none', background: item.active ? '#f0f7ff' : 'transparent' }}>
                   <div style={{ width: 10, height: 10, borderRadius: '50%', marginTop: 5, flexShrink: 0, background: item.active ? '#2563eb' : '#d1d5db', boxShadow: item.active ? '0 0 0 3px rgba(37,99,235,0.2)' : 'none' }} />
                   <div style={{ flex: 1 }}>
                     <Text style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>{item.date}</Text>
@@ -469,16 +468,12 @@ const PesertaDashboard = () => {
                 <Text strong style={{ color: '#fff', fontSize: 13, letterSpacing: 0.5 }}>TAHAP 2 — PENJURIAN</Text>
               </div>
               {[
-                { date: '28 Juli', desc: 'Kategori Kesehatan Kelompok (1-5), Kategori Pendidikan Kelompok (1-5)' },
-                { date: '30 Juli', desc: 'Kategori Kesehatan Kelompok (6-10), Kategori Pendidikan Kelompok (6-10)' },
-                { date: '4 Agustus', desc: 'Kategori Kesehatan Individual (1-5), Kategori Pendidikan Individual (1-5)' },
-                { date: '6 Agustus', desc: 'Kategori Kesehatan Individual (6-10), Kategori Pendidikan Individual (6-10)' },
-                { date: '11 Agustus', desc: 'Kategori Lingkungan Kelompok (1-5), Kategori Kewirausahaan Kelompok (1-5), Kategori Lingkungan Kelompok (6-10)' },
-                { date: '13 Agustus', desc: 'Kategori Kewirausahaan Kelompok (6-10)' },
-                { date: '18 Agustus', desc: 'Kategori Lingkungan Individual (1-5), Kategori Kewirausahaan Individual (1-5)' },
-                { date: '20 Agustus', desc: 'Kategori Lingkungan Individual (6-10), Kategori Kewirausahaan Individual (6-10)' },
+                { date: '4 Agustus', desc: 'Kategori Kesehatan Kelompok (1-8), Kategori Pendidikan Kelompok (1-8)' },
+                { date: '6 Agustus', desc: 'Kategori Kesehatan Individu (1-8), Kategori Pendidikan Individu (1-8)' },
+                { date: '11 Agustus', desc: 'Kategori Lingkungan Kelompok (1-8), Kategori Kewirausahaan Kelompok (1-8)' },
+                { date: '13 Agustus', desc: 'Kategori Lingkungan Individu (1-8), Kategori Kewirausahaan Individu (1-8)' },
               ].map((item, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '14px 20px', borderBottom: idx < 7 ? '1px solid #f1f5f9' : 'none' }}>
+                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '14px 20px', borderBottom: idx < 3 ? '1px solid #f1f5f9' : 'none' }}>
                   <div style={{ width: 10, height: 10, borderRadius: '50%', marginTop: 5, flexShrink: 0, background: '#d1d5db' }} />
                   <div style={{ flex: 1 }}>
                     <Text style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>{item.date}</Text>

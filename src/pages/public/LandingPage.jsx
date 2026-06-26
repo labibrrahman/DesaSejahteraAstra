@@ -16,41 +16,33 @@ import {
 import { useNavigate } from 'react-router-dom';
 import astraLogo from '../../assets/images/astra-logo.png';
 import satuIndoLogo from '../../assets/images/satu-indonesia-logo.png';
+import heroBg from '../../assets/LandingPageAsset/ASET-01.png';
+import geoLeft from '../../assets/LandingPageAsset/ASET-07(1).png';
+import geoRight from '../../assets/LandingPageAsset/ASET-08(2).png';
+import titleImage from '../../assets/LandingPageAsset/ASET-09.png';
 import useIsMobile from '../../hooks/useIsMobile';
 import useAuthStore from '../../stores/authStore';
 
 const { Title, Paragraph, Text, Link } = Typography;
 const { Header, Content, Footer } = Layout;
 
-// ─── Data ────────────────────────────────────────────────────────────────────
+// ─── Icon & Color Map ────────────────────────────────────────────────────────
 
-const pilarData = [
-  {
-    icon: <HeartOutlined />,
-    title: 'Kesehatan',
-    description: 'Meningkatkan Kesehatan Ibu & Anak.',
-    color: '#1870F0',
-  },
-  {
-    icon: <ReadOutlined />,
-    title: 'Pendidikan',
-    description: 'Meningkatkan Kualitas Pendidikan & Keterampilan Generasi Muda',
-    color: '#1870F0',
-  },
+const PILAR_ICON_MAP = {
+  kesehatan:     { icon: <HeartOutlined />,    color: '#e11d48' },
+  pendidikan:    { icon: <ReadOutlined />,     color: '#0284c7' },
+  lingkungan:    { icon: <GlobalOutlined />,   color: '#059669' },
+  kewirausahaan: { icon: <ShopOutlined />,     color: '#ea580c' },
+};
 
-  {
-    icon: <GlobalOutlined />,
-    title: 'Lingkungan',
-    description: 'Menjaga Lingkungan & Meningkatkan Ketahanan Terhadap Perubahan Iklim',
-    color: '#1870F0',
-  },
-  {
-    icon: <ShopOutlined />,
-    title: 'Kewirausahaan',
-    description: 'Meningkatkan Kesejahteraan Masyarakat',
-    color: '#1870F0',
-  },
-];
+const getPilarStyle = (name) => {
+  if (!name) return { icon: <HeartOutlined />, color: '#1870F0' };
+  const lower = name.toLowerCase();
+  for (const [key, val] of Object.entries(PILAR_ICON_MAP)) {
+    if (lower.includes(key)) return val;
+  }
+  return { icon: <HeartOutlined />, color: '#1870F0' };
+};
 
 const statsData = [
   { number: '3,01 Jt', label: 'Penerima Manfaat Program (2025)' },
@@ -68,8 +60,32 @@ const LandingPage = () => {
   const isMobile = useIsMobile();
   const { isAuthenticated, user } = useAuthStore();
   const [faqData, setFaqData] = useState([]);
+  const [pilarData, setPilarData] = useState([]);
+  const [supportWhatsapp, setSupportWhatsapp] = useState('');
 
   useEffect(() => {
+    // Fetch Pilar dari API
+    import('../../services/masterService').then(({ default: masterService }) => {
+      masterService.getPillars().then(result => {
+        const list = Array.isArray(result) ? result : [];
+        setPilarData(list.map(p => ({
+          ...getPilarStyle(p.name),
+          title: p.name,
+          description: p.description || '',
+        })));
+      }).catch(() => {});
+    });
+
+    // Fetch support_whatsapp dari system-settings
+    import('../../services/menuService').then(({ default: menuService }) => {
+      menuService.getSystemSettings().then(result => {
+        const settings = Array.isArray(result) ? result : [];
+        const waSetting = settings.find(s => s.key === 'support_whatsapp');
+        if (waSetting?.value) setSupportWhatsapp(waSetting.value);
+      }).catch(() => {});
+    });
+
+    // Fetch FAQ dari API
     import('../../services/adminService').then(({ default: adminService }) => {
       adminService.getFaqs({ isActive: true }).then(result => {
         const list = Array.isArray(result) ? result : [];
@@ -100,82 +116,92 @@ const LandingPage = () => {
         >
           {/* Background */}
           <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'linear-gradient(135deg, #005BAA 0%, #003d7a 50%, #001c3b 100%)',
-              }}
-            />
             <img
-              src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1400&q=80"
-              alt="Corporate background"
+              src={heroBg}
+              alt=""
               style={{
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
-                opacity: 0.3,
-                mixBlendMode: 'overlay',
+                objectPosition: 'center top',
               }}
             />
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'linear-gradient(180deg, rgba(0,91,170,0.2) 0%, transparent 40%, rgba(248,249,255,1) 100%)',
-              }}
-            />
+            {/* Gradient transisi ke section pilar */}
+            <div style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '30%',
+              background: 'linear-gradient(to bottom, transparent 0%, #fff 100%)',
+              pointerEvents: 'none',
+              zIndex: 2,
+            }} />
           </div>
+
+          {/* Geometric kiri */}
+          <img
+            src={geoLeft}
+            alt=""
+            className="geo-left"
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: '30%',
+              maxWidth: 400,
+              zIndex: 1,
+              pointerEvents: 'none',
+              opacity: 0.9,
+              WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
+              maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
+            }}
+          />
+
+          {/* Geometric kanan */}
+          <img
+            src={geoRight}
+            alt=""
+            className="geo-right"
+            style={{
+              position: 'absolute',
+              right: 0,
+              top: 0,
+              width: '30%',
+              maxWidth: 400,
+              zIndex: 1,
+              pointerEvents: 'none',
+              opacity: 0.9,
+              WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
+              maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
+            }}
+          />
 
           {/* Floating Satu Indonesia Badge */}
           <div
             style={{
               position: 'absolute',
-              top: isMobile ? 16 : 24,
-              left: isMobile ? 20 : 64,
+              top: isMobile ? 20 : 30,
+              left: isMobile ? 16 : 30,
               zIndex: 30,
-              height: 65,
-              padding: '12px 16px',
-              // background: 'rgba(255,255,255,0.1)',
-              // backdropFilter: 'blur(12px)',
-              // border: '1px solid rgba(255,255,255,0.2)',
-              // borderRadius: 12,
-              // boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-              transition: 'all 0.3s',
-              cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
             }}
-            // onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; }}
-            // onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
           >
-            <img src={astraLogo} alt="Astra Logo" style={{ height: 32, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+            <img src={astraLogo} alt="Astra Logo" style={{ height: isMobile ? 24 : 32, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
           </div>
 
           <div
             style={{
               position: 'absolute',
-              top: isMobile ? 16 : 24,
-              right: isMobile ? 20 : 64,
+              top: isMobile ? 12 : 24,
+              right: isMobile ? 16 : 30,
               zIndex: 30,
-              height: 65,
-              padding: '12px 16px',
-              // background: 'rgba(255,255,255,0.1)',
-              // backdropFilter: 'blur(12px)',
-              // border: '1px solid rgba(255,255,255,0.2)',
-              // borderRadius: 12,
-              // boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-              transition: 'all 0.3s',
-              cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
             }}
-            // onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; }}
-            // onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
           >
-            <img src={satuIndoLogo} alt="Satu Indonesia Logo" style={{ height: 50, objectFit: 'contain' }} />
+            <img src={satuIndoLogo} alt="Satu Indonesia Logo" style={{ height: isMobile ? 36 : 50, objectFit: 'contain' }} />
           </div>
 
           {/* Content */}
@@ -189,46 +215,27 @@ const LandingPage = () => {
               width: '100%',
             }}
           >
-            {/* Badge */}
-            <div
-              style={{
-                display: 'inline-block',
-                padding: '6px 16px',
-                borderRadius: 999,
-                background: 'rgba(255,255,255,0.1)',
-                backdropFilter: 'blur(8px)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                color: '#fff',
-                fontSize: 12,
-                fontWeight: 600,
-                letterSpacing: 2,
-                textTransform: 'uppercase',
-                marginBottom: isMobile ? 20 : 28,
-              }}
-            >
-              Astra Present
-            </div>
 
             {/* Title */}
-            <h1
+            <img
+              src={titleImage}
+              alt="Lomba Apresiasi Desa Sejahtera Astra"
               style={{
-                color: '#fff',
-                fontSize: isMobile ? 40 : 80,
-                fontWeight: 700,
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                lineHeight: 1.05,
+                maxWidth: isMobile ? 300 : 500,
+                width: '100%',
+                height: 'auto',
                 marginBottom: isMobile ? 16 : 24,
-                textShadow: '0 4px 24px rgba(0,0,0,0.2)',
+                filter: 'drop-shadow(0 4px 24px rgba(0,0,0,0.2))',
+                display: 'block',
+                margin: '0 auto',
               }}
-            >
-              Lomba 4 Pilar
-            </h1>
+            />
 
             {/* Subtitle */}
             <p
               style={{
                 color: 'rgba(255,255,255,0.9)',
-                fontSize: isMobile ? 15 : 24,
+                fontSize: isMobile ? 15 : 20,
                 lineHeight: 1.7,
                 marginBottom: isMobile ? 28 : 40,
                 maxWidth: 600,
@@ -272,32 +279,6 @@ const LandingPage = () => {
               >
                 Daftar Sekarang
               </button>
-              {/* <button
-                onClick={() => scrollTo('tentang-section')}
-                style={{
-                  padding: isMobile ? '14px 40px' : '16px 48px',
-                  borderRadius: 999,
-                  background: 'transparent',
-                  border: '1px solid rgba(255,255,255,0.3)',
-                  color: '#fff',
-                  fontSize: 16,
-                  fontWeight: 600,
-                  fontFamily: "'Inter', sans-serif",
-                  cursor: 'pointer',
-                  transition: 'all 0.3s',
-                  width: isMobile ? '100%' : 'auto',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                Pelajari Selengkapnya
-              </button> */}
             </div>
           </div>
 
@@ -380,12 +361,12 @@ const LandingPage = () => {
                         width: 48,
                         height: 48,
                         borderRadius: 10,
-                        background: 'rgba(24,112,240,0.08)',
+                        background: `${pilar.color}15`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         marginBottom: 24,
-                        color: '#1870F0',
+                        color: pilar.color,
                         fontSize: 22,
                         transition: 'all 0.3s',
                       }}
@@ -490,7 +471,7 @@ const LandingPage = () => {
             </div>
 
             <Row gutter={[isMobile ? 16 : 48, isMobile ? 32 : 48]} justify="center">
-              <Col xs={24} sm={8} onClick={() => window.open('https://wa.me/6285713043230', '_blank')}>
+              <Col xs={24} sm={8} onClick={() => window.open(`${supportWhatsapp}`, '_blank')} style={{ cursor: 'pointer' }}>
                 <div style={{ textAlign: 'center', padding: isMobile ? 20 : 32 }}>
                   <div style={{ marginBottom: 16 }}>
                     <PhoneOutlined style={{ fontSize: 32, color: '#1870F0' }} />
@@ -503,32 +484,6 @@ const LandingPage = () => {
                   </Text>
                 </div>
               </Col>
-              {/* <Col xs={24} sm={8}>
-                <div style={{ textAlign: 'center', padding: isMobile ? 20 : 32 }}>
-                  <div style={{ marginBottom: 16 }}>
-                    <MailOutlined style={{ fontSize: 32, color: '#1870F0' }} />
-                  </div>
-                  <Text style={{ fontSize: 14, fontWeight: 600, color: '#414751', display: 'block', marginBottom: 8 }}>
-                    Email
-                  </Text>
-                  <Text style={{ fontSize: isMobile ? 18 : 20, fontWeight: 600, color: '#181c21', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                    csr@astra.co.id
-                  </Text>
-                </div>
-              </Col>
-              <Col xs={24} sm={8}>
-                <div style={{ textAlign: 'center', padding: isMobile ? 20 : 32 }}>
-                  <div style={{ marginBottom: 16 }}>
-                    <EnvironmentOutlined style={{ fontSize: 32, color: '#1870F0' }} />
-                  </div>
-                  <Text style={{ fontSize: 14, fontWeight: 600, color: '#414751', display: 'block', marginBottom: 8 }}>
-                    Alamat
-                  </Text>
-                  <Text style={{ fontSize: isMobile ? 18 : 20, fontWeight: 600, color: '#181c21', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                    Jl. TB Simatupang, Jakarta
-                  </Text>
-                </div>
-              </Col> */}
             </Row>
           </div>
         </section>
@@ -570,6 +525,56 @@ const LandingPage = () => {
           0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
           40% { transform: translateX(-50%) translateY(-12px); }
           60% { transform: translateX(-50%) translateY(-6px); }
+        }
+
+        .geo-left {
+          width: 30%;
+          max-width: 400px;
+        }
+        .geo-right {
+          width: 30%;
+          max-width: 400px;
+        }
+
+        @media (max-width: 768px) {
+          .geo-left {
+            width: 50%;
+            max-width: 250px;
+            left: -20px;
+            top: 30% !important;
+          }
+          .geo-right {
+            width: 50%;
+            max-width: 250px;
+            right: -20px;
+            top: 5%;
+          }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+          .geo-left {
+            width: 25%;
+            max-width: 300px;
+          }
+          .geo-right {
+            width: 25%;
+            max-width: 300px;
+          }
+        }
+
+        @media (min-width: 1025px) {
+          .geo-left {
+            width: 22%;
+            max-width: 350px;
+            left: 0;
+            top: 0;
+          }
+          .geo-right {
+            width: 22%;
+            max-width: 350px;
+            right: 0;
+            top: 0;
+          }
         }
       `}</style>
     </Layout>

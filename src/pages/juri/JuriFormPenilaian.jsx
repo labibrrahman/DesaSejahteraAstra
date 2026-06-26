@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Form, Input, InputNumber, Button, Typography, Tag, Row, Col, message, Result, Spin, Modal } from 'antd';
-import { SaveOutlined, ArrowLeftOutlined, FileTextOutlined, BulbOutlined, ThunderboltOutlined, ToolOutlined, CheckCircleFilled, CameraOutlined } from '@ant-design/icons';
+import { SaveOutlined, ArrowLeftOutlined, FileTextOutlined, BulbOutlined, ThunderboltOutlined, ToolOutlined, CheckCircleFilled, CameraOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import adminService from '../../services/adminService';
 
@@ -39,6 +39,7 @@ const JuriFormPenilaian = () => {
   const [submitted, setSubmitted] = useState(false);
   const [previewPhoto, setPreviewPhoto] = useState(null);
   const [totalScore, setTotalScore] = useState(0);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const fetchDetail = useCallback(async () => {
     setLoading(true);
@@ -256,11 +257,45 @@ const JuriFormPenilaian = () => {
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
               <Button onClick={() => navigate('/juri/peserta')} style={{ height: 44, borderRadius: 8 }}>Batal</Button>
-              <Button type="primary" icon={<SaveOutlined />} onClick={handleSubmit} loading={submitting} disabled={totalScore === 0} style={{ height: 44, borderRadius: 8, fontWeight: 600 }}>Submit Penilaian</Button>
+              <Button type="primary" icon={<SaveOutlined />} onClick={() => setShowConfirmModal(true)} disabled={totalScore === 0} style={{ height: 44, borderRadius: 8, fontWeight: 600 }}>Submit Penilaian</Button>
             </div>
           </Form>
         </Col>
       </Row>
+
+      {/* Modal Konfirmasi Submit */}
+      <Modal
+        open={showConfirmModal}
+        onCancel={() => setShowConfirmModal(false)}
+        onOk={handleSubmit}
+        okText="Ya, Submit"
+        cancelText="Batal"
+        confirmLoading={submitting}
+        centered
+        okButtonProps={{ style: { background: '#0051d5', borderColor: '#0051d5', fontWeight: 600 } }}
+        cancelButtonProps={{ style: { fontWeight: 600 } }}
+      >
+        <div style={{ textAlign: 'center', padding: '8px 0' }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 16px',
+            boxShadow: '0 8px 24px rgba(245,158,11,0.3)',
+          }}>
+            <ExclamationCircleOutlined style={{ fontSize: 32, color: '#fff' }} />
+          </div>
+          <Title level={4} style={{ marginBottom: 8 }}>Konfirmasi Submit Penilaian</Title>
+          <Text style={{ fontSize: 14, color: '#64748b', display: 'block', lineHeight: 1.7 }}>
+            Pastikan seluruh nilai sudah benar. Setelah disubmit, <Text strong style={{ color: '#ef4444' }}>nilai tidak dapat diubah kembali</Text>.
+          </Text>
+          <div style={{ marginTop: 16, padding: '12px 16px', background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+            <Text style={{ fontSize: 13, color: '#64748b' }}>Total Nilai: </Text>
+            <Text strong style={{ fontSize: 18, color: scoreColor }}>{totalScore}</Text>
+            <Text style={{ fontSize: 13, color: '#94a3b8' }}> / 100</Text>
+          </div>
+        </div>
+      </Modal>
 
       {/* Modal Preview Foto */}
       <Modal

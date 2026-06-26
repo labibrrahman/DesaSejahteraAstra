@@ -54,8 +54,11 @@ const PILAR_CONFIG = {
 // ─── Shared Styles ───────────────────────────────────────────────────────────
 
 const inputStyle = { borderRadius: 8, height: 44, borderColor: '#e2e8f0', fontSize: 13, transition: 'all 0.2s' };
+const inputErrorStyle = { borderRadius: 8, height: 44, borderColor: '#ef4444', fontSize: 13, transition: 'all 0.2s', boxShadow: '0 0 0 2px rgba(239,68,68,0.1)' };
 const labelStyle = { display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#002444' };
+const labelErrorStyle = { display: 'block', marginBottom: 8, fontSize: 13, fontWeight: 600, color: '#ef4444' };
 const fieldWrapper = { marginBottom: 20 };
+const errorTextStyle = { fontSize: 12, color: '#ef4444', marginTop: 4, display: 'block' };
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -147,8 +150,12 @@ const FormPendaftaran = () => {
   const [photos, setPhotos] = useState(savedDraft?.photos || []);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [previewPhoto, setPreviewPhoto] = useState(null);
+  const [errors, setErrors] = useState({});
 
-  const updateField = (key, value) => setFormData(prev => ({ ...prev, [key]: value }));
+  const updateField = (key, value) => {
+    setFormData(prev => ({ ...prev, [key]: value }));
+    if (errors[key]) setErrors(prev => ({ ...prev, [key]: '' }));
+  };
 
   // Hanya izinkan angka untuk nomor HP
   const handlePhoneChange = (e) => {
@@ -420,72 +427,52 @@ const FormPendaftaran = () => {
   // ── Validasi per step sebelum lanjut ───────────────────────────────────────
 
   const validateStep = (step) => {
+    const e = {};
     switch (step) {
       case 1:
-        if (!selectedKategoriId) {
-          message.warning('Silakan pilih kategori terlebih dahulu');
-          return false;
-        }
-        return true;
+        if (!selectedKategoriId) e.kategori = 'Silakan pilih kategori terlebih dahulu';
+        break;
 
-      case 2: {
-        const missing = [];
-        if (!formData.nama_desa) missing.push('Nama DSA/Nama Desa');
-        if (!formData.jenis_dsa) missing.push('Jenis DSA');
-        if (!formData.nama_kelompok) missing.push(formData.jenis_dsa === 'individu' ? 'Nama Ketua Kelompok' : 'Nama Ketua Kelompok');
+      case 2:
+        if (!formData.nama_desa) e.nama_desa = 'Nama DSA wajib diisi';
+        if (!formData.nama_kelompok) e.nama_kelompok = 'Nama Ketua Kelompok wajib diisi';
         if (!formData.phone_number) {
-          missing.push('Nomor HP');
+          e.phone_number = 'Nomor HP wajib diisi';
         } else if (formData.phone_number.length < 8) {
-          message.warning('Nomor HP minimal 8 digit');
-          return false;
+          e.phone_number = 'Nomor HP minimal 8 digit';
         }
         if (!formData.nama_kontak_darurat) {
-          missing.push('Nama Kontak Lainnya');
+          e.nama_kontak_darurat = 'Nama Kontak Lainnya wajib diisi';
         } else if (formData.nama_kontak_darurat === formData.nama_kelompok) {
-          message.warning('Nama Kontak Lainnya tidak boleh sama dengan Nama Nama Ketua Kelompok');
-          return false;
+          e.nama_kontak_darurat = 'Tidak boleh sama dengan Nama Ketua Kelompok';
         }
         if (!formData.no_hp_kontak_darurat) {
-          missing.push('Nomor HP Kontak Lainnya');
+          e.no_hp_kontak_darurat = 'Nomor Kontak Lainnya wajib diisi';
         } else if (formData.no_hp_kontak_darurat.length < 8) {
-          message.warning('Nomor Kontak Lainnya minimal 8 digit');
-          return false;
+          e.no_hp_kontak_darurat = 'Minimal 8 digit';
         } else if (formData.no_hp_kontak_darurat === formData.phone_number) {
-          message.warning('Nomor Kontak Lainnya tidak boleh sama dengan Nomor HP');
-          return false;
+          e.no_hp_kontak_darurat = 'Tidak boleh sama dengan Nomor HP';
         }
-        if (!formData.alamat) missing.push('Alamat Lengkap');
-        if (!formData.provinceId) missing.push('Provinsi');
-        if (!formData.cityId) missing.push('Kabupaten / Kota');
-        if (!formData.districtId) missing.push('Kecamatan');
-        if (!formData.villageRegionId) missing.push('Desa / Kelurahan');
-        if (missing.length > 0) {
-          message.warning(`Harap isi: ${missing.join(', ')}`);
-          return false;
-        }
-        return true;
-      }
+        if (!formData.alamat) e.alamat = 'Alamat wajib diisi';
+        if (!formData.provinceId) e.provinceId = 'Provinsi wajib dipilih';
+        if (!formData.cityId) e.cityId = 'Kabupaten/Kota wajib dipilih';
+        if (!formData.districtId) e.districtId = 'Kecamatan wajib dipilih';
+        if (!formData.villageRegionId) e.villageRegionId = 'Desa/Kelurahan wajib dipilih';
+        break;
 
-      case 3: {
-        const missing = [];
-        if (!formData.durasi_program) missing.push('Durasi Program');
-        if (!formData.latar_belakang) missing.push('Latar Belakang');
-        if (!formData.dampak_program) missing.push('Dampak Yang Sudah Terealisasi');
-        if (!formData.rencana_pengembangan) missing.push('Rencana Pengembangan');
-        if (photos.length === 0) missing.push('Foto Dokumentasi (minimal 1 foto)');
-        if (!formData.implementation_method) missing.push('Metode Pelaksanaan Program');
-        if (!formData.sustainability_plan) missing.push('Keberlanjutan Program');
-        if (!formData.program_evaluation) missing.push('Evaluasi Program');
-        if (missing.length > 0) {
-          message.warning(`Harap isi: ${missing.join(', ')}`);
-          return false;
-        }
-        return true;
-      }
-
-      default:
-        return true;
+      case 3:
+        if (!formData.durasi_program) e.durasi_program = 'Wajib diisi';
+        if (!formData.latar_belakang) e.latar_belakang = 'Wajib diisi';
+        if (!formData.implementation_method) e.implementation_method = 'Wajib diisi';
+        if (!formData.dampak_program) e.dampak_program = 'Wajib diisi';
+        if (!formData.rencana_pengembangan) e.rencana_pengembangan = 'Wajib diisi';
+        if (!formData.sustainability_plan) e.sustainability_plan = 'Wajib diisi';
+        if (!formData.program_evaluation) e.program_evaluation = 'Wajib diisi';
+        if (photos.length === 0) e.photos = 'Minimal 1 foto wajib diunggah';
+        break;
     }
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
   const nextStep = () => {
@@ -867,22 +854,21 @@ const FormPendaftaran = () => {
         <Row gutter={[24, 0]}>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={labelStyle}>Nama DSA/Nama Desa *</Text>
-              <Input placeholder="Contoh: Desa Suka Maju" style={inputStyle} value={formData.nama_desa} onChange={e => updateField('nama_desa', e.target.value)} />
+              <Text style={errors.nama_desa ? labelErrorStyle : labelStyle}>Nama DSA/Nama Desa *</Text>
+              <Input placeholder="Contoh: Desa Suka Maju" style={errors.nama_desa ? inputErrorStyle : inputStyle} value={formData.nama_desa} onChange={e => updateField('nama_desa', e.target.value)} />
+              {errors.nama_desa && <Text style={errorTextStyle}>{errors.nama_desa}</Text>}
             </div>
           </Col>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={labelStyle}>
-                Nama Ketua Kelompok *
-              </Text>
+              <Text style={errors.nama_kelompok ? labelErrorStyle : labelStyle}>Nama Ketua Kelompok *</Text>
               <Input
-                placeholder={'Nama Ketua Kelompok'}
-                style={inputStyle}
+                placeholder="Nama Ketua Kelompok"
+                style={errors.nama_kelompok ? inputErrorStyle : inputStyle}
                 value={formData.nama_kelompok}
                 onChange={e => handleNameChange('nama_kelompok', e)}
-                // disabled={formData.jenis_dsa === 'individu'}
               />
+              {errors.nama_kelompok && <Text style={errorTextStyle}>{errors.nama_kelompok}</Text>}
             </div>
           </Col>
         </Row>
@@ -890,8 +876,9 @@ const FormPendaftaran = () => {
         <Row gutter={[24, 0]}>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={labelStyle}>Nomor HP Ketua Kelompok *</Text>
-              <Input placeholder="Contoh: 08123456789" style={inputStyle} value={formData.phone_number} onChange={handlePhoneChange} maxLength={15} inputMode="numeric" />
+              <Text style={errors.phone_number ? labelErrorStyle : labelStyle}>Nomor HP Ketua Kelompok *</Text>
+              <Input placeholder="Contoh: 08123456789" style={errors.phone_number ? inputErrorStyle : inputStyle} value={formData.phone_number} onChange={handlePhoneChange} maxLength={15} inputMode="numeric" />
+              {errors.phone_number && <Text style={errorTextStyle}>{errors.phone_number}</Text>}
             </div>
           </Col>
           <Col xs={24} sm={12}>
@@ -921,21 +908,24 @@ const FormPendaftaran = () => {
         <Row gutter={[24, 0]}>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={labelStyle}>Nama Kontak Lainnya *</Text>
-              <Input placeholder="Contoh: Siti Aminah" style={inputStyle} value={formData.nama_kontak_darurat} onChange={e => handleNameChange('nama_kontak_darurat', e)} />
+              <Text style={errors.nama_kontak_darurat ? labelErrorStyle : labelStyle}>Nama Kontak Lainnya *</Text>
+              <Input placeholder="Contoh: Siti Aminah" style={errors.nama_kontak_darurat ? inputErrorStyle : inputStyle} value={formData.nama_kontak_darurat} onChange={e => handleNameChange('nama_kontak_darurat', e)} />
+              {errors.nama_kontak_darurat && <Text style={errorTextStyle}>{errors.nama_kontak_darurat}</Text>}
             </div>
           </Col>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={labelStyle}>Nomor Kontak Lainnya *</Text>
-              <Input placeholder="Contoh: 08123456789" style={inputStyle} value={formData.no_hp_kontak_darurat} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); updateField('no_hp_kontak_darurat', v); }} maxLength={15} inputMode="numeric" />
+              <Text style={errors.no_hp_kontak_darurat ? labelErrorStyle : labelStyle}>Nomor Kontak Lainnya *</Text>
+              <Input placeholder="Contoh: 08123456789" style={errors.no_hp_kontak_darurat ? inputErrorStyle : inputStyle} value={formData.no_hp_kontak_darurat} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); updateField('no_hp_kontak_darurat', v); }} maxLength={15} inputMode="numeric" />
+              {errors.no_hp_kontak_darurat && <Text style={errorTextStyle}>{errors.no_hp_kontak_darurat}</Text>}
             </div>
           </Col>
         </Row>
 
         <div style={fieldWrapper}>
-          <Text style={labelStyle}>Alamat Lengkap *</Text>
-          <TextArea rows={3} placeholder="Detail jalan, RW/RT..." style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.alamat} onChange={e => updateField('alamat', e.target.value)} />
+          <Text style={errors.alamat ? labelErrorStyle : labelStyle}>Alamat Lengkap *</Text>
+          <TextArea rows={3} placeholder="Detail jalan, RW/RT..." style={{ borderRadius: 8, borderColor: errors.alamat ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.alamat ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.alamat} onChange={e => updateField('alamat', e.target.value)} />
+          {errors.alamat && <Text style={errorTextStyle}>{errors.alamat}</Text>}
         </div>
 
         <div style={fieldWrapper}>
@@ -953,7 +943,8 @@ const FormPendaftaran = () => {
           {/* Provinsi */}
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={labelStyle}>Provinsi *</Text>
+              <Text style={errors.provinceId ? labelErrorStyle : labelStyle}>Provinsi *</Text>
+              {errors.provinceId && <Text style={errorTextStyle}>{errors.provinceId}</Text>}
               <Select
                 placeholder="Ketik untuk cari provinsi..."
                 style={{ width: '100%' }}
@@ -991,7 +982,8 @@ const FormPendaftaran = () => {
           {/* Kabupaten */}
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={labelStyle}>Kabupaten / Kota *</Text>
+              <Text style={errors.cityId ? labelErrorStyle : labelStyle}>Kabupaten / Kota *</Text>
+              {errors.cityId && <Text style={errorTextStyle}>{errors.cityId}</Text>}
               <Select
                 placeholder="Ketik untuk cari kabupaten..."
                 style={{ width: '100%' }}
@@ -1030,7 +1022,8 @@ const FormPendaftaran = () => {
           {/* Kecamatan */}
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={labelStyle}>Kecamatan *</Text>
+              <Text style={errors.districtId ? labelErrorStyle : labelStyle}>Kecamatan *</Text>
+              {errors.districtId && <Text style={errorTextStyle}>{errors.districtId}</Text>}
               <Select
                 placeholder="Ketik untuk cari kecamatan..."
                 style={{ width: '100%' }}
@@ -1069,7 +1062,8 @@ const FormPendaftaran = () => {
           {/* Desa */}
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={labelStyle}>Desa / Kelurahan *</Text>
+              <Text style={errors.villageRegionId ? labelErrorStyle : labelStyle}>Desa / Kelurahan *</Text>
+              {errors.villageRegionId && <Text style={errorTextStyle}>{errors.villageRegionId}</Text>}
               <Select
                 placeholder="Ketik untuk cari desa..."
                 style={{ width: '100%' }}
@@ -1135,7 +1129,7 @@ const FormPendaftaran = () => {
       </div>
 
       <div style={fieldWrapper}>
-        <Text style={labelStyle}>Durasi Program *</Text>
+        <Text style={errors.durasi_program ? labelErrorStyle : labelStyle}>Durasi Program *</Text>
         <Select placeholder="Pilih durasi program..." style={{ width: '100%' }} size="large"
           listHeight={256}
           value={formData.durasi_program} onChange={val => updateField('durasi_program', val)}>
@@ -1144,50 +1138,52 @@ const FormPendaftaran = () => {
           <Option value="3-5 Tahun"><span style={{ fontSize:13 }}>3-5 Tahun</span></Option>
           <Option value=">5 Tahun"><span style={{ fontSize:13 }}>&gt;5 Tahun</span></Option>
         </Select>
+        {errors.durasi_program && <Text style={errorTextStyle}>{errors.durasi_program}</Text>}
       </div>
 
       <div style={fieldWrapper}>
-        <Text style={labelStyle}>Latar Belakang / Rasionalisasi *</Text>
-        <TextArea rows={5} placeholder="Jelaskan alasan dan latar belakang inisiatif program ini..." style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.latar_belakang} onChange={e => updateField('latar_belakang', e.target.value)} />
-        <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan latar belakang program</Text>
+        <Text style={errors.latar_belakang ? labelErrorStyle : labelStyle}>Latar Belakang / Rasionalisasi *</Text>
+        <TextArea rows={5} placeholder="Jelaskan alasan dan latar belakang inisiatif program ini..." style={{ borderRadius: 8, borderColor: errors.latar_belakang ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.latar_belakang ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.latar_belakang} onChange={e => updateField('latar_belakang', e.target.value)} />
+        {errors.latar_belakang ? <Text style={errorTextStyle}>{errors.latar_belakang}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan latar belakang program</Text>}
       </div>
 
       <div style={fieldWrapper}>
-        <Text style={labelStyle}>Metode Pelaksanaan Program *</Text>
-        <TextArea rows={5} placeholder="Jelaskan metode pelaksanaan program secara detail" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.implementation_method || ''} onChange={e => updateField('implementation_method', e.target.value)} />
-        <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan bagaimana program ini dilaksanakan</Text>
+        <Text style={errors.implementation_method ? labelErrorStyle : labelStyle}>Metode Pelaksanaan Program *</Text>
+        <TextArea rows={5} placeholder="Jelaskan metode pelaksanaan program secara detail" style={{ borderRadius: 8, borderColor: errors.implementation_method ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.implementation_method ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.implementation_method || ''} onChange={e => updateField('implementation_method', e.target.value)} />
+        {errors.implementation_method ? <Text style={errorTextStyle}>{errors.implementation_method}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan bagaimana program ini dilaksanakan</Text>}
       </div>
 
       <div style={fieldWrapper}>
-        <Text style={labelStyle}>Dampak Yang Sudah Terealisasi *</Text>
-        <TextArea rows={5} placeholder="Jelaskan Dampak Yang Sudah Terealisasi" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.dampak_program} onChange={e => updateField('dampak_program', e.target.value)} />
-        <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan target dampak yang ingin dicapai</Text>
+        <Text style={errors.dampak_program ? labelErrorStyle : labelStyle}>Dampak Yang Sudah Terealisasi *</Text>
+        <TextArea rows={5} placeholder="Jelaskan Dampak Yang Sudah Terealisasi" style={{ borderRadius: 8, borderColor: errors.dampak_program ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.dampak_program ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.dampak_program} onChange={e => updateField('dampak_program', e.target.value)} />
+        {errors.dampak_program ? <Text style={errorTextStyle}>{errors.dampak_program}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan target dampak yang ingin dicapai</Text>}
       </div>
 
       <div style={fieldWrapper}>
-        <Text style={labelStyle}>Rencana dan Potensi Pengembangan *</Text>
-        <TextArea rows={5} placeholder="Jelaskan Rencana dan Potensi program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.rencana_pengembangan} onChange={e => updateField('rencana_pengembangan', e.target.value)} />
-        <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan rencana pengembangan program ke depan</Text>
+        <Text style={errors.rencana_pengembangan ? labelErrorStyle : labelStyle}>Rencana dan Potensi Pengembangan *</Text>
+        <TextArea rows={5} placeholder="Jelaskan Rencana dan Potensi program" style={{ borderRadius: 8, borderColor: errors.rencana_pengembangan ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.rencana_pengembangan ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.rencana_pengembangan} onChange={e => updateField('rencana_pengembangan', e.target.value)} />
+        {errors.rencana_pengembangan ? <Text style={errorTextStyle}>{errors.rencana_pengembangan}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan rencana pengembangan program ke depan</Text>}
       </div>
 
       <div style={fieldWrapper}>
-        <Text style={labelStyle}>Keberlanjutan Program *</Text>
-        <TextArea rows={5} placeholder={"Contoh:\n- Program XX \n- Program YY \n- Program ZZ"} style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.sustainability_plan || ''} onChange={e => updateField('sustainability_plan', e.target.value)} />
-        <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan bagaimana keberlanjutan program di masa depan</Text>
+        <Text style={errors.sustainability_plan ? labelErrorStyle : labelStyle}>Keberlanjutan Program *</Text>
+        <TextArea rows={5} placeholder={"Contoh:\n- Program XX \n- Program YY \n- Program ZZ"} style={{ borderRadius: 8, borderColor: errors.sustainability_plan ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.sustainability_plan ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.sustainability_plan || ''} onChange={e => updateField('sustainability_plan', e.target.value)} />
+        {errors.sustainability_plan ? <Text style={errorTextStyle}>{errors.sustainability_plan}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan bagaimana keberlanjutan program di masa depan</Text>}
       </div>
 
       <div style={fieldWrapper}>
-        <Text style={labelStyle}>Evaluasi Program *</Text>
-        <TextArea rows={5} placeholder="Jelaskan mekanisme evaluasi program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.program_evaluation || ''} onChange={e => updateField('program_evaluation', e.target.value)} />
-        <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan bagaimana program ini dievaluasi</Text>
+        <Text style={errors.program_evaluation ? labelErrorStyle : labelStyle}>Evaluasi Program *</Text>
+        <TextArea rows={5} placeholder="Jelaskan mekanisme evaluasi program" style={{ borderRadius: 8, borderColor: errors.program_evaluation ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.program_evaluation ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.program_evaluation || ''} onChange={e => updateField('program_evaluation', e.target.value)} />
+        {errors.program_evaluation ? <Text style={errorTextStyle}>{errors.program_evaluation}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan bagaimana program ini dievaluasi</Text>}
       </div>
 
       {/* Upload Foto Dokumentasi */}
       <div style={{ marginTop: 8 }}>
-        <Text style={labelStyle}>Foto Dokumentasi *</Text>
+        <Text style={errors.photos ? labelErrorStyle : labelStyle}>Foto Dokumentasi *</Text>
         <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 12 }}>
           Unggah foto kegiatan program (wajib minimal 1 foto, maks. 4 foto, format JPEG/PNG/WEBP, maks. 1 MB per foto)
         </Text>
+        {errors.photos && <Text style={{ ...errorTextStyle, marginBottom: 12 }}>{errors.photos}</Text>}
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
           {photos.map((photo, index) => (
@@ -1322,7 +1318,7 @@ const FormPendaftaran = () => {
             <Text style={{ color: '#94a3b8', fontSize: 11, display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Foto Dokumentasi</Text>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {photos.map((photo, i) => (
-                <div key={i} style={{ width: 80, height: 80, borderRadius: 6, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+                <div key={i} onClick={() => setPreviewPhoto(photo.url?.startsWith('http') ? photo.url : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.url}`)} style={{ width: 80, height: 80, borderRadius: 6, overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer' }}>
                   <img src={photo.url?.startsWith('http') ? photo.url : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.url}`} alt={photo.originalName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
               ))}

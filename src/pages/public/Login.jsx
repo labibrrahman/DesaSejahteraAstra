@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../../stores/authStore';
 import useIsMobile from '../../hooks/useIsMobile';
 import astraLogo from '../../assets/images/astra-logo.png';
+import satuIndoLogo from '../../assets/images/satu-indonesia-logo.png';
 
 const { Title, Text } = Typography;
 const { Content } = Layout;
@@ -83,10 +84,11 @@ const Login = ({ adminMode = false }) => {
     if (adminMode) {
       return (
         <Layout style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ background: '#fff', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', flexShrink: 0 }}>
+          <div style={{ background: '#fff', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', flexShrink: 0 }}>
             <img src={astraLogo} alt="Astra" style={{ height: 24, objectFit: 'contain' }} />
+            <img src={satuIndoLogo} alt="Satu Indonesia" style={{ height: 32, objectFit: 'contain' }} />
           </div>
-          <MobileBranding title="Lomba 4 Pilar" subtitle="Apresiasi untuk program binaan yang memberikan dampak sosial terbaik bagi masyarakat." />
+          <MobileBranding title="Lomba Apresiasi Desa Sejahtera Astra" subtitle="Apresiasi untuk program binaan yang memberikan dampak sosial terbaik bagi masyarakat." />
           <MobileFormCard title="Masuk" subtitle="Gunakan akun Admin atau Juri yang telah terdaftar">
             <Form form={form} layout="vertical" onFinish={onFinish} size="large">
               <Form.Item name="email" rules={[{ required: true, message: 'Masukkan email Anda' }, { type: 'email', message: 'Email tidak valid' }]}>
@@ -108,9 +110,9 @@ const Login = ({ adminMode = false }) => {
 
     return (
       <Layout style={{ minHeight: '60vh', background: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ background: '#fff', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 10, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', flexShrink: 0 }}>
+        <div style={{ background: '#fff', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', flexShrink: 0 }}>
           <img src={astraLogo} alt="Astra" style={{ height: 24, objectFit: 'contain' }} />
-          {/* <Text strong style={{ fontSize: 16, color: '#005BAA', letterSpacing: 0.5 }}>ASTRA</Text> */}
+          <img src={satuIndoLogo} alt="Satu Indonesia" style={{ height: 32, objectFit: 'contain' }} />
         </div>
         <MobileBranding title="Desa Sejahtera Astra" subtitle="Apresiasi untuk program binaan yang memberikan dampak sosial terbaik bagi masyarakat." />
         <MobileFormCard title="Masuk sebagai Peserta" subtitle="Gunakan akun Google yang terdaftar untuk mengakses dashboard peserta.">
@@ -135,16 +137,10 @@ const Login = ({ adminMode = false }) => {
       <div style={{ position: 'absolute', right: -80, top: -80, width: 300, height: 300, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)' }} />
       <div style={{ position: 'absolute', right: 40, top: -120, width: 400, height: 400, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.05)' }} />
       <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 400 }}>
-        <img 
-  src={astraLogo} 
-  alt="Astra" 
-  style={{ 
-    height: 48, 
-    display: 'block',      // Mengubah menjadi elemen block
-    margin: '0 auto 32px auto', // Mengetengahkan secara horizontal & memberi jarak bawah 32px
-    filter: 'brightness(0) invert(1)' 
-  }} 
-/>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, marginBottom: 32 }}>
+          <img src={astraLogo} alt="Astra" style={{ height: 48, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+          <img src={satuIndoLogo} alt="Satu Indonesia" style={{ height: 55, objectFit: 'contain' }} />
+        </div>
         <Title level={2} style={{ color: '#fff', fontWeight: 700, fontSize: 32, lineHeight: 1.2, marginBottom: 16 }}>{title}</Title>
         <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 15, lineHeight: 1.7, display: 'block' }}>{subtitle}</Text>
         {stats && (
@@ -181,7 +177,7 @@ const Login = ({ adminMode = false }) => {
     return (
       <Layout style={{ minHeight: '100vh', background: '#f8fafc' }}>
         <Content style={{ display: 'flex', minHeight: '100vh' }}>
-          <DesktopBranding title="Lomba 4 Pilar" subtitle="Apresiasi untuk program binaan yang memberikan dampak sosial terbaik bagi masyarakat." />
+          <DesktopBranding title="Lomba Apresiasi Desa Sejahtera Astra" subtitle="Apresiasi untuk program binaan yang memberikan dampak sosial terbaik bagi masyarakat." />
           <DesktopFormPanel title="Masuk" subtitle="Gunakan akun Admin atau Juri yang telah terdaftar">
             <Form form={form} layout="vertical" onFinish={onFinish} size="large">
               <Form.Item name="email" rules={[{ required: true, message: 'Masukkan email Anda' }, { type: 'email', message: 'Email tidak valid' }]}>
@@ -206,7 +202,7 @@ const Login = ({ adminMode = false }) => {
     <Layout style={{ minHeight: '100vh', background: '#f8fafc' }}>
       <Content style={{ display: 'flex', minHeight: '100vh' }}>
         <DesktopBranding
-          title="Lomba 4 Pilar"
+          title="Lomba Apresiasi Desa Sejahtera Astra"
           subtitle="Apresiasi untuk program binaan yang memberikan dampak sosial terbaik bagi masyarakat."
           // stats={[{ num: '900+', label: 'Desa' }, { num: '4.5M', label: 'Manfaat' }, { num: '34', label: 'Provinsi' }]}
         />

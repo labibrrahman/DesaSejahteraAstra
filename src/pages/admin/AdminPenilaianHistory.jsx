@@ -477,14 +477,14 @@ const AdminPenilaianHistory = () => {
                   </Text>
 
                   {/* Criteria Scores */}
-                  <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+                  <Row gutter={[16, 16]} style={{ marginBottom: 16 }} align="stretch">
                     {[
                       { label: 'Inovasi & Kreativitas', score: selectedRecord.kriteria1, color: '#8b5cf6', bg: '#f5f3ff' },
                       { label: 'Metode Pelaksanaan Program', score: selectedRecord.kriteria2, color: '#0ea5e9', bg: '#f0f9ff' },
                       { label: 'Dampak Program', score: selectedRecord.kriteria3, color: '#10b981', bg: '#ecfdf5' },
                       { label: 'Potensi Keberlanjutan Program', score: selectedRecord.kriteria4, color: '#f59e0b', bg: '#fffbeb' },
                     ].map((item, idx) => (
-                      <Col xs={12} sm={6} key={idx}>
+                      <Col xs={12} sm={6} key={idx} style={{ display: 'flex' }}>
                         <div
                           style={{
                             background: '#fff',
@@ -495,7 +495,7 @@ const AdminPenilaianHistory = () => {
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
-                            height: '100%',
+                            width: '100%',
                           }}
                         >
                           <div
@@ -517,10 +517,12 @@ const AdminPenilaianHistory = () => {
                           <Text style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 8, lineHeight: 1.4, minHeight: 30 }}>
                             {item.label}
                           </Text>
-                          <div style={{ fontSize: 32, fontWeight: 800, color: item.color, fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1 }}>
-                            {item.score}
+                          <div style={{ marginTop: 'auto' }}>
+                            <div style={{ fontSize: 32, fontWeight: 800, color: item.color, fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1 }}>
+                              {item.score}
+                            </div>
+                            <Text style={{ fontSize: 12, color: '#94a3b8' }}>/ 100</Text>
                           </div>
-                          <Text style={{ fontSize: 12, color: '#94a3b8' }}>/ 100</Text>
                           <div style={{ marginTop: 10, height: 4, borderRadius: 2, background: '#f1f5f9', overflow: 'hidden', width: '100%' }}>
                             <div style={{ height: '100%', width: `${item.score}%`, background: item.color, borderRadius: 2, transition: 'width 0.3s' }} />
                           </div>

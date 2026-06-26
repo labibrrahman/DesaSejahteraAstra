@@ -54,7 +54,7 @@ const MasterGrupAstra = () => {
       const list = Array.isArray(result) ? result : [];
       setData(list.map(mapFromApi));
     } catch (error) {
-      message.error('Gagal memuat data Binaan');
+      message.error('Gagal memuat data Perusahaan/Yayasan Pembina');
       console.error('Fetch astra groups error:', error);
     } finally {
       setLoading(false);
@@ -161,8 +161,8 @@ const MasterGrupAstra = () => {
     <div>
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <Title level={3} style={{ margin: 0 }}>Master Binaan</Title>
-          <Text type="secondary">Kelola data Binaan</Text>
+          <Title level={3} style={{ margin: 0 }}>Master Perusahaan/Yayasan Pembina</Title>
+          <Text type="secondary">Kelola data Perusahaan/Yayasan Pembina</Text>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
           Tambah Grup
@@ -192,7 +192,7 @@ const MasterGrupAstra = () => {
       </Card>
 
       <Modal
-        title={editingRecord ? 'Edit Binaan' : 'Tambah Binaan'}
+        title={editingRecord ? 'Edit Perusahaan/Yayasan Pembina' : 'Tambah Perusahaan/Yayasan Pembina'}
         open={modalVisible}
         onOk={handleOk}
         confirmLoading={submitting}
@@ -208,7 +208,7 @@ const MasterGrupAstra = () => {
             label="Nama Grup"
             rules={[{ required: true, message: 'Masukkan nama grup' }]}
           >
-            <Input placeholder="Masukkan nama Binaan" />
+            <Input placeholder="Masukkan nama Perusahaan/Yayasan Pembina" />
           </Form.Item>
         </Form>
       </Modal>

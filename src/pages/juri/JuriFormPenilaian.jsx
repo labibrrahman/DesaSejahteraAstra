@@ -9,8 +9,9 @@ const { TextArea } = Input;
 
 const KRITERIA = [
   { key: 'criteria1', label: 'Inovasi & Kreativitas', desc: 'Penilaian terhadap tingkat inovasi dan kreativitas dalam program yang diajukan.', icon: <BulbOutlined />, color: '#8b5cf6', bg: '#f5f3ff' },
-  { key: 'criteria2', label: 'Dampak Program', desc: 'Penilaian terhadap dampak nyata program bagi masyarakat.', icon: <ThunderboltOutlined />, color: '#10b981', bg: '#ecfdf5' },
-  { key: 'criteria3', label: 'Potensi Keberlanjutan Program', desc: 'Penilaian terhadap potensi keberlanjutan dan pengembangan program ke depan.', icon: <ToolOutlined />, color: '#f59e0b', bg: '#fffbeb' },
+  { key: 'criteria2', label: 'Metode Pelaksanaan Program', desc: 'Penilaian terhadap metode dan mekanisme pelaksanaan program.', icon: <CheckCircleFilled />, color: '#0ea5e9', bg: '#f0f9ff' },
+  { key: 'criteria3', label: 'Dampak Program', desc: 'Penilaian terhadap dampak nyata program bagi masyarakat.', icon: <ThunderboltOutlined />, color: '#10b981', bg: '#ecfdf5' },
+  { key: 'criteria4', label: 'Potensi Keberlanjutan Program', desc: 'Penilaian terhadap potensi keberlanjutan dan pengembangan program ke depan.', icon: <ToolOutlined />, color: '#f59e0b', bg: '#fffbeb' },
 ];
 
 const mapFromApi = (i) => ({
@@ -19,6 +20,9 @@ const mapFromApi = (i) => ({
   wilayah: [i.province?.name, i.city?.name, i.district?.name, i.villageRegion?.name].filter(Boolean).join(' - ') || '-',
   grup_astra: i.astraGroupCustom || i.astraGroup?.name || '-', durasi_program: i.programDuration || '-', latar_belakang: i.background || '-', dampak_program: i.programImpact || '-',
   rencana_pengembangan: i.developmentPlan || '-',
+  metode_pelaksanaan: i.implementationMethod || '-',
+  keberlanjutan_program: i.sustainabilityPlan || '-',
+  evaluasi_program: i.programEvaluation || '-',
   social_media: i.socialMedia || '',
   foto: Array.isArray(i.photos) ? i.photos : [],
   jenis_dsa: i.dsaType || '-', phone_number: i.phoneNumber || '-',
@@ -55,15 +59,15 @@ const JuriFormPenilaian = () => {
   useEffect(() => { fetchDetail(); }, [fetchDetail]);
 
   const onValuesChange = (_, v) => {
-    const c1 = v.criteria1 || 0, c2 = v.criteria2 || 0, c3 = v.criteria3 || 0;
-    const hasAny = v.criteria1 != null || v.criteria2 != null || v.criteria3 != null;
-    setTotalScore(hasAny ? Math.round((c1 + c2 + c3) / 3) : 0);
+    const c1 = v.criteria1 || 0, c2 = v.criteria2 || 0, c3 = v.criteria3 || 0, c4 = v.criteria4 || 0;
+    const hasAny = v.criteria1 != null || v.criteria2 != null || v.criteria3 != null || v.criteria4 != null;
+    setTotalScore(hasAny ? Math.round((c1 + c2 + c3 + c4) / 4) : 0);
   };
 
   const handleSubmit = async () => {
     try {
       const v = await form.validateFields(); setSubmitting(true);
-      await adminService.createAssessment({ registrationId: id, criteria1: v.criteria1, criteria2: v.criteria2, criteria3: v.criteria3, notes: v.notes || undefined });
+      await adminService.createAssessment({ registrationId: id, criteria1: v.criteria1, criteria2: v.criteria2, criteria3: v.criteria3, criteria4: v.criteria4, notes: v.notes || undefined });
       message.success('Penilaian berhasil disubmit!'); setSubmitted(true);
     } catch (e) { if (e.response) message.error(e.response.data?.message || 'Gagal menyimpan'); }
     finally { setSubmitting(false); }
@@ -112,6 +116,15 @@ const JuriFormPenilaian = () => {
             <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #8b5cf6' }}><Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>{peserta.latar_belakang}</Paragraph></div></div>
           </div>
 
+          {/* Metode Pelaksanaan Program */}
+          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 15, overflow: 'hidden' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#f0f9ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CheckCircleFilled style={{ color: '#0ea5e9', fontSize: 14 }} /></div>
+              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Metode Pelaksanaan Program</Text>
+            </div>
+            <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #0ea5e9' }}><Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>{peserta.metode_pelaksanaan}</Paragraph></div></div>
+          </div>
+
           {/* Dampak */}
           <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0',marginBottom: 15, overflow: 'hidden' }}>
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -125,9 +138,27 @@ const JuriFormPenilaian = () => {
           <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0',marginBottom: 15, overflow: 'hidden' }}>
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ width: 32, height: 32, borderRadius: 8, background: '#f5f3ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ToolOutlined style={{ color: '#722ed1', fontSize: 14 }} /></div>
-              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Rencana Pengembangan</Text>
+              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Rencana dan Potensi Pengembangan</Text>
             </div>
             <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #722ed1' }}><Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>{peserta.rencana_pengembangan}</Paragraph></div></div>
+          </div>
+
+          {/* Keberlanjutan Program */}
+          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 15, overflow: 'hidden' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CheckCircleFilled style={{ color: '#10b981', fontSize: 14 }} /></div>
+              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Keberlanjutan Program</Text>
+            </div>
+            <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #10b981' }}><Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>{peserta.keberlanjutan_program}</Paragraph></div></div>
+          </div>
+
+          {/* Evaluasi Program */}
+          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 15, overflow: 'hidden' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#fffbeb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CheckCircleFilled style={{ color: '#f59e0b', fontSize: 14 }} /></div>
+              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Evaluasi Program</Text>
+            </div>
+            <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #f59e0b' }}><Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>{peserta.evaluasi_program}</Paragraph></div></div>
           </div>
 
           {/* Foto Dokumentasi */}
@@ -157,16 +188,16 @@ const JuriFormPenilaian = () => {
             </div>
             <div style={{ padding: 20 }}>
               {[
-                { l: 'Nama DSA (Desa Sejahtera Astra)', v: peserta.nama_desa },
+                { l: 'Nama DSA/Nama Desa', v: peserta.nama_desa },
                 { l: 'Jenis DSA', v: peserta.jenis_dsa },
-                { l: peserta.jenis_dsa === 'Individu' ? 'Nama Peserta' : 'Nama Penanggung Jawab', v: peserta.nama_kelompok },
-                { l: 'Nomor HP (WhatsApp)', v: peserta.phone_number },
-                { l: 'Nama Kontak Darurat', v: peserta.nama_kontak_darurat },
-                { l: 'Nomor HP Kontak Darurat', v: peserta.no_hp_kontak_darurat },
+                { l: peserta.jenis_dsa === 'Individu' ? 'Nama Ketua Kelompok' : 'Nama Ketua Kelompok', v: peserta.nama_kelompok },
+                { l: 'Nomor HP Ketua Kelompok', v: peserta.phone_number },
+                { l: 'Nama Kontak Lainnya', v: peserta.nama_kontak_darurat },
+                { l: 'Nomor Kontak Lainnya', v: peserta.no_hp_kontak_darurat },
                 { l: 'Pilar', v: peserta.pilar, tag: true },
                 { l: 'Kategori', v: peserta.kategori },
                 { l: 'Wilayah', v: peserta.wilayah },
-                { l: 'Binaan', v: peserta.grup_astra },
+                { l: 'Perusahaan/Yayasan Pembina', v: peserta.grup_astra },
                 { l: 'Durasi Program', v: peserta.durasi_program },
                 ...(peserta.social_media ? [{ l: 'Media Sosial', v: peserta.social_media }] : []),
               ].map((item, idx, arr) => (

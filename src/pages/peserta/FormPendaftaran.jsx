@@ -38,7 +38,7 @@ const STEP_TITLES = [
 
 const STEP_SUBTITLES = [
   'Silakan pilih pilar program yang akan didaftarkan.',
-  'Lengkapi data identitas desa dan penanggung jawab program.',
+  'Lengkapi data identitas desa dan Ketua Kelompok program.',
   'Jelaskan detail program, latar belakang, dan dampaknya.',
   'Periksa kembali data yang telah Anda isi sebelum mengirimkan pendaftaran.',
 ];
@@ -367,6 +367,9 @@ const FormPendaftaran = () => {
               dampak_program: reg.programImpact || '',
               rencana_pengembangan: reg.developmentPlan || '',
               durasi_program: reg.programDuration || '',
+              implementation_method: reg.implementationMethod || '',
+              sustainability_plan: reg.sustainabilityPlan || '',
+              program_evaluation: reg.programEvaluation || '',
               grup_astra_id: reg.astraGroupCustom ? 'others' : (reg.astraGroup?.id || null),
               binaan_custom: reg.astraGroupCustom || '',
               jenis_dsa: reg.dsaType ? reg.dsaType.toLowerCase() : null,
@@ -427,9 +430,9 @@ const FormPendaftaran = () => {
 
       case 2: {
         const missing = [];
-        if (!formData.nama_desa) missing.push('Nama DSA');
+        if (!formData.nama_desa) missing.push('Nama DSA/Nama Desa');
         if (!formData.jenis_dsa) missing.push('Jenis DSA');
-        if (!formData.nama_kelompok) missing.push(formData.jenis_dsa === 'individu' ? 'Nama Peserta' : 'Nama Penanggung Jawab');
+        if (!formData.nama_kelompok) missing.push(formData.jenis_dsa === 'individu' ? 'Nama Ketua Kelompok' : 'Nama Ketua Kelompok');
         if (!formData.phone_number) {
           missing.push('Nomor HP');
         } else if (formData.phone_number.length < 8) {
@@ -437,18 +440,18 @@ const FormPendaftaran = () => {
           return false;
         }
         if (!formData.nama_kontak_darurat) {
-          missing.push('Nama Kontak Darurat');
+          missing.push('Nama Kontak Lainnya');
         } else if (formData.nama_kontak_darurat === formData.nama_kelompok) {
-          message.warning('Nama Kontak Darurat tidak boleh sama dengan Nama Peserta/Penanggung Jawab');
+          message.warning('Nama Kontak Lainnya tidak boleh sama dengan Nama Nama Ketua Kelompok');
           return false;
         }
         if (!formData.no_hp_kontak_darurat) {
-          missing.push('Nomor HP Kontak Darurat');
+          missing.push('Nomor HP Kontak Lainnya');
         } else if (formData.no_hp_kontak_darurat.length < 8) {
-          message.warning('Nomor HP Kontak Darurat minimal 8 digit');
+          message.warning('Nomor Kontak Lainnya minimal 8 digit');
           return false;
         } else if (formData.no_hp_kontak_darurat === formData.phone_number) {
-          message.warning('Nomor HP Kontak Darurat tidak boleh sama dengan Nomor HP');
+          message.warning('Nomor Kontak Lainnya tidak boleh sama dengan Nomor HP');
           return false;
         }
         if (!formData.alamat) missing.push('Alamat Lengkap');
@@ -469,6 +472,10 @@ const FormPendaftaran = () => {
         if (!formData.latar_belakang) missing.push('Latar Belakang');
         if (!formData.dampak_program) missing.push('Dampak Yang Sudah Terealisasi');
         if (!formData.rencana_pengembangan) missing.push('Rencana Pengembangan');
+        if (photos.length === 0) missing.push('Foto Dokumentasi (minimal 1 foto)');
+        if (!formData.implementation_method) missing.push('Metode Pelaksanaan Program');
+        if (!formData.sustainability_plan) missing.push('Keberlanjutan Program');
+        if (!formData.program_evaluation) missing.push('Evaluasi Program');
         if (missing.length > 0) {
           message.warning(`Harap isi: ${missing.join(', ')}`);
           return false;
@@ -534,6 +541,9 @@ const FormPendaftaran = () => {
         programImpact: formData.dampak_program,
         programDuration: formData.durasi_program,
         developmentPlan: formData.rencana_pengembangan,
+        implementationMethod: formData.implementation_method || '',
+        sustainabilityPlan: formData.sustainability_plan || '',
+        programEvaluation: formData.program_evaluation || '',
       };
       if (formData.jenis_dsa) payload.dsaType = formData.jenis_dsa.charAt(0).toUpperCase() + formData.jenis_dsa.slice(1);
       if (formData.nama_ketua) payload.leaderName = formData.nama_ketua;
@@ -626,7 +636,7 @@ const FormPendaftaran = () => {
               Konfirmasi Akses
             </Title>
             <Text style={{ fontSize: 14, color: '#64748b', display: 'block', marginBottom: 28, lineHeight: 1.7 }}>
-              Apakah Anda merupakan bagian dari <Text strong style={{ color: '#1e293b' }}>Astra Grup</Text>?
+              Silahkan dipilih apakah anda merupakan Binaan <Text strong style={{ color: '#1e293b' }}>Grup Astra </Text> atau tidak?
             </Text>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
               <Button
@@ -862,17 +872,17 @@ const FormPendaftaran = () => {
         <Row gutter={[24, 0]}>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={labelStyle}>Nama DSA (Desa Sejahtera Astra) *</Text>
+              <Text style={labelStyle}>Nama DSA/Nama Desa *</Text>
               <Input placeholder="Contoh: Desa Suka Maju" style={inputStyle} value={formData.nama_desa} onChange={e => updateField('nama_desa', e.target.value)} />
             </div>
           </Col>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
               <Text style={labelStyle}>
-                {formData.jenis_dsa === 'individu' ? 'Nama Peserta *' : 'Nama Penanggung Jawab *'}
+                {formData.jenis_dsa === 'individu' ? 'Nama Ketua Kelompok *' : 'Nama Ketua Kelompok *'}
               </Text>
               <Input
-                placeholder={formData.jenis_dsa === 'individu' ? 'Otomatis dari akun login' : 'Masukan Nama Penanggung Jawab'}
+                placeholder={formData.jenis_dsa === 'individu' ? 'Otomatis dari akun login' : 'Nama Ketua Kelompok'}
                 style={inputStyle}
                 value={formData.nama_kelompok}
                 onChange={e => handleNameChange('nama_kelompok', e)}
@@ -885,15 +895,15 @@ const FormPendaftaran = () => {
         <Row gutter={[24, 0]}>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={labelStyle}>Nomor HP (WhatsApp) *</Text>
+              <Text style={labelStyle}>Nomor HP Ketua Kelompok *</Text>
               <Input placeholder="Contoh: 08123456789" style={inputStyle} value={formData.phone_number} onChange={handlePhoneChange} maxLength={15} inputMode="numeric" />
             </div>
           </Col>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={labelStyle}>Binaan (Opsional)</Text>
+              <Text style={labelStyle}>Perusahaan/Yayasan Pembina (Opsional)</Text>
               <Select
-                placeholder="Pilih Binaan..."
+                placeholder="Pilih Perusahaan/Yayasan Pembina..."
                 style={{ width: '100%' }}
                 size="large"
                 allowClear
@@ -909,7 +919,7 @@ const FormPendaftaran = () => {
                 <Option value="others" label="Lainnya..."><span style={{ fontSize:13, fontWeight: 600 }}>Lainnya...</span></Option>
               </Select>
               {formData.grup_astra_id === 'others' && (
-                <Input placeholder="Masukkan nama binaan lainnya" style={{ ...inputStyle, marginTop: 8 }} value={formData.binaan_custom || ''} onChange={e => updateField('binaan_custom', e.target.value)} />
+                <Input placeholder="Masukkan nama Perusahaan/Yayasan Pembina lainnya" style={{ ...inputStyle, marginTop: 8 }} value={formData.binaan_custom || ''} onChange={e => updateField('binaan_custom', e.target.value)} />
               )}
             </div>
           </Col>
@@ -918,13 +928,13 @@ const FormPendaftaran = () => {
         <Row gutter={[24, 0]}>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={labelStyle}>Nama Kontak Darurat *</Text>
+              <Text style={labelStyle}>Nama Kontak Lainnya *</Text>
               <Input placeholder="Contoh: Siti Aminah" style={inputStyle} value={formData.nama_kontak_darurat} onChange={e => handleNameChange('nama_kontak_darurat', e)} />
             </div>
           </Col>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={labelStyle}>Nomor HP Kontak Darurat *</Text>
+              <Text style={labelStyle}>Nomor Kontak Lainnya *</Text>
               <Input placeholder="Contoh: 08123456789" style={inputStyle} value={formData.no_hp_kontak_darurat} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); updateField('no_hp_kontak_darurat', v); }} maxLength={15} inputMode="numeric" />
             </div>
           </Col>
@@ -1155,22 +1165,40 @@ const FormPendaftaran = () => {
       </div>
 
       <div style={fieldWrapper}>
+        <Text style={labelStyle}>Metode Pelaksanaan Program *</Text>
+        <TextArea rows={5} placeholder="Jelaskan metode pelaksanaan program secara detail" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.implementation_method || ''} onChange={e => updateField('implementation_method', e.target.value)} />
+        <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan bagaimana program ini dilaksanakan</Text>
+      </div>
+
+      <div style={fieldWrapper}>
         <Text style={labelStyle}>Dampak Yang Sudah Terealisasi *</Text>
         <TextArea rows={5} placeholder="Jelaskan Dampak Yang Sudah Terealisasi" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.dampak_program} onChange={e => updateField('dampak_program', e.target.value)} />
         <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan target dampak yang ingin dicapai</Text>
       </div>
 
       <div style={fieldWrapper}>
-        <Text style={labelStyle}>Rencana dan Potensi Untuk Keberlanjutan Program *</Text>
-        <TextArea rows={5} placeholder="Jelaskan Rencana dan Potensi Untuk Keberlanjutan Program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.rencana_pengembangan} onChange={e => updateField('rencana_pengembangan', e.target.value)} />
+        <Text style={labelStyle}>Rencana dan Potensi Pengembangan *</Text>
+        <TextArea rows={5} placeholder="Jelaskan Rencana dan Potensi program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.rencana_pengembangan} onChange={e => updateField('rencana_pengembangan', e.target.value)} />
         <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan rencana pengembangan program ke depan</Text>
+      </div>
+
+      <div style={fieldWrapper}>
+        <Text style={labelStyle}>Keberlanjutan Program *</Text>
+        <TextArea rows={5} placeholder="Jelaskan rencana keberlanjutan program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.sustainability_plan || ''} onChange={e => updateField('sustainability_plan', e.target.value)} />
+        <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan bagaimana program ini可持续 di masa depan</Text>
+      </div>
+
+      <div style={fieldWrapper}>
+        <Text style={labelStyle}>Evaluasi Program *</Text>
+        <TextArea rows={5} placeholder="Jelaskan mekanisme evaluasi program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.program_evaluation || ''} onChange={e => updateField('program_evaluation', e.target.value)} />
+        <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan bagaimana program ini dievaluasi</Text>
       </div>
 
       {/* Upload Foto Dokumentasi */}
       <div style={{ marginTop: 8 }}>
-        <Text style={labelStyle}>Foto Dokumentasi (Opsional)</Text>
+        <Text style={labelStyle}>Foto Dokumentasi *</Text>
         <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 12 }}>
-          Unggah foto kegiatan program (maks. 4 foto, format JPEG/PNG/WEBP, maks. 1 MB per foto)
+          Unggah foto kegiatan program (wajib minimal 1 foto, maks. 4 foto, format JPEG/PNG/WEBP, maks. 1 MB per foto)
         </Text>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
@@ -1275,13 +1303,13 @@ const FormPendaftaran = () => {
 
       <ReviewCard title="Data Peserta" icon={<MedicineBoxOutlined style={{ color: '#1890ff', fontSize: 16 }} />}>
         <Row gutter={[16, 12]}>
-          <ReviewField label="Nama DSA (Desa Sejahtera Astra)" value={formData.nama_desa} />
+          <ReviewField label="Nama DSA/Nama Desa" value={formData.nama_desa} />
           <ReviewField label="Jenis DSA" value={formData.jenis_dsa === 'kelompok' ? 'Kelompok' : formData.jenis_dsa === 'individu' ? 'Individu' : '-'} />
-          <ReviewField label={formData.jenis_dsa === 'individu' ? 'Nama Peserta' : 'Nama Penanggung Jawab'} value={formData.nama_kelompok} />
-          <ReviewField label="Nomor HP (WhatsApp)" value={formData.phone_number} />
-          <ReviewField label="Binaan" value={grupLabel || '-'} span={24} />
-          <ReviewField label="Nama Kontak Darurat" value={formData.nama_kontak_darurat} />
-          <ReviewField label="Nomor HP Kontak Darurat" value={formData.no_hp_kontak_darurat} />
+          <ReviewField label={formData.jenis_dsa === 'individu' ? 'Nama Peserta' : 'Nama Ketua Kelompok'} value={formData.nama_kelompok} />
+          <ReviewField label="Nomor HP Ketua Kelompok" value={formData.phone_number} />
+          <ReviewField label="Perusahaan/Yayasan Pembina" value={grupLabel || '-'} span={24} />
+          <ReviewField label="Nama Kontak Lainnya" value={formData.nama_kontak_darurat} />
+          <ReviewField label="Nomor HP Kontak Lainnya" value={formData.no_hp_kontak_darurat} />
           <ReviewField label="Alamat Lengkap" value={formData.alamat} span={24} />
           <ReviewField label="Provinsi" value={formData.provinceName} />
           <ReviewField label="Kabupaten / Kota" value={formData.cityName} />
@@ -1296,6 +1324,9 @@ const FormPendaftaran = () => {
           <ReviewField label="Latar Belakang / Rasionalisasi" value={formData.latar_belakang} span={24} />
           <ReviewField label="Dampak Yang Sudah Terealisasi" value={formData.dampak_program} span={24} />
           <ReviewField label="Rencana Pengembangan" value={formData.rencana_pengembangan} span={24} />
+          <ReviewField label="Metode Pelaksanaan Program" value={formData.implementation_method} span={24} />
+          <ReviewField label="Keberlanjutan Program" value={formData.sustainability_plan} span={24} />
+          <ReviewField label="Evaluasi Program" value={formData.program_evaluation} span={24} />
           <ReviewField label="Media Sosial" value={formData.social_media || '-'} span={24} />
         </Row>
         {photos.length > 0 && (

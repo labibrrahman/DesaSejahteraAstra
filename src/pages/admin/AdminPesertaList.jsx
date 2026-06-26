@@ -85,6 +85,9 @@ const mapFromApi = (item) => ({
   latar_belakang: item.background || '-',
   dampak_program: item.programImpact || '-',
   rencana_pengembangan: item.developmentPlan || '-',
+  metode_pelaksanaan: item.implementationMethod || '-',
+  keberlanjutan_program: item.sustainabilityPlan || '-',
+  evaluasi_program: item.programEvaluation || '-',
   social_media: item.socialMedia || '-',
   foto: Array.isArray(item.photos) ? item.photos : [],
   kecamatan: item.district?.name || '-',
@@ -362,6 +365,9 @@ const AdminPesertaList = () => {
           background: detail.background,
           programImpact: detail.programImpact,
           developmentPlan: detail.developmentPlan,
+          implementationMethod: detail.implementationMethod || '',
+          sustainabilityPlan: detail.sustainabilityPlan || '',
+          programEvaluation: detail.programEvaluation || '',
           programDuration: detail.programDuration,
           emergencyContactName: detail.emergencyContactName,
           emergencyContactPhone: detail.emergencyContactPhone,
@@ -402,6 +408,9 @@ const AdminPesertaList = () => {
         background: values.background,
         programImpact: values.programImpact,
         developmentPlan: values.developmentPlan,
+        implementationMethod: values.implementationMethod || '',
+        sustainabilityPlan: values.sustainabilityPlan || '',
+        programEvaluation: values.programEvaluation || '',
         programDuration: values.programDuration,
         emergencyContactName: values.emergencyContactName,
         emergencyContactPhone: values.emergencyContactPhone,
@@ -527,7 +536,7 @@ const AdminPesertaList = () => {
 
   const columns = [
     {
-      title: 'Nama DSA',
+      title: 'Nama DSA/Nama Desa',
       onHeaderCell: () => ({
         style: { whiteSpace: 'nowrap' },
       }),
@@ -540,7 +549,7 @@ const AdminPesertaList = () => {
       ),
     },
     { 
-      title: 'Nama Peserta/Penanggung Jawab', 
+      title: 'Nama Ketua Kelompok', 
       onHeaderCell: () => ({
         style: { whiteSpace: 'nowrap' },
       }),
@@ -625,7 +634,7 @@ const AdminPesertaList = () => {
       <Card style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
           <Input
-            placeholder="Cari Nama DSA atau Nama Peserta/Penanggung Jawab..."
+            placeholder="Cari Nama DSA atau Nama Ketua Kelompok..."
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
@@ -757,7 +766,7 @@ const AdminPesertaList = () => {
                       <Text strong style={{ fontSize: 13 }}>{selectedPeserta.kategori}</Text>
                     </Col>
                     <Col xs={12} sm={8}>
-                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Binaan</Text>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Perusahaan/Yayasan Pembina</Text>
                       <Text strong style={{ fontSize: 13 }}>{selectedPeserta.grup_astra}</Text>
                     </Col>
                     <Col xs={12} sm={8}>
@@ -778,15 +787,15 @@ const AdminPesertaList = () => {
                       <Text strong style={{ fontSize: 13 }}>{selectedPeserta.jenis_dsa}</Text>
                     </Col>
                     <Col xs={12} sm={8}>
-                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nomor HP</Text>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nomor HP Ketua Kelompok</Text>
                       <Text strong style={{ fontSize: 13 }}>{selectedPeserta.phone_number}</Text>
                     </Col>
                     <Col xs={12} sm={8}>
-                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nama Kontak Darurat</Text>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nama Kontak Lainnya</Text>
                       <Text strong style={{ fontSize: 13 }}>{selectedPeserta.nama_kontak_darurat}</Text>
                     </Col>
                     <Col xs={12} sm={8}>
-                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>No HP Kontak Darurat</Text>
+                      <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>No Kontak Lainnya</Text>
                       <Text strong style={{ fontSize: 13 }}>{selectedPeserta.no_hp_kontak_darurat}</Text>
                     </Col>
                     <Col xs={12} sm={8}>
@@ -853,6 +862,12 @@ const AdminPesertaList = () => {
                       <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.latar_belakang}</Text>
                     </div>
                   </div>
+                  <div style={{ marginTop: 12 }}>
+                    <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Metode Pelaksanaan Program</Text>
+                    <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #0ea5e9' }}>
+                      <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.metode_pelaksanaan || '-'}</Text>
+                    </div>
+                  </div>
                   <div>
                     <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Dampak Yang Sudah Terealisasi</Text>
                     <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #52c41a' }}>
@@ -860,9 +875,21 @@ const AdminPesertaList = () => {
                     </div>
                   </div>
                   <div style={{ marginTop: 12 }}>
-                    <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Rencana Pengembangan</Text>
+                    <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Rencana dan Potensi Pengembangan</Text>
                     <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #722ed1' }}>
                       <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.rencana_pengembangan}</Text>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: 12 }}>
+                    <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Keberlanjutan Program</Text>
+                    <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #10b981' }}>
+                      <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.keberlanjutan_program || '-'}</Text>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: 12 }}>
+                    <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Evaluasi Program</Text>
+                    <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #f59e0b' }}>
+                      <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.evaluasi_program || '-'}</Text>
                     </div>
                   </div>
 
@@ -942,26 +969,26 @@ const AdminPesertaList = () => {
               {/* Data DSA */}
               <Row gutter={16}>
                 <Col span={12}>
-                  <Form.Item name="villageName" label="Nama DSA (Desa Sejahtera Astra)" rules={[{ required: true, message: 'Wajib diisi' }]}>
+                  <Form.Item name="villageName" label="Nama DSA/Nama Desa" rules={[{ required: true, message: 'Wajib diisi' }]}>
                     <Input placeholder="Contoh: Desa Suka Maju" />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item name="groupName" label="Nama Peserta / Penanggung Jawab">
-                    <Input placeholder="Masukan Nama Penanggung Jawab" />
+                  <Form.Item name="groupName" label="Nama Ketua Kelompok">
+                    <Input placeholder="Masukan Nama Ketua Kelompok" />
                   </Form.Item>
                 </Col>
               </Row>
 
               <Row gutter={16}>
                 <Col span={12}>
-                  <Form.Item name="phoneNumber" label="Nomor HP (WhatsApp)">
+                  <Form.Item name="phoneNumber" label="Nomor HP Ketua Kelompok">
                     <Input placeholder="Contoh: 08123456789" maxLength={15} />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item name="astraGroupId" label="Binaan">
-                    <Select placeholder="Pilih Binaan" allowClear>
+                  <Form.Item name="astraGroupId" label="Perusahaan/Yayasan Pembina">
+                    <Select placeholder="Pilih Perusahaan/Yayasan Pembina" allowClear>
                       {astraGroupOptions.map(g => (
                         <Option key={g.id} value={g.id}>{g.name}</Option>
                       ))}
@@ -974,19 +1001,19 @@ const AdminPesertaList = () => {
               <Form.Item noStyle shouldUpdate={(prev, cur) => prev.astraGroupId !== cur.astraGroupId}>
                 {({ getFieldValue }) => getFieldValue('astraGroupId') === 'others' && (
                   <Form.Item name="astraGroupCustom" label="Nama Binaan Lainnya">
-                    <Input placeholder="Masukkan nama binaan lainnya" />
+                    <Input placeholder="Masukkan nama Perusahaan/Yayasan Pembina lainnya" />
                   </Form.Item>
                 )}
               </Form.Item>
 
               <Row gutter={16}>
                 <Col span={12}>
-                  <Form.Item name="emergencyContactName" label="Nama Kontak Darurat">
+                  <Form.Item name="emergencyContactName" label="Nama Kontak Lainnya">
                     <Input placeholder="Contoh: Siti Aminah" />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item name="emergencyContactPhone" label="Nomor HP Kontak Darurat">
+                  <Form.Item name="emergencyContactPhone" label="Nomor Kontak Lainnya">
                     <Input placeholder="Contoh: 08123456789" maxLength={15} />
                   </Form.Item>
                 </Col>
@@ -1100,6 +1127,18 @@ const AdminPesertaList = () => {
 
               <Form.Item name="developmentPlan" label="Rencana dan Potensi Untuk Keberlanjutan Program">
                 <Input.TextArea rows={5} placeholder="Jelaskan Rencana dan Potensi Untuk Keberlanjutan Program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
+              </Form.Item>
+
+              <Form.Item name="implementationMethod" label="Metode Pelaksanaan Program">
+                <Input.TextArea rows={5} placeholder="Jelaskan metode pelaksanaan program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
+              </Form.Item>
+
+              <Form.Item name="sustainabilityPlan" label="Keberlanjutan Program">
+                <Input.TextArea rows={5} placeholder="Jelaskan rencana keberlanjutan program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
+              </Form.Item>
+
+              <Form.Item name="programEvaluation" label="Evaluasi Program">
+                <Input.TextArea rows={5} placeholder="Jelaskan mekanisme evaluasi program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
               </Form.Item>
 
               <Form.Item name="socialMedia" label="Media Sosial">

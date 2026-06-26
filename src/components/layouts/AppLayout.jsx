@@ -41,7 +41,7 @@ const MENU_CONFIG = {
         { key: '/admin/master/kategori', icon: <TagsOutlined />, label: 'Kategori' },
         { key: '/admin/master/user', icon: <UserOutlined />, label: 'User (Admin/Juri)' },
         { key: '/admin/master/wilayah', icon: <EnvironmentOutlined />, label: 'Wilayah' },
-        { key: '/admin/master/grup-astra', icon: <ShopOutlined />, label: 'Binaan' },
+        { key: '/admin/master/grup-astra', icon: <ShopOutlined />, label: 'Perusahaan/Yayasan Pembina' },
       ],
     },
   ],

@@ -41,6 +41,7 @@ const mapFromApi = (item) => ({
   kriteria1: item.criteria1 || 0,
   kriteria2: item.criteria2 || 0,
   kriteria3: item.criteria3 || 0,
+  kriteria4: item.criteria4 || 0,
   total: item.totalScore || 0,
   tanggal_nilai: item.createdAt
     ? new Date(item.createdAt).toLocaleDateString('id-ID')
@@ -182,7 +183,7 @@ const AdminPenilaianHistory = () => {
 
   const columns = [
     {
-      title: 'Nama DSA',
+      title: 'Nama DSA/Nama Desa',
       onHeaderCell: () => ({
         style: { whiteSpace: 'nowrap' },
       }),
@@ -195,7 +196,7 @@ const AdminPenilaianHistory = () => {
       ),
     },
     { 
-      title: 'Nama Peserta/Penanggung Jawab', 
+      title: 'NNama Ketua Kelompok', 
       onHeaderCell: () => ({
         style: { whiteSpace: 'nowrap' },
       }),
@@ -253,6 +254,17 @@ const AdminPenilaianHistory = () => {
       }),
       dataIndex: 'kriteria3',
       key: 'kriteria3',
+      render: (score) => (
+        <Text style={{ color: getScoreColor(score), fontWeight: 'bold' }}>{score}</Text>
+      ),
+    },
+    {
+      title: 'Kriteria 4',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
+      dataIndex: 'kriteria4',
+      key: 'kriteria4',
       render: (score) => (
         <Text style={{ color: getScoreColor(score), fontWeight: 'bold' }}>{score}</Text>
       ),
@@ -344,7 +356,7 @@ const AdminPenilaianHistory = () => {
       <Card style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
           <Input
-            placeholder="Cari nama DSA..."
+            placeholder="Cari Nama DSA/Nama Desa..."
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
@@ -468,10 +480,11 @@ const AdminPenilaianHistory = () => {
                   <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
                     {[
                       { label: 'Inovasi & Kreativitas', score: selectedRecord.kriteria1, color: '#8b5cf6', bg: '#f5f3ff' },
-                      { label: 'Dampak Program', score: selectedRecord.kriteria2, color: '#10b981', bg: '#ecfdf5' },
-                      { label: 'Potensi Keberlanjutan', score: selectedRecord.kriteria3, color: '#f59e0b', bg: '#fffbeb' },
+                      { label: 'Metode Pelaksanaan Program', score: selectedRecord.kriteria2, color: '#0ea5e9', bg: '#f0f9ff' },
+                      { label: 'Dampak Program', score: selectedRecord.kriteria3, color: '#10b981', bg: '#ecfdf5' },
+                      { label: 'Potensi Keberlanjutan Program', score: selectedRecord.kriteria4, color: '#f59e0b', bg: '#fffbeb' },
                     ].map((item, idx) => (
-                      <Col xs={24} sm={8} key={idx}>
+                      <Col xs={12} sm={6} key={idx}>
                         <div
                           style={{
                             background: '#fff',

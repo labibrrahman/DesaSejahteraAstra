@@ -110,7 +110,7 @@ const AdminDashboard = () => {
   }, [fetchDashboard]);
 
   const columns = [
-    { title: 'Nama DSA', dataIndex: 'nama_desa', key: 'nama_desa' },
+    { title: 'Nama DSA/Nama Desa', dataIndex: 'nama_desa', key: 'nama_desa' },
     { title: 'Pilar', dataIndex: 'pilar', key: 'pilar' },
     { title: 'Kategori', dataIndex: 'kategori', key: 'kategori' },
     {

@@ -61,6 +61,9 @@ const mapFromApi = (item) => ({
   latar_belakang: item.background || '-',
   dampak_program: item.programImpact || '-',
   rencana_pengembangan: item.developmentPlan || '-',
+  metode_pelaksanaan: item.implementationMethod || '-',
+  keberlanjutan_program: item.sustainabilityPlan || '-',
+  evaluasi_program: item.programEvaluation || '-',
   social_media: item.socialMedia || '-',
   foto: Array.isArray(item.photos) ? item.photos : [],
   status: item.status,
@@ -135,7 +138,7 @@ const JuriPesertaList = () => {
 
   const columns = [
     {
-      title: 'Nama DSA',
+      title: 'Nama DSA/Nama Desa',
       dataIndex: 'nama_desa',
       key: 'nama_desa',
       render: (text, record) => (
@@ -144,7 +147,7 @@ const JuriPesertaList = () => {
         </Button>
       ),
     },
-    { title: 'Nama Peserta/Penanggung Jawab', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
+    { title: 'Nama Ketua Kelompok', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
     { title: 'Pilar', dataIndex: 'pilar', key: 'pilar' },
     { title: 'Kategori', dataIndex: 'kategori', key: 'kategori' },
     { title: 'Wilayah', dataIndex: 'wilayah', key: 'wilayah' },
@@ -186,7 +189,7 @@ const JuriPesertaList = () => {
       <Card style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
           <Input
-            placeholder="Cari Nama DSA atau Nama Peserta/Penanggung Jawab..."
+            placeholder="Cari Nama DSA atau Nama Peserta/Ketua Kelompok..."
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
@@ -329,9 +332,9 @@ const JuriPesertaList = () => {
                 <Row gutter={[20, 12]}>
                   {[
                     { label: 'Jenis DSA', value: selectedPeserta.jenis_dsa },
-                    { label: 'Nomor HP', value: selectedPeserta.phone_number },
-                    { label: 'Nama Kontak Darurat', value: selectedPeserta.nama_kontak_darurat },
-                    { label: 'No HP Kontak Darurat', value: selectedPeserta.no_hp_kontak_darurat },
+                    { label: 'Nomor HP Ketua Kelompok', value: selectedPeserta.phone_number },
+                    { label: 'Nama Kontak Lainnya', value: selectedPeserta.nama_kontak_darurat },
+                    { label: 'No Kontak Lainnya', value: selectedPeserta.no_hp_kontak_darurat },
                     ...(selectedPeserta.social_media && selectedPeserta.social_media !== '-' ? [{ label: 'Media Sosial', value: selectedPeserta.social_media, full: true }] : []),
                   ].filter(item => item.value).map((item, idx) => (
                     <Col xs={12} sm={8} key={idx} {...(item.full ? { xs: 24 } : {})}>
@@ -378,6 +381,12 @@ const JuriPesertaList = () => {
                     <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.latar_belakang}</Text>
                   </div>
                 </div>
+                <div style={{ marginTop: 12 }}>
+                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Metode Pelaksanaan Program</Text>
+                  <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #0ea5e9' }}>
+                    <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.metode_pelaksanaan}</Text>
+                  </div>
+                </div>
                 <div style={{ marginBottom: 16 }}>
                   <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Dampak Yang Sudah Terealisasi</Text>
                   <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #52c41a' }}>
@@ -385,9 +394,21 @@ const JuriPesertaList = () => {
                   </div>
                 </div>
                 <div>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Rencana Pengembangan</Text>
+                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Rencana dan Potensi Pengembangan</Text>
                   <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #722ed1' }}>
                     <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.rencana_pengembangan}</Text>
+                  </div>
+                </div>
+                <div style={{ marginTop: 12 }}>
+                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Keberlanjutan Program</Text>
+                  <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #10b981' }}>
+                    <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.keberlanjutan_program}</Text>
+                  </div>
+                </div>
+                <div style={{ marginTop: 12 }}>
+                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Evaluasi Program</Text>
+                  <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #f59e0b' }}>
+                    <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{selectedPeserta.evaluasi_program}</Text>
                   </div>
                 </div>
 

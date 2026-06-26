@@ -245,7 +245,7 @@ const AdminSelectionReview = () => {
   // ── Table columns ─────────────────────────────────────────────────────────
   const columns = [
     {
-      title: 'Nama DSA',
+      title: 'Nama DSA/Nama Desa',
       onHeaderCell: () => ({
         style: { whiteSpace: 'nowrap' },
       }),
@@ -548,10 +548,11 @@ const AdminSelectionReview = () => {
                   <Row gutter={[16, 8]}>
                     {[
                       { label: 'Inovasi & Kreativitas', value: item.criteria1, color: '#8b5cf6' },
-                      { label: 'Dampak Program', value: item.criteria2, color: '#10b981' },
-                      { label: 'Potensi Keberlanjutan', value: item.criteria3, color: '#f59e0b' },
+                      { label: 'Metode Pelaksanaan Program', value: item.criteria2, color: '#0ea5e9' },
+                      { label: 'Dampak Program', value: item.criteria3, color: '#10b981' },
+                      { label: 'Potensi Keberlanjutan Program', value: item.criteria4, color: '#f59e0b' },
                     ].map((c, ci) => (
-                      <Col xs={8} key={ci}>
+                      <Col xs={12} sm={6} key={ci}>
                         <Text style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 4 }}>{c.label}</Text>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <Progress percent={c.value || 0} showInfo={false} strokeColor={c.color} size="small" style={{ flex: 1 }} />
@@ -602,9 +603,9 @@ const AdminSelectionReview = () => {
                   <Row gutter={[20, 16]}>
                     {[
                       { label: 'Jenis DSA', value: regDetailData.dsaType },
-                      { label: 'Nomor HP', value: regDetailData.phoneNumber },
-                      { label: 'Nama Kontak Darurat', value: regDetailData.emergencyContactName },
-                      { label: 'No HP Kontak Darurat', value: regDetailData.emergencyContactPhone },
+                      { label: 'Nomor HP Ketua Kelompok', value: regDetailData.phoneNumber },
+                      { label: 'Nama Kontak Lainnya', value: regDetailData.emergencyContactName },
+                      { label: 'No Kontak Lainnya', value: regDetailData.emergencyContactPhone },
                       ...(regDetailData.socialMedia ? [{ label: 'Media Sosial', value: regDetailData.socialMedia, span: 24 }] : []),
                     ].map((item, idx) => (
                       <Col xs={12} sm={8} key={idx} span={item.span}>
@@ -622,7 +623,7 @@ const AdminSelectionReview = () => {
                     {[
                       { label: 'Pilar', value: regDetailData.pillar?.name },
                       { label: 'Kategori', value: regDetailData.category?.name },
-                      { label: 'Binaan', value: regDetailData.astraGroupCustom || regDetailData.astraGroup?.name },
+                      { label: 'Perusahaan/Yayasan Pembina', value: regDetailData.astraGroupCustom || regDetailData.astraGroup?.name },
                       { label: 'Durasi Program', value: regDetailData.programDuration },
                     ].map((item, idx) => (
                       <Col xs={12} sm={6} key={idx}>
@@ -660,8 +661,11 @@ const AdminSelectionReview = () => {
                   <Text style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', textTransform: 'uppercase', letterSpacing: 0.5, display: 'block', marginBottom: 14, paddingBottom: 8, borderBottom: '1px solid #f0f0f0' }}><span style={{ marginRight: 6 }}><EditOutlined /></span> Deskripsi Program</Text>
                   {[
                     { label: 'Latar Belakang', value: regDetailData.background, color: '#1890ff' },
+                    { label: 'Metode Pelaksanaan Program', value: regDetailData.implementationMethod, color: '#0ea5e9' },
                     { label: 'Dampak Yang Sudah Terealisasi', value: regDetailData.programImpact, color: '#52c41a' },
-                    { label: 'Rencana Pengembangan', value: regDetailData.developmentPlan, color: '#722ed1' },
+                    { label: 'Rencana dan Potensi Pengembangan', value: regDetailData.developmentPlan, color: '#722ed1' },
+                    { label: 'Keberlanjutan Program', value: regDetailData.sustainabilityPlan, color: '#10b981' },
+                    { label: 'Evaluasi Program', value: regDetailData.programEvaluation, color: '#f59e0b' },
                   ].map((item, idx) => (
                     <div key={idx} style={{ marginBottom: idx < 2 ? 12 : 0 }}>
                       <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>{item.label}</Text>

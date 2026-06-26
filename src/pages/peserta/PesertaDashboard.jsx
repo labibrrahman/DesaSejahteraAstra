@@ -71,7 +71,7 @@ const PesertaDashboard = () => {
   const nama = reg?.user?.name || 'Peserta';
   const namaDesa = reg?.villageName || '—';
   const namaKelompok = reg?.groupName || '—';
-  const namaLabel = 'Nama Peserta / Penanggung Jawab';
+  const namaLabel = 'Nama Ketua Kelompok';
   const pilar = reg?.pillar?.name || '—';
   const status = dash?.registration?.status || 'draft';
 
@@ -393,7 +393,7 @@ const PesertaDashboard = () => {
                         letterSpacing: 0.5,
                       }}
                     >
-                      Nama DSA
+                      Nama DSA/Nama Desa
                     </Text>
                     <Text strong style={{ fontSize: 15, color: '#1e293b' }}>
                       {namaDesa}
@@ -703,11 +703,11 @@ const PesertaDashboard = () => {
                   <Text strong style={{ fontSize: 13 }}>{reg?.phoneNumber || '—'}</Text>
                 </Col>
                 <Col xs={12} sm={8}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nama Kontak Darurat</Text>
+                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nama Kontak Lainnya</Text>
                   <Text strong style={{ fontSize: 13 }}>{reg?.emergencyContactName || '—'}</Text>
                 </Col>
                 <Col xs={12} sm={8}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>No HP Kontak Darurat</Text>
+                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>No Kontak Lainnya</Text>
                   <Text strong style={{ fontSize: 13 }}>{reg?.emergencyContactPhone || '—'}</Text>
                 </Col>
                 <Col xs={12} sm={8}>
@@ -732,7 +732,7 @@ const PesertaDashboard = () => {
                   <Text strong style={{ fontSize: 13 }}>{reg?.category?.name || '—'}</Text>
                 </Col>
                 <Col xs={12} sm={8}>
-                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Binaan</Text>
+                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Perusahaan/Yayasan Pembina</Text>
                   <Text strong style={{ fontSize: 13 }}>{reg?.astraGroupCustom || reg?.astraGroup?.name || '—'}</Text>
                 </Col>
                 <Col xs={12} sm={8}>
@@ -782,6 +782,12 @@ const PesertaDashboard = () => {
                   <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{reg?.background || '—'}</Text>
                 </div>
               </div>
+              <div style={{ marginTop: 12 }}>
+                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Metode Pelaksanaan Program</Text>
+                <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #0ea5e9' }}>
+                  <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{reg?.implementationMethod || '—'}</Text>
+                </div>
+              </div>
               <div>
                 <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Dampak Yang Sudah Terealisasi</Text>
                 <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #52c41a' }}>
@@ -789,9 +795,21 @@ const PesertaDashboard = () => {
                 </div>
               </div>
               <div style={{ marginTop: 12 }}>
-                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Rencana Pengembangan</Text>
+                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Rencana dan Potensi Pengembangan</Text>
                 <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #722ed1' }}>
                   <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{reg?.developmentPlan || '—'}</Text>
+                </div>
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Keberlanjutan Program</Text>
+                <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #10b981' }}>
+                  <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{reg?.sustainabilityPlan || '—'}</Text>
+                </div>
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Evaluasi Program</Text>
+                <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #f59e0b' }}>
+                  <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{reg?.programEvaluation || '—'}</Text>
                 </div>
               </div>
 

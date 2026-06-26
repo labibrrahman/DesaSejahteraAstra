@@ -88,7 +88,7 @@ const Login = ({ adminMode = false }) => {
             <img src={astraLogo} alt="Astra" style={{ height: 24, objectFit: 'contain' }} />
             <img src={satuIndoLogo} alt="Satu Indonesia" style={{ height: 32, objectFit: 'contain' }} />
           </div>
-          <MobileBranding title="Lomba Apresiasi Desa Sejahtera Astra" subtitle="Apresiasi untuk program binaan yang memberikan dampak sosial terbaik bagi masyarakat." />
+          <MobileBranding title="Lomba Apresiasi Desa Sejahtera Astra" subtitle="Lomba ini adalah semangat Astra untuk terus mendorong inovasi 4 bidang (kesehatan, pendidikan, lingkungan, kewirausahaan) di desa binaan Grup & Yayasan Astra melalui flagship program Desa Sejahtera Astra yang menjadi semangat bersama dalam pemberdayaan rural development." />
           <MobileFormCard title="Masuk" subtitle="Gunakan akun Admin atau Juri yang telah terdaftar">
             <Form form={form} layout="vertical" onFinish={onFinish} size="large">
               <Form.Item name="email" rules={[{ required: true, message: 'Masukkan email Anda' }, { type: 'email', message: 'Email tidak valid' }]}>
@@ -114,7 +114,7 @@ const Login = ({ adminMode = false }) => {
           <img src={astraLogo} alt="Astra" style={{ height: 24, objectFit: 'contain' }} />
           <img src={satuIndoLogo} alt="Satu Indonesia" style={{ height: 32, objectFit: 'contain' }} />
         </div>
-        <MobileBranding title="Desa Sejahtera Astra" subtitle="Apresiasi untuk program binaan yang memberikan dampak sosial terbaik bagi masyarakat." />
+        <MobileBranding title="Desa Sejahtera Astra" subtitle="Lomba ini adalah semangat Astra untuk terus mendorong inovasi 4 bidang (kesehatan, pendidikan, lingkungan, kewirausahaan) di desa binaan Grup & Yayasan Astra melalui flagship program Desa Sejahtera Astra yang menjadi semangat bersama dalam pemberdayaan rural development." />
         <MobileFormCard title="Masuk sebagai Peserta" subtitle="Gunakan akun Google yang terdaftar untuk mengakses dashboard peserta.">
           <Button type="default" icon={<GoogleOutlined style={{ color: '#4285f4', fontSize: 18 }} />} size="large" block onClick={loginWithGoogle} loading={loading}
             style={{ height: 48, borderRadius: 10, border: '1px solid #e2e8f0', fontWeight: 500, fontSize: 14, color: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
@@ -177,7 +177,7 @@ const Login = ({ adminMode = false }) => {
     return (
       <Layout style={{ minHeight: '100vh', background: '#f8fafc' }}>
         <Content style={{ display: 'flex', minHeight: '100vh' }}>
-          <DesktopBranding title="Lomba Apresiasi Desa Sejahtera Astra" subtitle="Apresiasi untuk program binaan yang memberikan dampak sosial terbaik bagi masyarakat." />
+          <DesktopBranding title="Lomba Apresiasi Desa Sejahtera Astra" subtitle="Lomba ini adalah semangat Astra untuk terus mendorong inovasi 4 bidang (kesehatan, pendidikan, lingkungan, kewirausahaan) di desa binaan Grup & Yayasan Astra melalui flagship program Desa Sejahtera Astra yang menjadi semangat bersama dalam pemberdayaan rural development." />
           <DesktopFormPanel title="Masuk" subtitle="Gunakan akun Admin atau Juri yang telah terdaftar">
             <Form form={form} layout="vertical" onFinish={onFinish} size="large">
               <Form.Item name="email" rules={[{ required: true, message: 'Masukkan email Anda' }, { type: 'email', message: 'Email tidak valid' }]}>
@@ -203,7 +203,7 @@ const Login = ({ adminMode = false }) => {
       <Content style={{ display: 'flex', minHeight: '100vh' }}>
         <DesktopBranding
           title="Lomba Apresiasi Desa Sejahtera Astra"
-          subtitle="Apresiasi untuk program binaan yang memberikan dampak sosial terbaik bagi masyarakat."
+          subtitle="Lomba ini adalah semangat Astra untuk terus mendorong inovasi 4 bidang (kesehatan, pendidikan, lingkungan, kewirausahaan) di desa binaan Grup & Yayasan Astra melalui flagship program Desa Sejahtera Astra yang menjadi semangat bersama dalam pemberdayaan rural development."
           // stats={[{ num: '900+', label: 'Desa' }, { num: '4.5M', label: 'Manfaat' }, { num: '34', label: 'Provinsi' }]}
         />
         <DesktopFormPanel title="Masuk sebagai Peserta" subtitle="Gunakan akun Google yang terdaftar untuk mengakses dashboard peserta.">

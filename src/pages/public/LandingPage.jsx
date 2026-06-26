@@ -1,14 +1,11 @@
-import React, { useState, useEffect  } from 'react';
-import { Button, Row, Col, Typography, Space, Layout } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Row, Col, Typography, Layout } from 'antd';
 import {
   HeartOutlined,
   ReadOutlined,
   GlobalOutlined,
   ShopOutlined,
-  ArrowRightOutlined,
   PhoneOutlined,
-  MailOutlined,
-  EnvironmentOutlined,
   UpOutlined,
   DownOutlined,
   ArrowDownOutlined,
@@ -21,10 +18,9 @@ import geoLeft from '../../assets/LandingPageAsset/ASET-07(1).png';
 import geoRight from '../../assets/LandingPageAsset/ASET-08(2).png';
 import titleImage from '../../assets/LandingPageAsset/ASET-09.png';
 import useIsMobile from '../../hooks/useIsMobile';
-import useAuthStore from '../../stores/authStore';
 
-const { Title, Paragraph, Text, Link } = Typography;
-const { Header, Content, Footer } = Layout;
+const { Text } = Typography;
+const { Content, Footer } = Layout;
 
 // ─── Icon & Color Map ────────────────────────────────────────────────────────
 
@@ -58,40 +54,53 @@ const statsData = [
 const LandingPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { isAuthenticated, user } = useAuthStore();
   const [faqData, setFaqData] = useState([]);
   const [pilarData, setPilarData] = useState([]);
   const [supportWhatsapp, setSupportWhatsapp] = useState('');
 
   useEffect(() => {
-    // Fetch Pilar dari API
-    import('../../services/masterService').then(({ default: masterService }) => {
-      masterService.getPillars().then(result => {
-        const list = Array.isArray(result) ? result : [];
-        setPilarData(list.map(p => ({
+    let cancelled = false;
+
+    const loadAll = async () => {
+      try {
+        const [masterService, menuService, adminService] = await Promise.all([
+          import('../../services/masterService').then(m => m.default),
+          import('../../services/menuService').then(m => m.default),
+          import('../../services/adminService').then(m => m.default),
+        ]);
+
+        // Fetch semua data secara paralel
+        const [pillars, settings, faqs] = await Promise.all([
+          masterService.getPillars().catch(() => []),
+          menuService.getSystemSettings().catch(() => []),
+          adminService.getFaqs({ isActive: true }).catch(() => []),
+        ]);
+
+        if (cancelled) return;
+
+        // Set Pilar
+        const pilarList = Array.isArray(pillars) ? pillars : [];
+        setPilarData(pilarList.map(p => ({
           ...getPilarStyle(p.name),
           title: p.name,
           description: p.description || '',
         })));
-      }).catch(() => {});
-    });
 
-    // Fetch support_whatsapp dari system-settings
-    import('../../services/menuService').then(({ default: menuService }) => {
-      menuService.getSystemSettings().then(result => {
-        const settings = Array.isArray(result) ? result : [];
-        const waSetting = settings.find(s => s.key === 'support_whatsapp');
+        // Set WhatsApp
+        const settingsList = Array.isArray(settings) ? settings : [];
+        const waSetting = settingsList.find(s => s.key === 'support_whatsapp');
         if (waSetting?.value) setSupportWhatsapp(waSetting.value);
-      }).catch(() => {});
-    });
 
-    // Fetch FAQ dari API
-    import('../../services/adminService').then(({ default: adminService }) => {
-      adminService.getFaqs({ isActive: true }).then(result => {
-        const list = Array.isArray(result) ? result : [];
-        setFaqData(list.sort((a, b) => (a.order || 0) - (b.order || 0)));
-      }).catch(() => {});
-    });
+        // Set FAQ
+        const faqList = Array.isArray(faqs) ? faqs : [];
+        setFaqData(faqList.sort((a, b) => (a.order || 0) - (b.order || 0)));
+      } catch {
+        // ignore
+      }
+    };
+
+    loadAll();
+    return () => { cancelled = true; };
   }, []);
 
   const px = isMobile ? 20 : 30;
@@ -238,13 +247,13 @@ const LandingPage = () => {
                 fontSize: isMobile ? 15 : 20,
                 lineHeight: 1.7,
                 marginBottom: isMobile ? 28 : 40,
-                maxWidth: 600,
+                maxWidth: 900,
                 marginLeft: 'auto',
                 marginRight: 'auto',
                 textShadow: '0 2px 8px rgba(0,0,0,0.1)',
               }}
             >
-              Apresiasi untuk program binaan yang memberikan dampak sosial terbaik bagi masyarakat.
+              Lomba ini adalah semangat Astra untuk terus mendorong inovasi 4 bidang (kesehatan, pendidikan, lingkungan, kewirausahaan) di desa binaan Grup & Yayasan Astra melalui flagship program Desa Sejahtera Astra yang menjadi semangat bersama dalam pemberdayaan rural development..
               {/* Membangun masa depan berkelanjutan melalui sinergi dan inovasi sosial. */}
             </p>
 

@@ -339,6 +339,10 @@ const JuriPenilaianHistory = () => {
                         borderRadius: 12,
                         padding: '20px 16px',
                         textAlign: 'center',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        height: '100%',
                       }}>
                         <div style={{
                           width: 40,
@@ -348,20 +352,20 @@ const JuriPenilaianHistory = () => {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          margin: '0 auto 12px',
+                          marginBottom: 12,
                         }}>
                           <span style={{ fontSize: 18, fontWeight: 800, color: item.color, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                             {idx + 1}
                           </span>
                         </div>
-                        <Text style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 8, lineHeight: 1.4 }}>
+                        <Text style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 8, lineHeight: 1.4, minHeight: 30 }}>
                           {item.label}
                         </Text>
                         <div style={{ fontSize: 32, fontWeight: 800, color: item.color, fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: 1 }}>
                           {item.score}
                         </div>
                         <Text style={{ fontSize: 12, color: '#94a3b8' }}>/ 100</Text>
-                        <div style={{ marginTop: 10, height: 4, borderRadius: 2, background: '#f1f5f9', overflow: 'hidden' }}>
+                        <div style={{ marginTop: 10, height: 4, borderRadius: 2, background: '#f1f5f9', overflow: 'hidden', width: '100%' }}>
                           <div style={{ height: '100%', width: `${item.score}%`, background: item.color, borderRadius: 2 }} />
                         </div>
                       </div>

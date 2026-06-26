@@ -122,7 +122,7 @@ const MasterGrupAstra = () => {
       width: 60,
     },
     {
-      title: 'Nama Grup',
+      title: 'Nama Perusahaan/Yayasan Pembina',
       dataIndex: 'nama',
       key: 'nama',
     },
@@ -165,14 +165,14 @@ const MasterGrupAstra = () => {
           <Text type="secondary">Kelola data Perusahaan/Yayasan Pembina</Text>
         </div>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
-          Tambah Grup
+          Tambah Perusahaan/Yayasan Pembina
         </Button>
       </div>
 
       <Card>
         <div style={{ marginBottom: 16 }}>
           <Input
-            placeholder="Cari nama grup..."
+            placeholder="Cari Nama Perusahaan/Yayasan Pembina..."
             prefix={<SearchOutlined style={{ color: '#94a3b8' }} />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
@@ -205,10 +205,10 @@ const MasterGrupAstra = () => {
         <Form form={form} layout="vertical">
           <Form.Item
             name="nama"
-            label="Nama Grup"
-            rules={[{ required: true, message: 'Masukkan nama grup' }]}
+            label="Nama Perusahaan/Yayasan Pembina"
+            rules={[{ required: true, message: 'Masukkan Nama Perusahaan/Yayasan Pembina' }]}
           >
-            <Input placeholder="Masukkan nama Perusahaan/Yayasan Pembina" />
+            <Input placeholder="Masukkan Nama Perusahaan/Yayasan Pembina" />
           </Form.Item>
         </Form>
       </Modal>

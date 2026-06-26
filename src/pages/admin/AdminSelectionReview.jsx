@@ -551,9 +551,9 @@ const AdminSelectionReview = () => {
                       { label: 'Potensi Keberlanjutan Program', value: item.criteria4, color: '#f59e0b' },
                     ].map((c, ci) => (
                       <Col xs={12} sm={6} key={ci}>
-                        <Text style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 4 }}>{c.label}</Text>
+                        <Text style={{ fontSize: 11, color: '#64748b', display: 'block', marginBottom: 4, minHeight: 28, lineHeight: '16px' }}>{c.label}</Text>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <Progress percent={c.value || 0} showInfo={false} strokeColor={c.color} size="small" style={{ flex: 1 }} />
+                          <Progress percent={c.value || 0} showInfo={false} strokeColor={c.color} size="small" style={{ flex: 1, margin: 0 }} />
                           <Text strong style={{ color: c.color, fontSize: 13, minWidth: 30 }}>{c.value || 0}</Text>
                         </div>
                       </Col>

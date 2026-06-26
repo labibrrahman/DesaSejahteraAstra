@@ -162,7 +162,6 @@ const JuriFormPenilaian = () => {
           </div>
 
           {/* Foto Dokumentasi */}
-          {peserta.foto.length > 0 && (
             <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 20, overflow: 'hidden' }}>
               <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 32, height: 32, borderRadius: 8, background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CameraOutlined style={{ color: '#f59e0b', fontSize: 14 }} /></div>
@@ -178,7 +177,6 @@ const JuriFormPenilaian = () => {
                 </div>
               </div>
             </div>
-          )}
 
                     {/* Info Peserta */}
           <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 20, overflow: 'hidden' }}>
@@ -221,8 +219,8 @@ const JuriFormPenilaian = () => {
                 </div>
                 <div style={{ padding: 20 }}>
                   <Text style={{ fontSize: 13, color: '#64748b', display: 'block', marginBottom: 16, lineHeight: 1.6 }}>{k.desc}</Text>
-                  <Form.Item name={k.key} rules={[{ required: true, message: 'Masukkan nilai' }, { type: 'number', min: 0, max: 100, message: 'Nilai 0-100' }]} style={{ marginBottom: 0 }}>
-                    <InputNumber min={0} max={100} controls={false} keyboard={true} style={{ width: '100%', height: 48, borderRadius: 10, fontSize: 16, fontWeight: 600 }} placeholder="Masukkan nilai (0-100)" addonAfter={<span style={{ color: '#94a3b8' }}>/ 100</span>} />
+                  <Form.Item name={k.key} rules={[{ required: true, message: 'Masukkan nilai' }, { type: 'number', min: 0, max: 100, message: 'Nilai harus bilangan bulat 0-100' }]} style={{ marginBottom: 0 }}>
+                    <InputNumber min={0} max={100} precision={0} controls={false} keyboard={true} style={{ width: '100%', height: 48, borderRadius: 10, fontSize: 16, fontWeight: 600 }} placeholder="Masukkan nilai (0-100)" addonAfter={<span style={{ color: '#94a3b8' }}>/ 100</span>} onKeyPress={(e) => { if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'Tab') e.preventDefault(); }} />
                   </Form.Item>
                 </div>
               </div>

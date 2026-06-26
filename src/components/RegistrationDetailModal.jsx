@@ -108,34 +108,16 @@ const RegistrationDetailModal = ({
                   <FieldLabel label="Nama Kontak Lainnya" value={reg.emergencyContactName} />
                 </Col>
                 <Col xs={12} sm={8}>
-                  <FieldLabel label="No Kontak Lainnya" value={reg.emergencyContactPhone} />
+                  <FieldLabel label="Nomor Kontak Lainnya" value={reg.emergencyContactPhone} />
+                </Col>
+                <Col xs={12} sm={8}>
+                  <FieldLabel label="Perusahaan/Yayasan Pembina" value={reg.astraGroupCustom || reg.astraGroup?.name} />
                 </Col>
                 {reg.socialMedia && (
                   <Col xs={24}>
                     <FieldLabel label="Media Sosial" value={reg.socialMedia} />
                   </Col>
                 )}
-              </Row>
-            </div>
-
-            {/* Informasi Program */}
-            <div style={{ marginBottom: 24 }}>
-              <Text style={sectionTitleStyle}>
-                <FileTextOutlined style={{ marginRight: 6 }} /> Informasi Program
-              </Text>
-              <Row gutter={[20, 16]}>
-                <Col xs={12} sm={8}>
-                  <FieldLabel label="Pilar" value={reg.pillar?.name} />
-                </Col>
-                <Col xs={12} sm={8}>
-                  <FieldLabel label="Kategori" value={reg.category?.name} />
-                </Col>
-                <Col xs={12} sm={8}>
-                  <FieldLabel label="Perusahaan/Yayasan Pembina" value={reg.astraGroupCustom || reg.astraGroup?.name} />
-                </Col>
-                <Col xs={12} sm={8}>
-                  <FieldLabel label="Durasi Program" value={reg.programDuration} />
-                </Col>
               </Row>
             </div>
 
@@ -160,6 +142,24 @@ const RegistrationDetailModal = ({
                 <Col span={24}>
                   <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Alamat Lengkap</Text>
                   <Text style={{ fontSize: 13, lineHeight: 1.6 }}>{reg.address || '—'}</Text>
+                </Col>
+              </Row>
+            </div>
+
+            {/* Informasi Program */}
+            <div style={{ marginBottom: 24 }}>
+              <Text style={sectionTitleStyle}>
+                <FileTextOutlined style={{ marginRight: 6 }} /> Informasi Program
+              </Text>
+              <Row gutter={[20, 16]}>
+                <Col xs={12} sm={8}>
+                  <FieldLabel label="Pilar" value={reg.pillar?.name} />
+                </Col>
+                <Col xs={12} sm={8}>
+                  <FieldLabel label="Kategori" value={reg.category?.name} />
+                </Col>
+                <Col xs={12} sm={8}>
+                  <FieldLabel label="Durasi Program" value={reg.programDuration} />
                 </Col>
               </Row>
             </div>

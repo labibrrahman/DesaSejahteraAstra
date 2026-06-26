@@ -907,8 +907,6 @@ const FormPendaftaran = () => {
                 filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                 value={formData.grup_astra_id}
                 onChange={val => updateField('grup_astra_id', val)}
-                getPopupContainer={() => document.body}
-                dropdownStyle={{ maxHeight: 300, overflow: 'auto' }}
               >
                 {astraGroups.map(g => <Option key={g.id} value={g.id} label={g.name}><span style={{ fontSize:13 }}>{g.name}</span></Option>)}
                 <Option value="others" label="Lainnya..."><span style={{ fontSize:13, fontWeight: 600 }}>Lainnya...</span></Option>
@@ -960,8 +958,7 @@ const FormPendaftaran = () => {
                 placeholder="Ketik untuk cari provinsi..."
                 style={{ width: '100%' }}
                 size="large"
-                getPopupContainer={() => document.body}
-                dropdownStyle={{ maxHeight: 300, overflow: 'auto' }}
+                listHeight={256}
                 showSearch
                 optionFilterProp="label"
                 filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
@@ -999,8 +996,7 @@ const FormPendaftaran = () => {
                 placeholder="Ketik untuk cari kabupaten..."
                 style={{ width: '100%' }}
                 size="large"
-                getPopupContainer={() => document.body}
-                dropdownStyle={{ maxHeight: 300, overflow: 'auto' }}
+                listHeight={256}
                 showSearch
                 optionFilterProp="label"
                 filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
@@ -1039,8 +1035,7 @@ const FormPendaftaran = () => {
                 placeholder="Ketik untuk cari kecamatan..."
                 style={{ width: '100%' }}
                 size="large"
-                getPopupContainer={() => document.body}
-                dropdownStyle={{ maxHeight: 300, overflow: 'auto' }}
+                listHeight={256}
                 showSearch
                 optionFilterProp="label"
                 filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
@@ -1079,8 +1074,7 @@ const FormPendaftaran = () => {
                 placeholder="Ketik untuk cari desa..."
                 style={{ width: '100%' }}
                 size="large"
-                getPopupContainer={() => document.body}
-                dropdownStyle={{ maxHeight: 300, overflow: 'auto' }}
+                listHeight={256}
                 showSearch
                 optionFilterProp="label"
                 filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
@@ -1143,8 +1137,7 @@ const FormPendaftaran = () => {
       <div style={fieldWrapper}>
         <Text style={labelStyle}>Durasi Program *</Text>
         <Select placeholder="Pilih durasi program..." style={{ width: '100%' }} size="large"
-          getPopupContainer={() => document.body}
-          dropdownStyle={{ maxHeight: 300, overflow: 'auto' }}
+          listHeight={256}
           value={formData.durasi_program} onChange={val => updateField('durasi_program', val)}>
           <Option value="<1 Tahun"><span style={{ fontSize:13 }}>&lt;1 Tahun</span></Option>
           <Option value="1-3 Tahun"><span style={{ fontSize:13 }}>1-3 Tahun</span></Option>
@@ -1156,7 +1149,7 @@ const FormPendaftaran = () => {
       <div style={fieldWrapper}>
         <Text style={labelStyle}>Latar Belakang / Rasionalisasi *</Text>
         <TextArea rows={5} placeholder="Jelaskan alasan dan latar belakang inisiatif program ini..." style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.latar_belakang} onChange={e => updateField('latar_belakang', e.target.value)} />
-        <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Untuk menjelaskan latar belakang program</Text>
+        <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan latar belakang program</Text>
       </div>
 
       <div style={fieldWrapper}>
@@ -1179,8 +1172,8 @@ const FormPendaftaran = () => {
 
       <div style={fieldWrapper}>
         <Text style={labelStyle}>Keberlanjutan Program *</Text>
-        <TextArea rows={5} placeholder="Jelaskan rencana keberlanjutan program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.sustainability_plan || ''} onChange={e => updateField('sustainability_plan', e.target.value)} />
-        <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan bagaimana program ini可持续 di masa depan</Text>
+        <TextArea rows={5} placeholder={"Contoh:\n- Program XX \n- Program YY \n- Program ZZ"} style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.sustainability_plan || ''} onChange={e => updateField('sustainability_plan', e.target.value)} />
+        <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan bagaimana keberlanjutan program di masa depan</Text>
       </div>
 
       <div style={fieldWrapper}>
@@ -1215,7 +1208,7 @@ const FormPendaftaran = () => {
                 type="text"
                 size="small"
                 icon={<CloseOutlined style={{ fontSize: 12, color: '#fff' }} />}
-                onClick={() => handlePhotoDelete(index)}
+                onClick={(e) => { e.stopPropagation(); handlePhotoDelete(index); }}
                 style={{
                   position: 'absolute', top: 4, right: 4,
                   width: 24, height: 24, minWidth: 24,
@@ -1306,6 +1299,7 @@ const FormPendaftaran = () => {
           <ReviewField label="Nama Kontak Lainnya" value={formData.nama_kontak_darurat} />
           <ReviewField label="Nomor HP Kontak Lainnya" value={formData.no_hp_kontak_darurat} />
           <ReviewField label="Alamat Lengkap" value={formData.alamat} span={24} />
+          <ReviewField label="Media Sosial" value={formData.social_media || '-'} span={24} />
           <ReviewField label="Provinsi" value={formData.provinceName} />
           <ReviewField label="Kabupaten / Kota" value={formData.cityName} />
           <ReviewField label="Kecamatan" value={formData.districtName} />
@@ -1317,12 +1311,11 @@ const FormPendaftaran = () => {
         <Row gutter={[16, 12]}>
           <ReviewField label="Durasi Program" value={formData.durasi_program || '-'} />
           <ReviewField label="Latar Belakang / Rasionalisasi" value={formData.latar_belakang} span={24} />
-          <ReviewField label="Dampak Yang Sudah Terealisasi" value={formData.dampak_program} span={24} />
-          <ReviewField label="Rencana Pengembangan" value={formData.rencana_pengembangan} span={24} />
           <ReviewField label="Metode Pelaksanaan Program" value={formData.implementation_method} span={24} />
+          <ReviewField label="Dampak Yang Sudah Terealisasi" value={formData.dampak_program} span={24} />
+          <ReviewField label="Rencana dan Potensi Pengembangan" value={formData.rencana_pengembangan} span={24} />
           <ReviewField label="Keberlanjutan Program" value={formData.sustainability_plan} span={24} />
           <ReviewField label="Evaluasi Program" value={formData.program_evaluation} span={24} />
-          <ReviewField label="Media Sosial" value={formData.social_media || '-'} span={24} />
         </Row>
         {photos.length > 0 && (
           <div style={{ marginTop: 12 }}>
@@ -1468,14 +1461,15 @@ const FormPendaftaran = () => {
         onCancel={() => setPreviewPhoto(null)}
         footer={null}
         centered
-        width={600}
+        width={'90vw'}
+        style={{ maxWidth: 900 }}
         styles={{ body: { padding: 0, background: 'transparent' } }}
       >
         {previewPhoto && (
           <img
             src={previewPhoto}
             alt="Preview"
-            style={{ width: '100%', borderRadius: 8 }}
+            style={{ width: '100%', height: 'auto', maxHeight: '80vh', objectFit: 'contain', borderRadius: 8 }}
           />
         )}
       </Modal>

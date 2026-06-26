@@ -877,14 +877,15 @@ const PesertaDashboard = () => {
         onCancel={() => setPreviewPhoto(null)}
         footer={null}
         centered
-        width={600}
+        width={'90vw'}
+        style={{ maxWidth: 900 }}
         styles={{ body: { padding: 0, background: 'transparent' } }}
       >
         {previewPhoto && (
           <img
             src={previewPhoto}
             alt="Preview"
-            style={{ width: '100%', borderRadius: 8 }}
+            style={{ width: '100%', height: 'auto', maxHeight: '80vh', objectFit: 'contain', borderRadius: 8 }}
           />
         )}
       </Modal>

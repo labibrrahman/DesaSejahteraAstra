@@ -177,14 +177,14 @@ const FormPendaftaran = () => {
       message.error('Format foto harus JPEG, PNG, atau WEBP');
       return false;
     }
-    // Validasi ukuran (max 1MB)
-    if (file.size > 1024 * 1024) {
-      message.error('Ukuran foto maksimal 1 MB');
+    // Validasi ukuran (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      message.error('Ukuran foto maksimal 5 MB');
       return false;
     }
-    // Validasi jumlah foto (max 4)
-    if (photos.length >= 4) {
-      message.error('Maksimal 4 foto');
+    // Validasi jumlah foto (max 2)
+    if (photos.length >= 2) {
+      message.error('Maksimal 2 foto');
       return false;
     }
 
@@ -1137,7 +1137,7 @@ const FormPendaftaran = () => {
       <div style={{ marginTop: 8 }}>
         <Text style={errors.photos ? labelErrorStyle : labelStyle}>Foto Dokumentasi *</Text>
         <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 12 }}>
-          Unggah foto kegiatan program (wajib minimal 1 foto, maks. 4 foto, format JPEG/PNG/WEBP, maks. 1 MB per foto)
+          Unggah foto kegiatan program (wajib minimal 1 foto, maks. 2 foto, format JPEG/PNG/WEBP, maks. 5 MB per foto)
         </Text>
         {errors.photos && <Text style={{ ...errorTextStyle, marginBottom: 12 }}>{errors.photos}</Text>}
 
@@ -1171,7 +1171,7 @@ const FormPendaftaran = () => {
             </div>
           ))}
 
-          {photos.length < 4 && (
+          {photos.length < 2 && (
             <Upload
               accept=".jpg,.jpeg,.png,.webp"
               showUploadList={false}

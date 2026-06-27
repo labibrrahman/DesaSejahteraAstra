@@ -456,12 +456,12 @@ const AdminPesertaList = () => {
       message.error('Format foto harus JPEG, PNG, atau WEBP');
       return false;
     }
-    if (file.size > 1024 * 1024) {
-      message.error('Ukuran foto maksimal 1 MB');
+    if (file.size > 5 * 1024 * 1024) {
+      message.error('Ukuran foto maksimal 5 MB');
       return false;
     }
-    if (editPhotos.length >= 4) {
-      message.error('Maksimal 4 foto');
+    if (editPhotos.length >= 2) {
+      message.error('Maksimal 2 foto');
       return false;
     }
     setUploadingEditPhoto(true);
@@ -938,7 +938,7 @@ const AdminPesertaList = () => {
 
               {/* Foto Dokumentasi */}
               <div style={{ marginBottom: 24 }}>
-                <Text style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>Foto Dokumentasi (Maks. 4 foto, 1 MB per foto)</Text>
+                <Text style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>Foto Dokumentasi (Maks. 2 foto, 5 MB per foto)</Text>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
                   {editPhotos.map((photo, index) => (
                     <div key={index} style={{ width: 100, height: 100, borderRadius: 8, overflow: 'hidden', border: '1px solid #e2e8f0', position: 'relative' }}>
@@ -956,7 +956,7 @@ const AdminPesertaList = () => {
                       />
                     </div>
                   ))}
-                  {editPhotos.length < 4 && (
+                  {editPhotos.length < 2 && (
                     <Upload accept=".jpg,.jpeg,.png,.webp" showUploadList={false} beforeUpload={handleEditPhotoUpload} disabled={uploadingEditPhoto}>
                       <div style={{ width: 100, height: 100, borderRadius: 8, border: '1.5px dashed #d1d5db', background: '#fafbfc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: uploadingEditPhoto ? 'not-allowed' : 'pointer', opacity: uploadingEditPhoto ? 0.6 : 1 }}>
                         {uploadingEditPhoto ? <Spin size="small" /> : <><PlusOutlined style={{ fontSize: 20, color: '#9ca3af', marginBottom: 4 }} /><Text style={{ fontSize: 11, color: '#9ca3af' }}>Tambah</Text></>}

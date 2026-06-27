@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Button, Select, Input, Row, Col, message, Modal, Spin, Radio, Card, Upload } from 'antd';
+import { Typography, Button, Input, Row, Col, message, Modal, Spin, Radio, Card, Upload } from 'antd';
+import SearchSelect from '../../components/SearchSelect';
 import {
   ArrowLeftOutlined,
   ArrowRightOutlined,
@@ -23,7 +24,6 @@ import registrationService from '../../services/registrationService';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
-const { Option } = Select;
 
 // ─── Static Config ───────────────────────────────────────────────────────────
 
@@ -884,20 +884,17 @@ const FormPendaftaran = () => {
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
               <Text style={labelStyle}>Perusahaan/Yayasan Pembina (Opsional)</Text>
-              <Select
+              <SearchSelect
                 placeholder="Pilih Perusahaan/Yayasan Pembina..."
-                style={{ width: '100%' }}
-                size="large"
-                allowClear
-                showSearch
-                optionFilterProp="label"
-                filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                 value={formData.grup_astra_id}
                 onChange={val => updateField('grup_astra_id', val)}
-              >
-                {astraGroups.map(g => <Option key={g.id} value={g.id} label={g.name}><span style={{ fontSize:13 }}>{g.name}</span></Option>)}
-                <Option value="others" label="Lainnya..."><span style={{ fontSize:13, fontWeight: 600 }}>Lainnya...</span></Option>
-              </Select>
+                allowClear
+                showSearch
+                options={[
+                  ...astraGroups.map(g => ({ value: g.id, label: g.name })),
+                  { value: 'others', label: 'Lainnya...' },
+                ]}
+              />
               {formData.grup_astra_id === 'others' && (
                 <Input placeholder="Masukkan nama Perusahaan/Yayasan Pembina lainnya" style={{ ...inputStyle, marginTop: 8 }} value={formData.binaan_custom || ''} onChange={e => updateField('binaan_custom', e.target.value)} />
               )}
@@ -945,38 +942,28 @@ const FormPendaftaran = () => {
             <div style={fieldWrapper}>
               <Text style={errors.provinceId ? labelErrorStyle : labelStyle}>Provinsi *</Text>
               {errors.provinceId && <Text style={errorTextStyle}>{errors.provinceId}</Text>}
-              <Select
+              <SearchSelect
                 placeholder="Ketik untuk cari provinsi..."
-                style={{ width: '100%' }}
-                size="large"
-                listHeight={256}
-                showSearch
-                optionFilterProp="label"
-                filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                 value={formData.provinceId}
-                onChange={handleProvinceChange}
+                onChange={(val) => {
+                  if (!val) {
+                    setFormData(prev => ({ ...prev, provinceId: null, provinceName: '', cityId: null, cityName: '', districtId: null, districtName: '', villageRegionId: null, villageRegionName: '' }));
+                    setCityOptions([]); setDistrictOptions([]); setDesaOptions([]); setProvinceOptions([]);
+                  } else {
+                    handleProvinceChange(val);
+                  }
+                }}
+                allowClear
+                showSearch
                 onSearch={(val) => debounce('province', () => { setProvinceOptions([]); fetchProvinces(val, 1); }, 500)}
                 loading={loadingProvinces}
                 notFoundContent={loadingProvinces ? 'Memuat data...' : 'Tidak ada data'}
-                allowClear
-                onClear={() => { setFormData(prev => ({ ...prev, provinceId: null, provinceName: '', cityId: null, cityName: '', districtId: null, districtName: '', villageRegionId: null, villageRegionName: '' })); setCityOptions([]); setDistrictOptions([]); setDesaOptions([]); setProvinceOptions([]); }}
-                dropdownRender={(menu) => (
-                  <div>
-                    {menu}
-                    {provinceHasMore && (
-                      <div style={{ padding: '8px 12px', textAlign: 'center', borderTop: '1px solid #f0f0f0' }}>
-                        <Button type="link" size="small" loading={loadingProvinces} onClick={() => fetchProvinces(provinceSearch, provincePage + 1, true)}>
-                          Muat Lainnya...
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              >
-                {provinceOptions.map(p => (
-                  <Option key={p.id} value={p.id} label={p.name}><span style={{ fontSize:13 }}>{p.name}</span></Option>
-                ))}
-              </Select>
+                error={errors.provinceId}
+                options={provinceOptions.map(p => ({ value: p.id, label: p.name }))}
+                hasMore={provinceHasMore}
+                loadingMore={loadingProvinces}
+                onLoadMore={() => fetchProvinces(provinceSearch, provincePage + 1, true)}
+              />
             </div>
           </Col>
           {/* Kabupaten */}
@@ -984,39 +971,29 @@ const FormPendaftaran = () => {
             <div style={fieldWrapper}>
               <Text style={errors.cityId ? labelErrorStyle : labelStyle}>Kabupaten / Kota *</Text>
               {errors.cityId && <Text style={errorTextStyle}>{errors.cityId}</Text>}
-              <Select
+              <SearchSelect
                 placeholder="Ketik untuk cari kabupaten..."
-                style={{ width: '100%' }}
-                size="large"
-                listHeight={256}
-                showSearch
-                optionFilterProp="label"
-                filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                 value={formData.cityId}
-                onChange={handleCityChange}
+                onChange={(val) => {
+                  if (!val) {
+                    setFormData(prev => ({ ...prev, cityId: null, cityName: '', districtId: null, districtName: '', villageRegionId: null, villageRegionName: '' }));
+                    setDistrictOptions([]); setDesaOptions([]); setCityOptions([]);
+                  } else {
+                    handleCityChange(val);
+                  }
+                }}
+                allowClear
+                showSearch
                 onSearch={(val) => debounce('city', () => formData.provinceId && fetchCities(formData.provinceId, val), 500)}
                 disabled={!formData.provinceId}
                 loading={loadingCities}
                 notFoundContent={loadingCities ? 'Memuat data...' : 'Tidak ada data'}
-                allowClear
-                onClear={() => { setFormData(prev => ({ ...prev, cityId: null, cityName: '', districtId: null, districtName: '', villageRegionId: null, villageRegionName: '' })); setDistrictOptions([]); setDesaOptions([]); setCityOptions([]); }}
-                dropdownRender={(menu) => (
-                  <div>
-                    {menu}
-                    {cityHasMore && (
-                      <div style={{ padding: '8px 12px', textAlign: 'center', borderTop: '1px solid #f0f0f0' }}>
-                        <Button type="link" size="small" loading={loadingCities} onClick={() => fetchCities(formData.provinceId, citySearch, cityPage + 1, true)}>
-                          Muat Lainnya...
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              >
-                {cityOptions.map(c => (
-                  <Option key={c.id} value={c.id} label={c.name}><span style={{ fontSize:13 }}>{c.name}</span></Option>
-                ))}
-              </Select>
+                error={errors.cityId}
+                options={cityOptions.map(c => ({ value: c.id, label: c.name }))}
+                hasMore={cityHasMore}
+                loadingMore={loadingCities}
+                onLoadMore={() => fetchCities(formData.provinceId, citySearch, cityPage + 1, true)}
+              />
             </div>
           </Col>
           {/* Kecamatan */}
@@ -1024,39 +1001,29 @@ const FormPendaftaran = () => {
             <div style={fieldWrapper}>
               <Text style={errors.districtId ? labelErrorStyle : labelStyle}>Kecamatan *</Text>
               {errors.districtId && <Text style={errorTextStyle}>{errors.districtId}</Text>}
-              <Select
+              <SearchSelect
                 placeholder="Ketik untuk cari kecamatan..."
-                style={{ width: '100%' }}
-                size="large"
-                listHeight={256}
-                showSearch
-                optionFilterProp="label"
-                filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                 value={formData.districtId}
-                onChange={handleDistrictChange}
+                onChange={(val) => {
+                  if (!val) {
+                    setFormData(prev => ({ ...prev, districtId: null, districtName: '', villageRegionId: null, villageRegionName: '' }));
+                    setDesaOptions([]); setDistrictOptions([]);
+                  } else {
+                    handleDistrictChange(val);
+                  }
+                }}
+                allowClear
+                showSearch
                 onSearch={(val) => debounce('district', () => formData.cityId && fetchDistricts(formData.cityId, val), 500)}
                 disabled={!formData.cityId}
                 loading={loadingDistricts}
                 notFoundContent={loadingDistricts ? 'Memuat data...' : 'Tidak ada data'}
-                allowClear
-                onClear={() => { setFormData(prev => ({ ...prev, districtId: null, districtName: '', villageRegionId: null, villageRegionName: '' })); setDesaOptions([]); setDistrictOptions([]); }}
-                dropdownRender={(menu) => (
-                  <div>
-                    {menu}
-                    {districtHasMore && (
-                      <div style={{ padding: '8px 12px', textAlign: 'center', borderTop: '1px solid #f0f0f0' }}>
-                        <Button type="link" size="small" loading={loadingDistricts} onClick={() => fetchDistricts(formData.cityId, districtSearch, districtPage + 1, true)}>
-                          Muat Lainnya...
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              >
-                {districtOptions.map(d => (
-                  <Option key={d.id} value={d.id} label={d.name}><span style={{ fontSize:13 }}>{d.name}</span></Option>
-                ))}
-              </Select>
+                error={errors.districtId}
+                options={districtOptions.map(d => ({ value: d.id, label: d.name }))}
+                hasMore={districtHasMore}
+                loadingMore={loadingDistricts}
+                onLoadMore={() => fetchDistricts(formData.cityId, districtSearch, districtPage + 1, true)}
+              />
             </div>
           </Col>
           {/* Desa */}
@@ -1064,48 +1031,34 @@ const FormPendaftaran = () => {
             <div style={fieldWrapper}>
               <Text style={errors.villageRegionId ? labelErrorStyle : labelStyle}>Desa / Kelurahan *</Text>
               {errors.villageRegionId && <Text style={errorTextStyle}>{errors.villageRegionId}</Text>}
-              <Select
+              <SearchSelect
                 placeholder="Ketik untuk cari desa..."
-                style={{ width: '100%' }}
-                size="large"
-                listHeight={256}
-                showSearch
-                optionFilterProp="label"
-                filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
                 value={formData.villageRegionId}
-                onChange={handleVillageChange}
+                onChange={(val) => {
+                  if (!val) {
+                    updateField('villageRegionId', null);
+                    setDesaOptions([]);
+                  } else {
+                    handleVillageChange(val);
+                  }
+                }}
+                allowClear
+                showSearch
                 onSearch={(val) => debounce('village', () => formData.districtId && fetchVillages(formData.districtId, val), 500)}
                 disabled={!formData.districtId}
                 loading={loadingDesa}
                 notFoundContent={loadingDesa ? 'Memuat data...' : 'Tidak ada data desa'}
-                allowClear
-                onClear={() => { updateField('villageRegionId', null); setDesaOptions([]); }}
-                dropdownRender={(menu) => (
-                  <div>
-                    {menu}
-                    {desaHasMore && (
-                      <div style={{ padding: '8px 12px', textAlign: 'center', borderTop: '1px solid #f0f0f0' }}>
-                        <Button type="link" size="small" loading={loadingDesa} onClick={() => fetchVillages(formData.districtId, desaSearch, desaPage + 1, true)}>
-                          Muat Lainnya...
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              >
-                {desaOptions.map(d => (
-                  <Option key={d.id} value={d.id} label={d.name}><span style={{ fontSize:13 }}>{d.name}</span></Option>
-                ))}
-              </Select>
+                error={errors.villageRegionId}
+                options={desaOptions.map(d => ({ value: d.id, label: d.name }))}
+                hasMore={desaHasMore}
+                loadingMore={loadingDesa}
+                onLoadMore={() => fetchVillages(formData.districtId, desaSearch, desaPage + 1, true)}
+              />
             </div>
           </Col>
           <div style={{visibility :'hidden'}}>
-            <Text >Jenis DSA *</Text>
-            <Select placeholder="Pilih kategori terlebih dahulu"
-              value={formData.jenis_dsa} disabled>
-              <Option value="kelompok"><span style={{ fontSize:13 }}>Kelompok</span></Option>
-              <Option value="individu"><span style={{ fontSize:13 }}>Individu</span></Option>
-            </Select>
+            <Text>Jenis DSA *</Text>
+            <Input value={formData.jenis_dsa} disabled />
           </div>
         </Row>
       </div>
@@ -1130,15 +1083,18 @@ const FormPendaftaran = () => {
 
       <div style={fieldWrapper}>
         <Text style={errors.durasi_program ? labelErrorStyle : labelStyle}>Durasi Program *</Text>
-        <Select placeholder="Pilih durasi program..." style={{ width: '100%' }} size="large"
-          listHeight={256}
-          value={formData.durasi_program} onChange={val => updateField('durasi_program', val)}>
-          <Option value="<1 Tahun"><span style={{ fontSize:13 }}>&lt;1 Tahun</span></Option>
-          <Option value="1-3 Tahun"><span style={{ fontSize:13 }}>1-3 Tahun</span></Option>
-          <Option value="3-5 Tahun"><span style={{ fontSize:13 }}>3-5 Tahun</span></Option>
-          <Option value=">5 Tahun"><span style={{ fontSize:13 }}>&gt;5 Tahun</span></Option>
-        </Select>
-        {errors.durasi_program && <Text style={errorTextStyle}>{errors.durasi_program}</Text>}
+        <SearchSelect
+          placeholder="Pilih durasi program..."
+          value={formData.durasi_program}
+          onChange={val => updateField('durasi_program', val)}
+          error={errors.durasi_program}
+          options={[
+            { value: '<1 Tahun', label: '< 1 Tahun' },
+            { value: '1-3 Tahun', label: '1-3 Tahun' },
+            { value: '3-5 Tahun', label: '3-5 Tahun' },
+            { value: '>5 Tahun', label: '> 5 Tahun' },
+          ]}
+        />
       </div>
 
       <div style={fieldWrapper}>

@@ -37,6 +37,23 @@ const PesertaDashboard = () => {
   const { registration, dashboardData, loading, hasRegistration } = useRegistration();
   const [detailOpen, setDetailOpen] = useState(false);
   const [statusModalOpen, setStatusModalOpen] = useState(false);
+  const [timelineData, setTimelineData] = useState([]);
+
+  // Fetch timeline dari system-settings
+  React.useEffect(() => {
+    import('../../services/menuService').then(({ default: menuService }) => {
+      menuService.getSystemSettings().then(result => {
+        const settings = Array.isArray(result) ? result : [];
+        const tlSetting = settings.find(s => s.key === 'timeline');
+        if (tlSetting?.value) {
+          try {
+            const parsed = JSON.parse(tlSetting.value);
+            setTimelineData(Array.isArray(parsed) ? parsed : []);
+          } catch { /* ignore invalid JSON */ }
+        }
+      }).catch(() => {});
+    });
+  }, []);
 
   // Auto-open status modal untuk finalist/rejected
   React.useEffect(() => {
@@ -444,42 +461,24 @@ const PesertaDashboard = () => {
               style={{ borderRadius: 12, border: '1px solid #e2e8f0', marginBottom:'20px' }}
               bodyStyle={{ padding: 0 }}
             >
-              {/* Tahap 1 */}
-              <div style={{ background: '#2563eb', padding: '12px 20px' }}>
-                <Text strong style={{ color: '#fff', fontSize: 13, letterSpacing: 0.5 }}>TAHAP 1 — PENDAFTARAN & SOSIALISASI</Text>
-              </div>
-              {[
-                { date: '25 Juni', desc: 'Kick Off & Pembukaan Pendaftaran Lomba Inovasi', active: status === 'draft' },
-                { date: '29 Juni – 17 Juli', desc: 'Open Registration', active: ['draft', 'waiting_screening'].includes(status) },
-                { date: '7 Juli', desc: 'Sosialisasi Lomba Inovasi', active: false },
-                { date: '28 – 30 Juli', desc: 'Pengumuman Hasil Seleksi Tahap 1 & Pengumuman Linimasa Tahap 2', active: ['assessed', 'finalist', 'rejected'].includes(status) },
-              ].map((item, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '14px 20px', borderBottom: idx < 3 ? '1px solid #f1f5f9' : 'none', background: item.active ? '#f0f7ff' : 'transparent' }}>
-                  <div style={{ width: 10, height: 10, borderRadius: '50%', marginTop: 5, flexShrink: 0, background: item.active ? '#2563eb' : '#d1d5db', boxShadow: item.active ? '0 0 0 3px rgba(37,99,235,0.2)' : 'none' }} />
-                  <div style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>{item.date}</Text>
-                    <Text style={{ fontSize: 13, color: '#1e293b', display: 'block', marginTop: 2 }}>{item.desc}</Text>
+              {/* Timeline dari API */}
+              {timelineData.map((phase, phaseIdx) => (
+                <React.Fragment key={phaseIdx}>
+                  <div style={{ background: phaseIdx === 0 ? '#2563eb' : '#7c3aed', padding: '12px 20px' }}>
+                    <Text strong style={{ color: '#fff', fontSize: 13, letterSpacing: 0.5 }}>{phase.phase}</Text>
                   </div>
-                </div>
-              ))}
-
-              {/* Tahap 2 */}
-              <div style={{ background: '#7c3aed', padding: '12px 20px' }}>
-                <Text strong style={{ color: '#fff', fontSize: 13, letterSpacing: 0.5 }}>TAHAP 2 — PENJURIAN</Text>
-              </div>
-              {[
-                { date: '4 Agustus', desc: 'Kategori Kesehatan Kelompok (1-8), Kategori Pendidikan Kelompok (1-8)' },
-                { date: '6 Agustus', desc: 'Kategori Kesehatan Individu (1-8), Kategori Pendidikan Individu (1-8)' },
-                { date: '11 Agustus', desc: 'Kategori Lingkungan Kelompok (1-8), Kategori Kewirausahaan Kelompok (1-8)' },
-                { date: '13 Agustus', desc: 'Kategori Lingkungan Individu (1-8), Kategori Kewirausahaan Individu (1-8)' },
-              ].map((item, idx) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '14px 20px', borderBottom: idx < 3 ? '1px solid #f1f5f9' : 'none' }}>
-                  <div style={{ width: 10, height: 10, borderRadius: '50%', marginTop: 5, flexShrink: 0, background: '#d1d5db' }} />
-                  <div style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>{item.date}</Text>
-                    <Text style={{ fontSize: 13, color: '#1e293b', display: 'block', marginTop: 2 }}>{item.desc}</Text>
-                  </div>
-                </div>
+                  {phase.schedules.map((schedule, idx) => (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '14px 20px', borderBottom: idx < phase.schedules.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                      <div style={{ width: 10, height: 10, borderRadius: '50%', marginTop: 5, flexShrink: 0, background: '#d1d5db' }} />
+                      <div style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>{schedule.date}</Text>
+                        {schedule.activities.map((act, actIdx) => (
+                          <Text key={actIdx} style={{ fontSize: 13, color: '#1e293b', display: 'block', marginTop: 2 }}>{act}</Text>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </React.Fragment>
               ))}
             </Card>
             )}

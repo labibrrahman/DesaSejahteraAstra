@@ -70,6 +70,7 @@ const MasterWilayah = () => {
   });
   const [parentOptions, setParentOptions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [tablePage, setTablePage] = useState({ current: 1, pageSize: 10 });
   const [submitting, setSubmitting] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
@@ -193,7 +194,7 @@ const MasterWilayah = () => {
   /** Kolom tabel berdasarkan tab aktif */
   const getColumns = () => {
     const baseColumns = [
-      { title: 'No', key: 'no', render: (_, __, index) => index + 1, width: 60 },
+      { title: 'No', key: 'no', render: (_, __, index) => (tablePage.current - 1) * tablePage.pageSize + index + 1, width: 60 },
       { title: 'Kode', dataIndex: 'kode', key: 'kode', width: 120 },
       { title: 'Nama', dataIndex: 'nama', key: 'nama' },
     ];
@@ -312,7 +313,7 @@ const MasterWilayah = () => {
               item.parentNama?.toLowerCase().includes(searchText.toLowerCase())
             )}
             rowKey="id"
-            pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50'], showTotal: (total) => `Total ${total} data` }}
+            pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50'], showTotal: (total) => `Total ${total} data`, onChange: (page, pageSize) => setTablePage({ current: page, pageSize }) }}
             scroll={{ x: 500 }}
           />
         </Spin>

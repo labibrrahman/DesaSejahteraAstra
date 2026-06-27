@@ -45,6 +45,7 @@ const MasterGrupAstra = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [form] = Form.useForm();
+  const [tablePage, setTablePage] = useState({ current: 1, pageSize: 10 });
 
   /** Fetch semua Binaan dari API */
   const fetchData = useCallback(async () => {
@@ -118,7 +119,7 @@ const MasterGrupAstra = () => {
     {
       title: 'No',
       key: 'no',
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => (tablePage.current - 1) * tablePage.pageSize + index + 1,
       width: 60,
     },
     {
@@ -185,7 +186,7 @@ const MasterGrupAstra = () => {
             columns={columns}
             dataSource={filteredData}
             rowKey="id"
-            pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50'], showTotal: (total) => `Total ${total} data` }}
+            pagination={{ pageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50'], showTotal: (total) => `Total ${total} data`, onChange: (page, pageSize) => setTablePage({ current: page, pageSize }) }}
             scroll={{ x: 500 }}
           />
         </Spin>

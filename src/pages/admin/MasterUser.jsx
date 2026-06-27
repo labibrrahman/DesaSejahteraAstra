@@ -209,7 +209,7 @@ const MasterUser = () => {
     {
       title: 'No',
       key: 'no',
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => (pagination.current - 1) * pagination.pageSize + index + 1,
       width: 60,
     },
     {

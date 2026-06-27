@@ -14,9 +14,6 @@ import { useNavigate } from 'react-router-dom';
 import astraLogo from '../../assets/images/astra-logo.png';
 import satuIndoLogo from '../../assets/images/satu-indonesia-logo.png';
 import heroBg from '../../assets/LandingPageAsset/ASET-01.png';
-import geoLeft from '../../assets/LandingPageAsset/ASET-07(1).png';
-import geoRight from '../../assets/LandingPageAsset/ASET-08(2).png';
-import titleImage from '../../assets/LandingPageAsset/ASET-09.png';
 import useIsMobile from '../../hooks/useIsMobile';
 
 const { Text } = Typography;
@@ -57,6 +54,21 @@ const LandingPage = () => {
   const [faqData, setFaqData] = useState([]);
   const [pilarData, setPilarData] = useState([]);
   const [supportWhatsapp, setSupportWhatsapp] = useState('');
+  const [lazyImages, setLazyImages] = useState({ geoLeft: null, geoRight: null, titleImage: null });
+
+  // Lazy load gambar dekoratif setelah hero load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      Promise.all([
+        import('../../assets/LandingPageAsset/ASET-07(1).png').then(m => m.default),
+        import('../../assets/LandingPageAsset/ASET-08(2).png').then(m => m.default),
+        import('../../assets/LandingPageAsset/ASET-09.png').then(m => m.default),
+      ]).then(([geoL, geoR, title]) => {
+        setLazyImages({ geoLeft: geoL, geoRight: geoR, titleImage: title });
+      }).catch(() => {});
+    }, 300); // delay 300ms agar hero load dulu
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -149,42 +161,48 @@ const LandingPage = () => {
           </div>
 
           {/* Geometric kiri */}
-          <img
-            src={geoLeft}
-            alt=""
-            className="geo-left"
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              width: '30%',
-              maxWidth: 400,
-              zIndex: 1,
-              pointerEvents: 'none',
-              opacity: 0.9,
-              WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
-              maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
-            }}
-          />
+          {lazyImages.geoLeft && (
+            <img
+              src={lazyImages.geoLeft}
+              alt=""
+              className="geo-left"
+              loading="lazy"
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: '30%',
+                maxWidth: 400,
+                zIndex: 1,
+                pointerEvents: 'none',
+                opacity: 0.9,
+                WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
+                maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
+              }}
+            />
+          )}
 
           {/* Geometric kanan */}
-          <img
-            src={geoRight}
-            alt=""
-            className="geo-right"
-            style={{
-              position: 'absolute',
-              right: 0,
-              top: 0,
-              width: '30%',
-              maxWidth: 400,
-              zIndex: 1,
-              pointerEvents: 'none',
-              opacity: 0.9,
-              WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
-              maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
-            }}
-          />
+          {lazyImages.geoRight && (
+            <img
+              src={lazyImages.geoRight}
+              alt=""
+              className="geo-right"
+              loading="lazy"
+              style={{
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '30%',
+                maxWidth: 400,
+                zIndex: 1,
+                pointerEvents: 'none',
+                opacity: 0.9,
+                WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
+                maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
+              }}
+            />
+          )}
 
           {/* Floating Satu Indonesia Badge */}
           <div
@@ -220,25 +238,29 @@ const LandingPage = () => {
               zIndex: 10,
               padding: `150px ${isMobile ? 20 : 64}px`,
               textAlign: 'center',
-              maxWidth: 800,
+              maxWidth: 1500,
               width: '100%',
             }}
           >
 
             {/* Title */}
-            <img
-              src={titleImage}
-              alt="Lomba Apresiasi Desa Sejahtera Astra"
-              style={{
-                maxWidth: isMobile ? 300 : 500,
-                width: '100%',
-                height: 'auto',
-                marginBottom: isMobile ? 16 : 24,
-                filter: 'drop-shadow(0 4px 24px rgba(0,0,0,0.2))',
-                display: 'block',
-                margin: '0 auto',
-              }}
-            />
+            {lazyImages.titleImage ? (
+              <img
+                src={lazyImages.titleImage}
+                alt="Lomba Apresiasi Desa Sejahtera Astra"
+                style={{
+                  maxWidth: isMobile ? 300 : 500,
+                  width: '100%',
+                  height: 'auto',
+                  marginBottom: isMobile ? 16 : 24,
+                  filter: 'drop-shadow(0 4px 24px rgba(0,0,0,0.2))',
+                  display: 'block',
+                  margin: '0 auto',
+                }}
+              />
+            ) : (
+              <div style={{ maxWidth: isMobile ? 300 : 500, height: isMobile ? 150 : 250, margin: '0 auto', marginBottom: isMobile ? 16 : 24 }} />
+            )}
 
             {/* Subtitle */}
             <p
@@ -253,7 +275,7 @@ const LandingPage = () => {
                 textShadow: '0 2px 8px rgba(0,0,0,0.1)',
               }}
             >
-              Lomba ini adalah semangat Astra untuk terus mendorong inovasi 4 bidang (kesehatan, pendidikan, lingkungan, kewirausahaan) di desa binaan Grup & Yayasan Astra melalui flagship program Desa Sejahtera Astra yang menjadi semangat bersama dalam pemberdayaan rural development..
+              Lomba ini adalah semangat Astra untuk terus mendorong inovasi 4 bidang (kesehatan, pendidikan, lingkungan, kewirausahaan) di desa binaan Grup & Yayasan Astra melalui flagship program Desa Sejahtera Astra yang menjadi semangat bersama dalam pemberdayaan rural development.
               {/* Membangun masa depan berkelanjutan melalui sinergi dan inovasi sosial. */}
             </p>
 

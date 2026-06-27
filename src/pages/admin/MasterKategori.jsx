@@ -21,6 +21,7 @@ import {
   SearchOutlined,
 } from '@ant-design/icons';
 import masterService from '../../services/masterService';
+import logger from '../../lib/logger';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -65,7 +66,7 @@ const MasterKategori = () => {
       setData(list.map(mapFromApi));
     } catch (error) {
       message.error('Gagal memuat data kategori');
-      console.error('Fetch kategori error:', error);
+      logger.error('Fetch kategori error:', error);
     } finally {
       setLoading(false);
     }
@@ -78,7 +79,7 @@ const MasterKategori = () => {
       const list = Array.isArray(result) ? result : [];
       setPilarOptions(list.map((item) => ({ id: item.id, name: item.name })));
     } catch (error) {
-      console.error('Fetch pilar error:', error);
+      logger.error('Fetch pilar error:', error);
     }
   }, []);
 

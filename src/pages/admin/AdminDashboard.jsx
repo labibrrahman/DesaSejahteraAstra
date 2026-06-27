@@ -9,6 +9,7 @@ import {
 } from '@ant-design/icons';
 import adminService from '../../services/adminService';
 import masterService from '../../services/masterService';
+import logger from '../../lib/logger';
 
 const { Title, Text } = Typography;
 
@@ -99,7 +100,7 @@ const AdminDashboard = () => {
       setRecentRegistrations(mapped.recentRegistrations);
     } catch (error) {
       message.error('Gagal memuat data dashboard');
-      console.error('Fetch dashboard error:', error);
+      logger.error('Fetch dashboard error:', error);
     } finally {
       setLoading(false);
     }

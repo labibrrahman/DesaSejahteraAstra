@@ -21,6 +21,7 @@ import {
   SearchOutlined,
 } from '@ant-design/icons';
 import masterService from '../../services/masterService';
+import logger from '../../lib/logger';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -103,7 +104,7 @@ const MasterWilayah = () => {
       setDataByTab((prev) => ({ ...prev, [tabKey]: mapped }));
     } catch (error) {
       message.error(`Gagal memuat data ${TAB_LABEL_MAP[tabKey]}`);
-      console.error('Fetch regions error:', error);
+      logger.error('Fetch regions error:', error);
     } finally {
       setLoading(false);
     }
@@ -122,7 +123,7 @@ const MasterWilayah = () => {
       const list = Array.isArray(result) ? result : [];
       setParentOptions(list.map((item) => ({ id: item.id, name: item.name })));
     } catch (error) {
-      console.error('Fetch parent options error:', error);
+      logger.error('Fetch parent options error:', error);
     }
   }, []);
 

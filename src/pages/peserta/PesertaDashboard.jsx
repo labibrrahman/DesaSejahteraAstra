@@ -536,7 +536,12 @@ const PesertaDashboard = () => {
                   Tim pendamping Astra siap membantu Anda dalam setiap tahapan program.
                 </Text>
                 <Button
-                  onClick={() => window.open(`${dashboardData?.support?.whatsapp || 'https://wa.me/6285713043230'}`, '_blank')}
+                  onClick={() => {
+                    const url = dashboardData?.support?.whatsapp || 'https://wa.me/6285713043230';
+                    if (url.match(/^https:\/\/(wa\.me|api\.whatsapp\.com)\//)) {
+                      window.open(url, '_blank', 'noopener,noreferrer');
+                    }
+                  }}
                   style={{
                     background: '#fff',
                     borderColor: '#fff',

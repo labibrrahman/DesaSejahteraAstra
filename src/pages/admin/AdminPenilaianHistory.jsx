@@ -25,6 +25,7 @@ import {
 } from '@ant-design/icons';
 import adminService from '../../services/adminService';
 import masterService from '../../services/masterService';
+import logger from '../../lib/logger';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -95,7 +96,7 @@ const AdminPenilaianHistory = () => {
         message.error(backendMsg || 'Gagal memuat data penilaian');
       }
 
-      console.error('Fetch assessments error:', error.response?.data || error.message);
+      logger.error('Fetch assessments error:', error.response?.data || error.message);
     } finally {
       setLoading(false);
     }
@@ -158,7 +159,7 @@ const AdminPenilaianHistory = () => {
       message.success('Berhasil mengunduh file export');
     } catch (error) {
       message.error('Gagal mengexport data');
-      console.error('Export error:', error);
+      logger.error('Export error:', error);
     }
   };
 

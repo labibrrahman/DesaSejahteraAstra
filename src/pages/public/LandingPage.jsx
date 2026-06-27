@@ -502,7 +502,12 @@ const LandingPage = () => {
             </div>
 
             <Row gutter={[isMobile ? 16 : 48, isMobile ? 32 : 48]} justify="center">
-              <Col xs={24} sm={8} onClick={() => window.open(`${supportWhatsapp}`, '_blank')} style={{ cursor: 'pointer' }}>
+              <Col xs={24} sm={8} onClick={() => {
+                const url = supportWhatsapp || '';
+                if (url.match(/^https:\/\/(wa\.me|api\.whatsapp\.com)\//)) {
+                  window.open(url, '_blank', 'noopener,noreferrer');
+                }
+              }} style={{ cursor: 'pointer' }}>
                 <div style={{ textAlign: 'center', padding: isMobile ? 20 : 32 }}>
                   <div style={{ marginBottom: 16 }}>
                     <PhoneOutlined style={{ fontSize: 32, color: '#1870F0' }} />

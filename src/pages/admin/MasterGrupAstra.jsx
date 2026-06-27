@@ -19,6 +19,7 @@ import {
   SearchOutlined,
 } from '@ant-design/icons';
 import masterService from '../../services/masterService';
+import logger from '../../lib/logger';
 
 const { Title, Text } = Typography;
 
@@ -56,7 +57,7 @@ const MasterGrupAstra = () => {
       setData(list.map(mapFromApi));
     } catch (error) {
       message.error('Gagal memuat data Perusahaan/Yayasan Pembina');
-      console.error('Fetch astra groups error:', error);
+      logger.error('Fetch astra groups error:', error);
     } finally {
       setLoading(false);
     }

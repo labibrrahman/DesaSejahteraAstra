@@ -19,6 +19,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import adminService from '../../services/adminService';
 import RegistrationDetailModal from '../../components/RegistrationDetailModal';
+import logger from '../../lib/logger';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -97,7 +98,7 @@ const JuriPesertaList = () => {
         message.error(backendMsg || 'Gagal memuat data peserta');
       }
 
-      console.error('Fetch tasks error:', error.response?.data || error.message);
+      logger.error('Fetch tasks error:', error.response?.data || error.message);
     } finally {
       setLoading(false);
     }

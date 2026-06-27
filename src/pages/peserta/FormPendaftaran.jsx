@@ -21,6 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../lib/api';
 import masterService from '../../services/masterService';
 import registrationService from '../../services/registrationService';
+import logger from '../../lib/logger';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -256,7 +257,7 @@ const FormPendaftaran = () => {
       setProvincePage(page);
       if (search !== undefined) setProvinceSearch(search);
     } catch {
-      console.error('Gagal memuat provinsi');
+      logger.error('Gagal memuat provinsi');
     } finally {
       setLoadingProvinces(false);
     }

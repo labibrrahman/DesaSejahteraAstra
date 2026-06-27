@@ -20,6 +20,7 @@ import {
   SearchOutlined,
 } from '@ant-design/icons';
 import masterService from '../../services/masterService';
+import logger from '../../lib/logger';
 
 const { Title, Text } = Typography;
 
@@ -63,7 +64,7 @@ const MasterPilar = () => {
       setData(list.map(mapFromApi));
     } catch (error) {
       message.error('Gagal memuat data pilar');
-      console.error('Fetch pilar error:', error);
+      logger.error('Fetch pilar error:', error);
     } finally {
       setLoading(false);
     }

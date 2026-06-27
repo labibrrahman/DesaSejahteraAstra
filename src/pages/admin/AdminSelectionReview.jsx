@@ -11,6 +11,7 @@ import {
 import adminService from '../../services/adminService';
 import masterService from '../../services/masterService';
 import RegistrationDetailModal from '../../components/RegistrationDetailModal';
+import logger from '../../lib/logger';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -79,7 +80,7 @@ const AdminSelectionReview = () => {
       setPagination(prev => ({ ...prev, current: result.page || page, total: result.total || 0 }));
     } catch (error) {
       message.error('Gagal memuat data seleksi');
-      console.error(error);
+      logger.error(error);
     } finally {
       setLoading(false);
     }
@@ -117,7 +118,7 @@ const AdminSelectionReview = () => {
       message.success('Export berhasil');
     } catch (error) {
       message.error('Gagal export data');
-      console.error(error);
+      logger.error(error);
     }
   };
 
@@ -224,7 +225,7 @@ const AdminSelectionReview = () => {
       setDetailData(Array.isArray(result) ? result : result?.data || []);
     } catch (error) {
       message.error('Gagal memuat detail penilaian');
-      console.error(error);
+      logger.error(error);
       setDetailData([]);
     } finally {
       setDetailLoading(false);

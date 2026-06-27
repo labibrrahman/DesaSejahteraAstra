@@ -22,6 +22,7 @@ import {
   StarOutlined,
 } from '@ant-design/icons';
 import adminService from '../../services/adminService';
+import logger from '../../lib/logger';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -72,7 +73,7 @@ const JuriPenilaianHistory = () => {
         message.error(backendMsg || 'Gagal memuat riwayat penilaian');
       }
 
-      console.error('Fetch history error:', error.response?.data || error.message);
+      logger.error('Fetch history error:', error.response?.data || error.message);
     } finally {
       setLoading(false);
     }

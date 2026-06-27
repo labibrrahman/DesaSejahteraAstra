@@ -133,6 +133,8 @@ const useAuthStore = create((set, get) => ({
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('form_pendaftaran_draft');
+    sessionStorage.removeItem('astra_group_checked');
     set({
       user: null,
       accessToken: null,

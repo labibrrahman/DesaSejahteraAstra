@@ -974,4 +974,3 @@ const AdminPesertaList = () => {
 };
 
 export default AdminPesertaList;
-

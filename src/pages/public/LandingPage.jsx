@@ -528,28 +528,30 @@ const LandingPage = () => {
       {/* ── Footer ──────────────────────────────────────────────────────────── */}
       <Footer
         style={{
-          padding: `${isMobile ? 32 : 48}px ${px}px`,
-          background: '#181c21',
+          padding: 0,
+          background: '#0f172a',
         }}
       >
-        <div
-          style={{
+        {/* Footer Bottom */}
+        <div style={{
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          padding: `${isMobile ? 20 : 24}px ${px}px`,
+        }}>
+          <div style={{
             maxWidth: 1280,
             margin: '0 auto',
             display: 'flex',
-            flexDirection: 'column',
+            flexDirection: isMobile ? 'column' : 'row',
             justifyContent: 'space-between',
             alignItems: 'center',
-            gap: isMobile ? 24 : 0,
-          }}
-        >
-          <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: 'center', gap: isMobile ? 16 : 24 }}>
-            <div style={{ display: 'flex', gap: 24 }}>
-            </div>
-            <div style={{ display: 'flex', gap: 24, textAlign:'center' }}>
-              <Text style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
-                © 2026 Astra. All Rights Reserved.
-              </Text>
+            gap: isMobile ? 12 : 0,
+          }}>
+            <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12 }}>
+              © 2026 Astra International. All Rights Reserved.
+            </Text>
+            <div style={{ display: 'flex', gap: 20 }}>
+              <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, cursor: 'pointer', transition: 'color 0.2s' }} onClick={() => navigate('/privacy')} onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}>Kebijakan Privasi</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, cursor: 'pointer', transition: 'color 0.2s' }} onClick={() => navigate('/terms')} onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}>Ketentuan Layanan</Text>
             </div>
           </div>
         </div>

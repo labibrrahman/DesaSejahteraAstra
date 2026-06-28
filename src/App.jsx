@@ -10,6 +10,8 @@ import LandingPage from './pages/public/LandingPage';
 import Login from './pages/public/Login';
 import AuthCallback from './pages/public/AuthCallback';
 import MaintenancePage from './pages/public/MaintenancePage';
+import TermsPage from './pages/public/TermsPage';
+import PrivacyPage from './pages/public/PrivacyPage';
 
 // Peserta Pages
 import AppLayout from './components/layouts/AppLayout';
@@ -89,6 +91,8 @@ function App() {
           <Route path="/login/admin" element={<Login adminMode />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/maintenance" element={<MaintenancePage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
 
           {/* Peserta Routes — dengan sidebar */}
           <Route

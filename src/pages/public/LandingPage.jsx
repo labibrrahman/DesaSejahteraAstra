@@ -275,7 +275,7 @@ const LandingPage = () => {
                 textShadow: '0 2px 8px rgba(0,0,0,0.1)',
               }}
             >
-              Lomba ini adalah semangat Astra untuk terus mendorong inovasi 4 bidang (kesehatan, pendidikan, lingkungan, kewirausahaan) di desa binaan Grup & Yayasan Astra melalui flagship program Desa Sejahtera Astra yang menjadi semangat bersama dalam pemberdayaan rural development.
+              Apresiasi ini adalah semangat Astra untuk terus mendorong inovasi 4 bidang (kesehatan, pendidikan, lingkungan, kewirausahaan) di desa binaan Grup & Yayasan Astra melalui flagship program Desa Sejahtera Astra yang menjadi semangat bersama dalam pemberdayaan rural development.
               {/* Membangun masa depan berkelanjutan melalui sinergi dan inovasi sosial. */}
             </p>
 

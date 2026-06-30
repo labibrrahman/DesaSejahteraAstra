@@ -177,12 +177,6 @@ const RegistrationDetailModal = ({
               <DescriptionBlock label="Rencana dan Potensi Pengembangan" value={reg.developmentPlan} color="#722ed1" />
               <DescriptionBlock label="Keberlanjutan Program" value={reg.sustainabilityPlan} color="#10b981" />
               <DescriptionBlock label="Evaluasi Program" value={reg.programEvaluation} color="#f59e0b" />
-                {reg.documentLink && (
-                  <div style={{ marginTop: 12 }}>
-                    <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Link Dokumen/Drive Pendukung</Text>
-                    <a href={reg.documentLink} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, wordBreak: 'break-all' }}>{reg.documentLink}</a>
-                  </div>
-                )}
               {/* Foto Dokumentasi */}
               {Array.isArray(reg.photos) && reg.photos.length > 0 && (
                 <div style={{ marginTop: 12 }}>
@@ -202,6 +196,12 @@ const RegistrationDetailModal = ({
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+              {reg.documentLink && (
+                <div style={{ marginTop: 12 }}>
+                  <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Link dokumentasi lainnya</Text>
+                  <a href={reg.documentLink} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, wordBreak: 'break-all' }}>{reg.documentLink}</a>
                 </div>
               )}
             </div>

@@ -171,42 +171,33 @@ const JuriFormPenilaian = () => {
             <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #f59e0b' }}><Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>{peserta.evaluasi_program}</Paragraph></div></div>
           </div>
 
-          {/* Evaluasi Program */}
-          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 15, overflow: 'hidden' }}>
+          {/* Foto Dokumentasi */}
+          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 20, overflow: 'hidden' }}>
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#fffbeb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CheckCircleFilled style={{ color: '#f59e0b', fontSize: 14 }} /></div>
-              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Evaluasi Program</Text>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CameraOutlined style={{ color: '#f59e0b', fontSize: 14 }} /></div>
+              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Foto Dokumentasi</Text>
             </div>
-            <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #f59e0b' }}><Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>{peserta.evaluasi_program}</Paragraph></div></div>
+            <div style={{ padding: 20 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {peserta.foto.map((photo, i) => (
+                  <div key={i} onClick={() => setPreviewPhoto(photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`)} style={{ width: 100, height: 100, borderRadius: 8, overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer' }}>
+                    <img src={photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`} alt={photo.originalName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
-          {/* Link Dokumen/Drive Pendukung */}
+          {/* Link dokumentasi lainnya */}
           {peserta.document_link && peserta.document_link !== '-' && (
             <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 15, overflow: 'hidden' }}>
               <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 32, height: 32, borderRadius: 8, background: '#eff4ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><LinkOutlined style={{ color: '#1890ff', fontSize: 14 }} /></div>
-                <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Link Dokumen/Drive Pendukung</Text>
+                <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Link dokumentasi lainnya</Text>
               </div>
               <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #1890ff' }}><a href={peserta.document_link} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: '#1890ff', wordBreak: 'break-all' }}>{peserta.document_link}</a></div></div>
             </div>
           )}
-
-          {/* Foto Dokumentasi */}
-            <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 20, overflow: 'hidden' }}>
-              <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CameraOutlined style={{ color: '#f59e0b', fontSize: 14 }} /></div>
-                <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Foto Dokumentasi</Text>
-              </div>
-              <div style={{ padding: 20 }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {peserta.foto.map((photo, i) => (
-                    <div key={i} onClick={() => setPreviewPhoto(photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`)} style={{ width: 100, height: 100, borderRadius: 8, overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer' }}>
-                      <img src={photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`} alt={photo.originalName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
 
                     {/* Info Peserta */}
           <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 20, overflow: 'hidden' }}>

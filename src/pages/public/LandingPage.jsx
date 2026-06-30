@@ -273,34 +273,35 @@ const LandingPage = () => {
                 )}
               </div>
 
-              {/* DSA Logo + Kategori */}
+              {/* Kategori + DSA Logo */}
               {lazyImages.titleImage && (
                 <div style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: isMobile ? 12 : 24,
                   position: 'relative',
                   zIndex: 1,
+                  display: 'flex',
+                  marginLeft: isMobile ? '100px' :'30px',
+                  justifyContent: 'center',
+                  alignItems: 'center',
                 }}>
-                  <div style={{ textAlign: 'left' }}>
-                    <Text style={{
-                      color: '#fff',
-                      fontSize: isMobile ? 18 : 28,
-                      fontWeight: 700,
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
-                      textShadow: '0 2px 12px rgba(0,0,0,0.3)',
-                      letterSpacing: 2,
-                    }}>
-                      Kategori
-                    </Text>
-                  </div>
+                  <Text style={{
+                    position: 'absolute',
+                    right: isMobile ? 'calc(80% + 20px)' : 'calc(100% + 20px)',
+                    color: '#fff',
+                    fontSize: isMobile ? 14 : 28,
+                    fontWeight: 700,
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    textShadow: '0 2px 12px rgba(0,0,0,0.3)',
+                    letterSpacing: 2,
+                    whiteSpace: 'nowrap',
+                  }}>
+                    Kategori
+                  </Text>
                   <img
                     src={dsaLogo}
                     alt="Desa Sejahtera Astra Logo"
                     style={{
                       maxWidth: isMobile ? 180 : 280,
-                      width: '100%',
+                      width: isMobile ? '70%' : '100%',
                       height: 'auto',
                       filter: 'brightness(0) invert(1) drop-shadow(0 10px 40px rgba(0,0,0,0.5)) drop-shadow(0 0 100px rgba(255,255,255,0.25))',
                     }}

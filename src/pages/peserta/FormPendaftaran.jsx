@@ -619,7 +619,7 @@ const FormPendaftaran = () => {
               Konfirmasi Akses
             </Title>
             <Text style={{ fontSize: 14, color: '#64748b', display: 'block', marginBottom: 28, lineHeight: 1.7 }}>
-              Silahkan dipilih apakah anda merupakan Binaan <Text strong style={{ color: '#1e293b' }}>Grup Astra </Text> atau tidak?
+              Silahkan dipilih apakah anda merupakan Binaan <Text strong style={{ color: '#1e293b' }}>Grup Astra atau Yayasan Astra</Text> atau tidak?
             </Text>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
               <Button
@@ -635,7 +635,7 @@ const FormPendaftaran = () => {
                 onClick={handleAstraYes}
                 style={{ fontWeight: 600, height: 44, paddingInline: 28, borderRadius: 8, background: '#2563eb', borderColor: '#2563eb' }}
               >
-                Ya, Saya Binaan Grup Astra
+                Ya, Saya Adalah Binaan
               </Button>
             </div>
           </div>
@@ -862,28 +862,6 @@ const FormPendaftaran = () => {
           </Col>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={errors.nama_kelompok ? labelErrorStyle : labelStyle}>Nama Ketua Kelompok *</Text>
-              <Input
-                placeholder="Nama Ketua Kelompok"
-                style={errors.nama_kelompok ? inputErrorStyle : inputStyle}
-                value={formData.nama_kelompok}
-                onChange={e => handleNameChange('nama_kelompok', e)}
-              />
-              {errors.nama_kelompok && <Text style={errorTextStyle}>{errors.nama_kelompok}</Text>}
-            </div>
-          </Col>
-        </Row>
-
-        <Row gutter={[24, 0]}>
-          <Col xs={24} sm={12}>
-            <div style={fieldWrapper}>
-              <Text style={errors.phone_number ? labelErrorStyle : labelStyle}>Nomor HP Ketua Kelompok *</Text>
-              <Input placeholder="Contoh: 08123456789" style={errors.phone_number ? inputErrorStyle : inputStyle} value={formData.phone_number} onChange={handlePhoneChange} maxLength={15} inputMode="numeric" />
-              {errors.phone_number && <Text style={errorTextStyle}>{errors.phone_number}</Text>}
-            </div>
-          </Col>
-          <Col xs={24} sm={12}>
-            <div style={fieldWrapper}>
               <Text style={labelStyle}>Perusahaan/Yayasan Pembina (Opsional)</Text>
               <SearchSelect
                 placeholder="Pilih Perusahaan/Yayasan Pembina..."
@@ -899,6 +877,28 @@ const FormPendaftaran = () => {
               {formData.grup_astra_id === 'others' && (
                 <Input placeholder="Masukkan nama Perusahaan/Yayasan Pembina lainnya" style={{ ...inputStyle, marginTop: 8 }} value={formData.binaan_custom || ''} onChange={e => updateField('binaan_custom', e.target.value)} />
               )}
+            </div>
+          </Col>
+        </Row>
+
+        <Row gutter={[24, 0]}>
+          <Col xs={24} sm={12}>
+            <div style={fieldWrapper}>
+              <Text style={errors.nama_kelompok ? labelErrorStyle : labelStyle}>Nama Ketua Kelompok *</Text>
+              <Input
+                placeholder="Nama Ketua Kelompok"
+                style={errors.nama_kelompok ? inputErrorStyle : inputStyle}
+                value={formData.nama_kelompok}
+                onChange={e => handleNameChange('nama_kelompok', e)}
+              />
+              {errors.nama_kelompok && <Text style={errorTextStyle}>{errors.nama_kelompok}</Text>}
+            </div>
+          </Col>
+          <Col xs={24} sm={12}>
+            <div style={fieldWrapper}>
+              <Text style={errors.phone_number ? labelErrorStyle : labelStyle}>Nomor HP Ketua Kelompok *</Text>
+              <Input placeholder="Contoh: 08123456789" style={errors.phone_number ? inputErrorStyle : inputStyle} value={formData.phone_number} onChange={handlePhoneChange} maxLength={15} inputMode="numeric" />
+              {errors.phone_number && <Text style={errorTextStyle}>{errors.phone_number}</Text>}
             </div>
           </Col>
         </Row>
@@ -1077,11 +1077,6 @@ const FormPendaftaran = () => {
         </span>
       </div>
 
-      <div style={{ marginBottom: 24 }}>
-        <Text style={{ ...labelStyle, fontSize: 15 }}>Informasi Program</Text>
-        <Text type="secondary" style={{ fontSize: 13 }}>Jelaskan detail program yang telah berjalan</Text>
-      </div>
-
       <div style={fieldWrapper}>
         <Text style={errors.durasi_program ? labelErrorStyle : labelStyle}>Durasi Program *</Text>
         <SearchSelect
@@ -1100,37 +1095,37 @@ const FormPendaftaran = () => {
 
       <div style={fieldWrapper}>
         <Text style={errors.latar_belakang ? labelErrorStyle : labelStyle}>Latar Belakang / Rasionalisasi *</Text>
-        <TextArea rows={5} placeholder="Jelaskan alasan dan latar belakang inisiatif program ini..." style={{ borderRadius: 8, borderColor: errors.latar_belakang ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.latar_belakang ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.latar_belakang} onChange={e => updateField('latar_belakang', e.target.value)} />
+        <TextArea rows={5} placeholder="Contoh: Permintaan dari masyarakat dan kondisi X menyebabkan latar belakang program Y..." style={{ borderRadius: 8, borderColor: errors.latar_belakang ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.latar_belakang ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.latar_belakang} onChange={e => updateField('latar_belakang', e.target.value)} />
         {errors.latar_belakang ? <Text style={errorTextStyle}>{errors.latar_belakang}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan latar belakang program</Text>}
       </div>
 
       <div style={fieldWrapper}>
         <Text style={errors.implementation_method ? labelErrorStyle : labelStyle}>Metode Pelaksanaan Program *</Text>
-        <TextArea rows={5} placeholder="Jelaskan metode pelaksanaan program secara detail" style={{ borderRadius: 8, borderColor: errors.implementation_method ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.implementation_method ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.implementation_method || ''} onChange={e => updateField('implementation_method', e.target.value)} />
+        <TextArea rows={5} placeholder="Contoh: Penyuluhan (Counseling/Education), Pelatihan (Training), Studi Banding (Benchmarking), Pembinaan, Pengorganisasian Masyarakat (Community Organizing), Pengembangan Stimulan/Bantuan Sarana, Kemitraan dan Jejaring (Networking), Aksi Kolektif/Gotong Royong, Peer Learning (Belajar Sebaya), Sekolah Lapang, Aksi Kolektif" style={{ borderRadius: 8, borderColor: errors.implementation_method ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.implementation_method ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.implementation_method || ''} onChange={e => updateField('implementation_method', e.target.value)} />
         {errors.implementation_method ? <Text style={errorTextStyle}>{errors.implementation_method}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan bagaimana program ini dilaksanakan</Text>}
       </div>
 
       <div style={fieldWrapper}>
         <Text style={errors.dampak_program ? labelErrorStyle : labelStyle}>Dampak Yang Sudah Terealisasi *</Text>
-        <TextArea rows={5} placeholder="Jelaskan Dampak Yang Sudah Terealisasi" style={{ borderRadius: 8, borderColor: errors.dampak_program ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.dampak_program ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.dampak_program} onChange={e => updateField('dampak_program', e.target.value)} />
+        <TextArea rows={5} placeholder="Contoh: Peningkatan pendapatan sebesar Rp X, Peningkatan jumlah kunjungan wisata sebesar Y%, Penurunan emisi sebesar Y%" style={{ borderRadius: 8, borderColor: errors.dampak_program ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.dampak_program ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.dampak_program} onChange={e => updateField('dampak_program', e.target.value)} />
         {errors.dampak_program ? <Text style={errorTextStyle}>{errors.dampak_program}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan target dampak yang ingin dicapai</Text>}
       </div>
 
       <div style={fieldWrapper}>
         <Text style={errors.rencana_pengembangan ? labelErrorStyle : labelStyle}>Rencana dan Potensi Pengembangan *</Text>
-        <TextArea rows={5} placeholder="Jelaskan Rencana dan Potensi program" style={{ borderRadius: 8, borderColor: errors.rencana_pengembangan ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.rencana_pengembangan ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.rencana_pengembangan} onChange={e => updateField('rencana_pengembangan', e.target.value)} />
-        {errors.rencana_pengembangan ? <Text style={errorTextStyle}>{errors.rencana_pengembangan}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan rencana pengembangan program ke depan</Text>}
+        <TextArea rows={5} placeholder="Contoh: Program X akan terus dikembangkan dengan meningkatkan jumlah pelatihan dan memperluas jangkauan program" style={{ borderRadius: 8, borderColor: errors.rencana_pengembangan ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.rencana_pengembangan ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.rencana_pengembangan} onChange={e => updateField('rencana_pengembangan', e.target.value)} />
+        {errors.rencana_pengembangan ? <Text style={errorTextStyle}>{errors.rencana_pengembangan}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan rencana pengembangan program satu tahun ke depan</Text>}
       </div>
 
       <div style={fieldWrapper}>
         <Text style={errors.sustainability_plan ? labelErrorStyle : labelStyle}>Keberlanjutan Program *</Text>
-        <TextArea rows={5} placeholder={"Contoh:\n- Program XX \n- Program YY \n- Program ZZ"} style={{ borderRadius: 8, borderColor: errors.sustainability_plan ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.sustainability_plan ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.sustainability_plan || ''} onChange={e => updateField('sustainability_plan', e.target.value)} />
-        {errors.sustainability_plan ? <Text style={errorTextStyle}>{errors.sustainability_plan}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan bagaimana keberlanjutan program di masa depan</Text>}
+        <TextArea rows={5} placeholder={"Contoh:\n- 1.Kemitraan \n- 2.Kaderisasi \n- 3.Digitalisasi \n- 4. dll"} style={{ borderRadius: 8, borderColor: errors.sustainability_plan ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.sustainability_plan ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.sustainability_plan || ''} onChange={e => updateField('sustainability_plan', e.target.value)} />
+        {errors.sustainability_plan ? <Text style={errorTextStyle}>{errors.sustainability_plan}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Sebutkan & Jelaskan Strategi Keberlanjutan Program</Text>}
       </div>
 
       <div style={fieldWrapper}>
         <Text style={errors.program_evaluation ? labelErrorStyle : labelStyle}>Evaluasi Program *</Text>
-        <TextArea rows={5} placeholder="Jelaskan mekanisme evaluasi program" style={{ borderRadius: 8, borderColor: errors.program_evaluation ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.program_evaluation ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.program_evaluation || ''} onChange={e => updateField('program_evaluation', e.target.value)} />
+        <TextArea rows={5} placeholder="Contoh: Evaluasi dilakukan melalui survei kepuasan peserta dan monitoring dampak program" style={{ borderRadius: 8, borderColor: errors.program_evaluation ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.program_evaluation ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.program_evaluation || ''} onChange={e => updateField('program_evaluation', e.target.value)} />
         {errors.program_evaluation ? <Text style={errorTextStyle}>{errors.program_evaluation}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan bagaimana program ini dievaluasi</Text>}
       </div>
 

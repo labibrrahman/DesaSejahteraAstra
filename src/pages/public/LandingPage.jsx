@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Typography, Layout } from 'antd';
 import {
-  HeartOutlined,
-  ReadOutlined,
-  GlobalOutlined,
-  ShopOutlined,
   PhoneOutlined,
   UpOutlined,
   DownOutlined,
@@ -14,27 +10,32 @@ import { useNavigate } from 'react-router-dom';
 import astraLogo from '../../assets/images/astra-logo.png';
 import satuIndoLogo from '../../assets/images/satu-indonesia-logo.png';
 import heroBg from '../../assets/LandingPageAsset/ASET-01.png';
+import dsaLogo from '../../assets/LandingPageAsset/DSA LOGO-COLOUR UPDATE.png';
 import useIsMobile from '../../hooks/useIsMobile';
+import pilarKesehatan from '../../assets/Pilar/KESEHATAN.jpg';
+import pilarPendidikan from '../../assets/Pilar/PENDIDIKAN.jpg';
+import pilarLingkungan from '../../assets/Pilar/LINGKUNGAN.jpg';
+import pilarKewirausahaan from '../../assets/Pilar/KEWIRAUSAHAAN.jpg';
 
 const { Text } = Typography;
 const { Content, Footer } = Layout;
 
-// ─── Icon & Color Map ────────────────────────────────────────────────────────
+// ─── Pilar Image Map ────────────────────────────────────────────────────────
 
-const PILAR_ICON_MAP = {
-  kesehatan:     { icon: <HeartOutlined />,    color: '#e11d48' },
-  pendidikan:    { icon: <ReadOutlined />,     color: '#0284c7' },
-  lingkungan:    { icon: <GlobalOutlined />,   color: '#059669' },
-  kewirausahaan: { icon: <ShopOutlined />,     color: '#ea580c' },
+const PILAR_IMAGE_MAP = {
+  kesehatan:     { image: pilarKesehatan,     color: '#e11d48' },
+  pendidikan:    { image: pilarPendidikan,    color: '#0284c7' },
+  lingkungan:    { image: pilarLingkungan,    color: '#059669' },
+  kewirausahaan: { image: pilarKewirausahaan, color: '#ea580c' },
 };
 
 const getPilarStyle = (name) => {
-  if (!name) return { icon: <HeartOutlined />, color: '#1870F0' };
+  if (!name) return { image: pilarKesehatan, color: '#1870F0' };
   const lower = name.toLowerCase();
-  for (const [key, val] of Object.entries(PILAR_ICON_MAP)) {
+  for (const [key, val] of Object.entries(PILAR_IMAGE_MAP)) {
     if (lower.includes(key)) return val;
   }
-  return { icon: <HeartOutlined />, color: '#1870F0' };
+  return { image: pilarKesehatan, color: '#1870F0' };
 };
 
 const statsData = [
@@ -236,31 +237,77 @@ const LandingPage = () => {
             style={{
               position: 'relative',
               zIndex: 10,
-              padding: `150px ${isMobile ? 20 : 64}px`,
+              padding: `100px ${isMobile ? 20 : 64}px`,
               textAlign: 'center',
               maxWidth: 1500,
               width: '100%',
             }}
           >
 
-            {/* Title */}
-            {lazyImages.titleImage ? (
-              <img
-                src={lazyImages.titleImage}
-                alt="Lomba Apresiasi Desa Sejahtera Astra"
-                style={{
-                  maxWidth: isMobile ? 300 : 500,
-                  width: '100%',
-                  height: 'auto',
-                  marginBottom: isMobile ? 16 : 24,
-                  filter: 'drop-shadow(0 4px 24px rgba(0,0,0,0.2))',
-                  display: 'block',
-                  margin: '0 auto',
-                }}
-              />
-            ) : (
-              <div style={{ maxWidth: isMobile ? 300 : 500, height: isMobile ? 150 : 250, margin: '0 auto', marginBottom: isMobile ? 16 : 24 }} />
-            )}
+            {/* Title + Logo */}
+            <div style={{
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              marginBottom: isMobile ? 16 : 24,
+            }}>
+              {/* Title - di atas DSA Logo, lebih kecil */}
+              <div style={{
+                marginBottom: isMobile ? 12 : 16,
+                zIndex: 2,
+              }}>
+                {lazyImages.titleImage ? (
+                  <img
+                    src={lazyImages.titleImage}
+                    alt="Lomba Apresiasi Desa Sejahtera Astra"
+                    style={{
+                      maxWidth: isMobile ? 160 : 180,
+                      width: '100%',
+                      height: 'auto',
+                      filter: 'drop-shadow(0 3px 12px rgba(0,0,0,0.2))',
+                    }}
+                  />
+                ) : (
+                  <div style={{ maxWidth: isMobile ? 160 : 180, height: isMobile ? 80 : 90 }} />
+                )}
+              </div>
+
+              {/* DSA Logo + Kategori */}
+              {lazyImages.titleImage && (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: isMobile ? 12 : 24,
+                  position: 'relative',
+                  zIndex: 1,
+                }}>
+                  <div style={{ textAlign: 'left' }}>
+                    <Text style={{
+                      color: '#fff',
+                      fontSize: isMobile ? 18 : 28,
+                      fontWeight: 700,
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      textShadow: '0 2px 12px rgba(0,0,0,0.3)',
+                      letterSpacing: 2,
+                    }}>
+                      Kategori
+                    </Text>
+                  </div>
+                  <img
+                    src={dsaLogo}
+                    alt="Desa Sejahtera Astra Logo"
+                    style={{
+                      maxWidth: isMobile ? 180 : 280,
+                      width: '100%',
+                      height: 'auto',
+                      filter: 'brightness(0) invert(1) drop-shadow(0 10px 40px rgba(0,0,0,0.5)) drop-shadow(0 0 100px rgba(255,255,255,0.25))',
+                    }}
+                  />
+                </div>
+              )}
+            </div>
 
             {/* Subtitle */}
             <p
@@ -355,7 +402,7 @@ const LandingPage = () => {
                     lineHeight: 1.2,
                   }}
                 >
-                  Membangun Negeri Melalui 4 Pilar Utama
+                  Terhubung dalam Aksi melalui 4 Bidang Utama Desa Sejahtera Astra
                 </h2>
                 <p style={{ fontSize: isMobile ? 14 : 16, color: '#414751', lineHeight: 1.7, margin: 0 }}>
                   Program ini dirancang untuk mengidentifikasi, mendukung, dan mempercepat
@@ -370,54 +417,77 @@ const LandingPage = () => {
                 <Col xs={24} sm={12} lg={6} key={index}>
                   <div
                     style={{
-                      padding: isMobile ? '28px 24px' : '32px',
-                      borderRadius: 12,
-                      border: '1px solid #c1c6d3',
+                      borderRadius: 16,
+                      overflow: 'hidden',
+                      border: '1px solid #e2e8f0',
                       background: '#fff',
                       height: '100%',
                       cursor: 'default',
                       transition: 'all 0.3s',
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
                     }}
                     onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = '#1870F0';
-                      e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.08)';
+                      e.currentTarget.style.transform = 'translateY(-8px)';
+                      e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.12)';
                     }}
                     onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = '#c1c6d3';
-                      e.currentTarget.style.boxShadow = 'none';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.06)';
                     }}
                   >
-                    <div
-                      style={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: 10,
-                        background: `${pilar.color}15`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginBottom: 24,
-                        color: pilar.color,
-                        fontSize: 22,
-                        transition: 'all 0.3s',
-                      }}
-                    >
-                      {pilar.icon}
+                    {/* Gambar Pilar */}
+                    <div style={{
+                      width: '100%',
+                      height: isMobile ? 160 : 180,
+                      overflow: 'hidden',
+                      position: 'relative',
+                    }}>
+                      <img
+                        src={pilar.image}
+                        alt={pilar.title}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          transition: 'transform 0.5s ease',
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.08)'}
+                        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                      />
+                      {/* Gradient overlay */}
+                      <div style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: '50%',
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%)',
+                      }} />
+                      {/* Label nama pilar di atas gambar */}
+                      <div style={{
+                        position: 'absolute',
+                        bottom: 12,
+                        left: 16,
+                        right: 16,
+                      }}>
+                        <Text style={{
+                          color: '#fff',
+                          fontSize: 16,
+                          fontWeight: 700,
+                          fontFamily: "'Plus Jakarta Sans', sans-serif",
+                          textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                        }}>
+                          {pilar.title}
+                        </Text>
+                      </div>
                     </div>
-                    <h3
-                      style={{
-                        fontSize: 18,
-                        fontWeight: 600,
-                        fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        color: '#181c21',
-                        marginBottom: 10,
-                      }}
-                    >
-                      {pilar.title}
-                    </h3>
-                    <p style={{ fontSize: 12, color: '#414751', lineHeight: 1.7, margin: 0 }}>
-                      {pilar.description}
-                    </p>
+
+                    {/* Deskripsi */}
+                    <div style={{ padding: isMobile ? '20px 16px 24px' : '20px 16px 28px' }}>
+                      <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.7, margin: 0 }}>
+                        {pilar.description}
+                      </p>
+                    </div>
                   </div>
                 </Col>
               ))}

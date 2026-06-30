@@ -884,28 +884,6 @@ const FormPendaftaran = () => {
         <Row gutter={[24, 0]}>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={errors.phone_number ? labelErrorStyle : labelStyle}>Nomor HP Ketua Kelompok *</Text>
-              <Input placeholder="Contoh: 08123456789" style={errors.phone_number ? inputErrorStyle : inputStyle} value={formData.phone_number} onChange={handlePhoneChange} maxLength={15} inputMode="numeric" />
-              {errors.phone_number && <Text style={errorTextStyle}>{errors.phone_number}</Text>}
-            </div>
-          </Col>
-          <Col xs={24} sm={12}>
-            <div style={fieldWrapper}>
-              <Text style={errors.nama_kelompok ? labelErrorStyle : labelStyle}>Nama Ketua Kelompok *</Text>
-              <Input
-                placeholder="Nama Ketua Kelompok"
-                style={errors.nama_kelompok ? inputErrorStyle : inputStyle}
-                value={formData.nama_kelompok}
-                onChange={e => handleNameChange('nama_kelompok', e)}
-              />
-              {errors.nama_kelompok && <Text style={errorTextStyle}>{errors.nama_kelompok}</Text>}
-            </div>
-          </Col>
-        </Row>
-
-        <Row gutter={[24, 0]}>
-          <Col xs={24} sm={12}>
-            <div style={fieldWrapper}>
               <Text style={errors.nama_kelompok ? labelErrorStyle : labelStyle}>Nama Ketua Kelompok *</Text>
               <Input
                 placeholder="Nama Ketua Kelompok"

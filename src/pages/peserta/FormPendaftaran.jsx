@@ -394,6 +394,8 @@ const FormPendaftaran = () => {
               districtName: reg.district?.name || '',
               villageRegionName: reg.villageRegion?.name || '',
               social_media: reg.socialMedia || '',
+              dampak_program_after: reg.programImpactAfter || '',
+              document_link: reg.documentLink || '',
             });
             if (reg.categoryId) setSelectedKategoriId(reg.categoryId);
             if (Array.isArray(reg.photos) && reg.photos.length > 0) {
@@ -466,9 +468,13 @@ const FormPendaftaran = () => {
         if (!formData.latar_belakang) e.latar_belakang = 'Wajib diisi';
         if (!formData.implementation_method) e.implementation_method = 'Wajib diisi';
         if (!formData.dampak_program) e.dampak_program = 'Wajib diisi';
+        if (!formData.dampak_program_after) e.dampak_program_after = 'Wajib diisi';
         if (!formData.rencana_pengembangan) e.rencana_pengembangan = 'Wajib diisi';
         if (!formData.sustainability_plan) e.sustainability_plan = 'Wajib diisi';
         if (!formData.program_evaluation) e.program_evaluation = 'Wajib diisi';
+        if (formData.document_link && !/^https?:\/\/.+/i.test(formData.document_link.trim())) {
+          e.document_link = 'Link dokumen harus berupa URL yang valid';
+        }
         if (photos.length === 0) e.photos = 'Minimal 1 foto wajib diunggah';
         break;
     }
@@ -522,6 +528,7 @@ const FormPendaftaran = () => {
         address: formData.alamat,
         background: formData.latar_belakang,
         programImpact: formData.dampak_program,
+        programImpactAfter: formData.dampak_program_after || '',
         programDuration: formData.durasi_program,
         developmentPlan: formData.rencana_pengembangan,
         implementationMethod: formData.implementation_method || '',
@@ -543,6 +550,7 @@ const FormPendaftaran = () => {
         payload.astraGroupId = formData.grup_astra_id;
       }
       if (formData.social_media) payload.socialMedia = formData.social_media;
+      if (formData.document_link && formData.document_link.trim()) payload.documentLink = formData.document_link.trim();
       if (photos.length > 0) {
         payload.photos = photos.map(p => ({ url: p.url, originalName: p.originalName, generatedName: p.generatedName }));
       }
@@ -1106,9 +1114,15 @@ const FormPendaftaran = () => {
       </div>
 
       <div style={fieldWrapper}>
-        <Text style={errors.dampak_program ? labelErrorStyle : labelStyle}>Dampak Yang Sudah Terealisasi *</Text>
-        <TextArea rows={5} placeholder="Contoh: Peningkatan pendapatan sebesar Rp X, Peningkatan jumlah kunjungan wisata sebesar Y%, Penurunan emisi sebesar Y%" style={{ borderRadius: 8, borderColor: errors.dampak_program ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.dampak_program ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.dampak_program} onChange={e => updateField('dampak_program', e.target.value)} />
-        {errors.dampak_program ? <Text style={errorTextStyle}>{errors.dampak_program}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan target dampak yang ingin dicapai</Text>}
+        <Text style={errors.dampak_program ? labelErrorStyle : labelStyle}>Dampak Sebelum Program *</Text>
+        <TextArea rows={5} placeholder="Contoh: Sebelum program dijalankan, pendapatan masyarakat masih rendah, tingkat literasi masih kurang, dll." style={{ borderRadius: 8, borderColor: errors.dampak_program ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.dampak_program ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.dampak_program} onChange={e => updateField('dampak_program', e.target.value)} />
+        {errors.dampak_program ? <Text style={errorTextStyle}>{errors.dampak_program}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan kondisi/dampak sebelum program dijalankan</Text>}
+      </div>
+
+      <div style={fieldWrapper}>
+        <Text style={errors.dampak_program_after ? labelErrorStyle : labelStyle}>Dampak Setelah Program *</Text>
+        <TextArea rows={5} placeholder="Contoh: Peningkatan pendapatan sebesar Rp X, Peningkatan jumlah kunjungan wisata sebesar Y%, Penurunan emisi sebesar Y%" style={{ borderRadius: 8, borderColor: errors.dampak_program_after ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.dampak_program_after ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.dampak_program_after || ''} onChange={e => updateField('dampak_program_after', e.target.value)} />
+        {errors.dampak_program_after ? <Text style={errorTextStyle}>{errors.dampak_program_after}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan dampak yang terjadi setelah program dijalankan</Text>}
       </div>
 
       <div style={fieldWrapper}>
@@ -1127,6 +1141,12 @@ const FormPendaftaran = () => {
         <Text style={errors.program_evaluation ? labelErrorStyle : labelStyle}>Evaluasi Program *</Text>
         <TextArea rows={5} placeholder="Contoh: Evaluasi dilakukan melalui survei kepuasan peserta dan monitoring dampak program" style={{ borderRadius: 8, borderColor: errors.program_evaluation ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.program_evaluation ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.program_evaluation || ''} onChange={e => updateField('program_evaluation', e.target.value)} />
         {errors.program_evaluation ? <Text style={errorTextStyle}>{errors.program_evaluation}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan bagaimana program ini dievaluasi</Text>}
+      </div>
+
+      <div style={fieldWrapper}>
+        <Text style={errors.document_link ? labelErrorStyle : labelStyle}>Tambahkan link dokumentasi foto/video/publikasi lainnya yang menggambarkan pelaksanaan program</Text>
+        <Input placeholder="https://drive.google.com/drive/folders/..." style={errors.document_link ? inputErrorStyle : inputStyle} value={formData.document_link || ''} onChange={e => updateField('document_link', e.target.value)} />
+        {errors.document_link ? <Text style={errorTextStyle}>{errors.document_link}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Opsional. Masukkan link Google Drive atau cloud storage lainnya</Text>}
       </div>
 
       {/* Upload Foto Dokumentasi */}
@@ -1260,10 +1280,12 @@ const FormPendaftaran = () => {
           <ReviewField label="Durasi Program" value={formData.durasi_program || '-'} />
           <ReviewField label="Latar Belakang / Rasionalisasi" value={formData.latar_belakang} span={24} />
           <ReviewField label="Metode Pelaksanaan Program" value={formData.implementation_method} span={24} />
-          <ReviewField label="Dampak Yang Sudah Terealisasi" value={formData.dampak_program} span={24} />
+          <ReviewField label="Dampak Sebelum Program" value={formData.dampak_program} span={24} />
+          <ReviewField label="Dampak Setelah Program" value={formData.dampak_program_after || '-'} span={24} />
           <ReviewField label="Rencana dan Potensi Pengembangan" value={formData.rencana_pengembangan} span={24} />
           <ReviewField label="Keberlanjutan Program" value={formData.sustainability_plan} span={24} />
           <ReviewField label="Evaluasi Program" value={formData.program_evaluation} span={24} />
+          <ReviewField label="Tambahkan link dokumentasi foto/video/publikasi lainnya" value={formData.document_link || '-'} span={24} />
         </Row>
         {photos.length > 0 && (
           <div style={{ marginTop: 12 }}>

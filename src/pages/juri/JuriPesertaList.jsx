@@ -54,6 +54,8 @@ const mapFromApi = (item) => ({
   durasi_program: item.programDuration || '-',
   latar_belakang: item.background || '-',
   dampak_program: item.programImpact || '-',
+  dampak_program_after: item.programImpactAfter || '-',
+  document_link: item.documentLink || '-',
   rencana_pengembangan: item.developmentPlan || '-',
   metode_pelaksanaan: item.implementationMethod || '-',
   keberlanjutan_program: item.sustainabilityPlan || '-',

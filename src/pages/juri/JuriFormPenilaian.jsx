@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Form, Input, InputNumber, Button, Typography, Tag, Row, Col, message, Result, Spin, Modal } from 'antd';
-import { SaveOutlined, ArrowLeftOutlined, FileTextOutlined, BulbOutlined, ThunderboltOutlined, ToolOutlined, CheckCircleFilled, CameraOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { SaveOutlined, ArrowLeftOutlined, FileTextOutlined, BulbOutlined, ThunderboltOutlined, ToolOutlined, CheckCircleFilled, CameraOutlined, ExclamationCircleOutlined, LinkOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import adminService from '../../services/adminService';
 
@@ -18,7 +18,7 @@ const mapFromApi = (i) => ({
   id: i.id, nama_desa: i.villageName || '-', nama_kelompok: i.groupName || '-',
   pilar: i.pillar?.name || '-', kategori: i.category?.name || '-',
   wilayah: [i.province?.name, i.city?.name, i.district?.name, i.villageRegion?.name].filter(Boolean).join(' - ') || '-',
-  grup_astra: i.astraGroupCustom || i.astraGroup?.name || '-', durasi_program: i.programDuration || '-', latar_belakang: i.background || '-', dampak_program: i.programImpact || '-',
+  grup_astra: i.astraGroupCustom || i.astraGroup?.name || '-', durasi_program: i.programDuration || '-', latar_belakang: i.background || '-', dampak_program: i.programImpact || '-', dampak_program_after: i.programImpactAfter || '-', document_link: i.documentLink || '-',
   rencana_pengembangan: i.developmentPlan || '-',
   metode_pelaksanaan: i.implementationMethod || '-',
   keberlanjutan_program: i.sustainabilityPlan || '-',
@@ -130,9 +130,18 @@ const JuriFormPenilaian = () => {
           <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0',marginBottom: 15, overflow: 'hidden' }}>
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ width: 32, height: 32, borderRadius: 8, background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ThunderboltOutlined style={{ color: '#10b981', fontSize: 14 }} /></div>
-              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Dampak Yang Sudah Terealisasi</Text>
+              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Dampak Sebelum Program</Text>
             </div>
             <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #10b981' }}><Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>{peserta.dampak_program}</Paragraph></div></div>
+          </div>
+
+          {/* Dampak Setelah Program */}
+          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0',marginBottom: 15, overflow: 'hidden' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#ecfdf5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ThunderboltOutlined style={{ color: '#16a34a', fontSize: 14 }} /></div>
+              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Dampak Setelah Program</Text>
+            </div>
+            <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #16a34a' }}><Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>{peserta.dampak_program_after}</Paragraph></div></div>
           </div>
 
           {/* Rencana Pengembangan */}
@@ -161,6 +170,26 @@ const JuriFormPenilaian = () => {
             </div>
             <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #f59e0b' }}><Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>{peserta.evaluasi_program}</Paragraph></div></div>
           </div>
+
+          {/* Evaluasi Program */}
+          <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 15, overflow: 'hidden' }}>
+            <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: '#fffbeb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CheckCircleFilled style={{ color: '#f59e0b', fontSize: 14 }} /></div>
+              <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Evaluasi Program</Text>
+            </div>
+            <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #f59e0b' }}><Paragraph style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.7 }}>{peserta.evaluasi_program}</Paragraph></div></div>
+          </div>
+
+          {/* Link Dokumen/Drive Pendukung */}
+          {peserta.document_link && peserta.document_link !== '-' && (
+            <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 15, overflow: 'hidden' }}>
+              <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: '#eff4ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><LinkOutlined style={{ color: '#1890ff', fontSize: 14 }} /></div>
+                <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Link Dokumen/Drive Pendukung</Text>
+              </div>
+              <div style={{ padding: 20 }}><div style={{ background: '#f8fafc', borderRadius: 8, padding: '14px 16px', borderLeft: '3px solid #1890ff' }}><a href={peserta.document_link} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: '#1890ff', wordBreak: 'break-all' }}>{peserta.document_link}</a></div></div>
+            </div>
+          )}
 
           {/* Foto Dokumentasi */}
             <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 20, overflow: 'hidden' }}>

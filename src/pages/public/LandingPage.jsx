@@ -483,7 +483,7 @@ const LandingPage = () => {
                     </div>
 
                     {/* Deskripsi */}
-                    <div style={{ padding: isMobile ? '20px 20px 24px' : '20px 24px 28px' }}>
+                    <div style={{ padding: isMobile ? '20px 16px 24px' : '20px 16px 28px' }}>
                       <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.7, margin: 0 }}>
                         {pilar.description}
                       </p>

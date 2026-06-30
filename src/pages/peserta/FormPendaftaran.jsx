@@ -1114,13 +1114,13 @@ const FormPendaftaran = () => {
       </div>
 
       <div style={fieldWrapper}>
-        <Text style={errors.dampak_program ? labelErrorStyle : labelStyle}>Dampak Sebelum Program *</Text>
+        <Text style={errors.dampak_program ? labelErrorStyle : labelStyle}>Kondisi Sebelum Program *</Text>
         <TextArea rows={5} placeholder="Contoh: Sebelum program dijalankan, pendapatan masyarakat masih rendah, tingkat literasi masih kurang, dll." style={{ borderRadius: 8, borderColor: errors.dampak_program ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.dampak_program ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.dampak_program} onChange={e => updateField('dampak_program', e.target.value)} />
-        {errors.dampak_program ? <Text style={errorTextStyle}>{errors.dampak_program}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan kondisi/dampak sebelum program dijalankan</Text>}
+        {errors.dampak_program ? <Text style={errorTextStyle}>{errors.dampak_program}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan kondisi/Kondisi Sebelum program dijalankan</Text>}
       </div>
 
       <div style={fieldWrapper}>
-        <Text style={errors.dampak_program_after ? labelErrorStyle : labelStyle}>Dampak Setelah Program *</Text>
+        <Text style={errors.dampak_program_after ? labelErrorStyle : labelStyle}>Kondisi Setelah Program *</Text>
         <TextArea rows={5} placeholder="Contoh: Peningkatan pendapatan sebesar Rp X, Peningkatan jumlah kunjungan wisata sebesar Y%, Penurunan emisi sebesar Y%" style={{ borderRadius: 8, borderColor: errors.dampak_program_after ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.dampak_program_after ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.dampak_program_after || ''} onChange={e => updateField('dampak_program_after', e.target.value)} />
         {errors.dampak_program_after ? <Text style={errorTextStyle}>{errors.dampak_program_after}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan dampak yang terjadi setelah program dijalankan</Text>}
       </div>
@@ -1280,8 +1280,8 @@ const FormPendaftaran = () => {
           <ReviewField label="Durasi Program" value={formData.durasi_program || '-'} />
           <ReviewField label="Latar Belakang / Rasionalisasi" value={formData.latar_belakang} span={24} />
           <ReviewField label="Metode Pelaksanaan Program" value={formData.implementation_method} span={24} />
-          <ReviewField label="Dampak Sebelum Program" value={formData.dampak_program} span={24} />
-          <ReviewField label="Dampak Setelah Program" value={formData.dampak_program_after || '-'} span={24} />
+          <ReviewField label="Kondisi Sebelum Program" value={formData.dampak_program} span={24} />
+          <ReviewField label="Kondisi Setelah Program" value={formData.dampak_program_after || '-'} span={24} />
           <ReviewField label="Rencana dan Potensi Pengembangan" value={formData.rencana_pengembangan} span={24} />
           <ReviewField label="Keberlanjutan Program" value={formData.sustainability_plan} span={24} />
           <ReviewField label="Evaluasi Program" value={formData.program_evaluation} span={24} />

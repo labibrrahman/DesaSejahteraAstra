@@ -172,8 +172,8 @@ const RegistrationDetailModal = ({
 
               <DescriptionBlock label="Latar Belakang" value={reg.background} color="#1890ff" />
               <DescriptionBlock label="Metode Pelaksanaan Program" value={reg.implementationMethod} color="#0ea5e9" />
-              <DescriptionBlock label="Dampak Sebelum Program" value={reg.programImpact} color="#52c41a" />
-              <DescriptionBlock label="Dampak Setelah Program" value={reg.programImpactAfter} color="#16a34a" />
+              <DescriptionBlock label="Kondisi Sebelum Program" value={reg.programImpact} color="#52c41a" />
+              <DescriptionBlock label="Kondisi Setelah Program" value={reg.programImpactAfter} color="#16a34a" />
               <DescriptionBlock label="Rencana dan Potensi Pengembangan" value={reg.developmentPlan} color="#722ed1" />
               <DescriptionBlock label="Keberlanjutan Program" value={reg.sustainabilityPlan} color="#10b981" />
               <DescriptionBlock label="Evaluasi Program" value={reg.programEvaluation} color="#f59e0b" />

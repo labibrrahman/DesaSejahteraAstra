@@ -919,12 +919,12 @@ const AdminPesertaList = () => {
                 <Input.TextArea rows={5} placeholder="Jelaskan alasan dan latar belakang inisiatif program ini..." style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
               </Form.Item>
 
-              <Form.Item name="programImpact" label="Dampak Sebelum Program">
-                <Input.TextArea rows={5} placeholder="Jelaskan Dampak Sebelum Program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
+              <Form.Item name="programImpact" label="Kondisi Sebelum Program">
+                <Input.TextArea rows={5} placeholder="Jelaskan Kondisi Sebelum Program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
               </Form.Item>
 
-              <Form.Item name="programImpactAfter" label="Dampak Setelah Program">
-                <Input.TextArea rows={5} placeholder="Jelaskan Dampak Setelah Program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
+              <Form.Item name="programImpactAfter" label="Kondisi Setelah Program">
+                <Input.TextArea rows={5} placeholder="Jelaskan Kondisi Setelah Program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
               </Form.Item>
 
               <Form.Item name="developmentPlan" label="Rencana dan Potensi Untuk Keberlanjutan Program">

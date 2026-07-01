@@ -6,6 +6,7 @@ import useAuthStore from '../../stores/authStore';
 import useIsMobile from '../../hooks/useIsMobile';
 import astraLogo from '../../assets/images/astra-logo.png';
 import satuIndoLogo from '../../assets/images/satu-indonesia-logo.png';
+import dsaLogo from '../../assets/LandingPageAsset/DSA LOGO-COLOUR UPDATE.png';
 
 const { Title, Text } = Typography;
 const { Content } = Layout;
@@ -84,8 +85,9 @@ const Login = ({ adminMode = false }) => {
     if (adminMode) {
       return (
         <Layout style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ background: '#fff', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', flexShrink: 0 }}>
+          <div style={{ background: '#fff', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', flexShrink: 0, position: 'relative' }}>
             <img src={astraLogo} alt="Astra" style={{ height: 24, objectFit: 'contain' }} />
+            <img src={dsaLogo} alt="DSA" style={{ height: 36, objectFit: 'contain', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} />
             <img src={satuIndoLogo} alt="Satu Indonesia" style={{ height: 32, objectFit: 'contain' }} />
           </div>
           <MobileBranding title="Lomba Apresiasi Desa Sejahtera Astra" subtitle="Apresiasi ini adalah semangat Astra untuk terus mendorong inovasi 4 bidang (kesehatan, pendidikan, lingkungan, kewirausahaan) di desa binaan Grup & Yayasan Astra melalui flagship program Desa Sejahtera Astra yang menjadi semangat bersama dalam pemberdayaan rural development." />
@@ -110,8 +112,9 @@ const Login = ({ adminMode = false }) => {
 
     return (
       <Layout style={{ minHeight: '60vh', background: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ background: '#fff', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', flexShrink: 0 }}>
+        <div style={{ background: '#fff', padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', flexShrink: 0, position: 'relative' }}>
           <img src={astraLogo} alt="Astra" style={{ height: 24, objectFit: 'contain' }} />
+          <img src={dsaLogo} alt="DSA" style={{ height: 36, objectFit: 'contain', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} />
           <img src={satuIndoLogo} alt="Satu Indonesia" style={{ height: 32, objectFit: 'contain' }} />
         </div>
         <MobileBranding title="Desa Sejahtera Astra" subtitle="Apresiasi ini adalah semangat Astra untuk terus mendorong inovasi 4 bidang (kesehatan, pendidikan, lingkungan, kewirausahaan) di desa binaan Grup & Yayasan Astra melalui flagship program Desa Sejahtera Astra yang menjadi semangat bersama dalam pemberdayaan rural development." />
@@ -137,9 +140,12 @@ const Login = ({ adminMode = false }) => {
       <div style={{ position: 'absolute', right: -80, top: -80, width: 300, height: 300, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)' }} />
       <div style={{ position: 'absolute', right: 40, top: -120, width: 400, height: 400, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.05)' }} />
       <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 400 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, marginBottom: 32 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, marginBottom: 24 }}>
           <img src={astraLogo} alt="Astra" style={{ height: 48, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
           <img src={satuIndoLogo} alt="Satu Indonesia" style={{ height: 55, objectFit: 'contain' }} />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
+          <img src={dsaLogo} alt="Desa Sejahtera Astra" style={{ height: 72, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
         </div>
         <Title level={2} style={{ color: '#fff', fontWeight: 700, fontSize: 32, lineHeight: 1.2, marginBottom: 16 }}>{title}</Title>
         <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 15, lineHeight: 1.7, display: 'block' }}>{subtitle}</Text>

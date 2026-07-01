@@ -272,7 +272,7 @@ const PesertaDashboard = () => {
                 </Space>
               </div>
             )}
-            {canAddMore && (
+            {/* {canAddMore && (
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
@@ -288,7 +288,7 @@ const PesertaDashboard = () => {
               >
                 Tambah Pilar Baru
               </Button>
-            )}
+            )} */}
           </Col>
         </Row>
 
@@ -470,7 +470,7 @@ const PesertaDashboard = () => {
                             <div>
                               <Text style={{ fontSize: 11, color: '#64748b', display: 'block', textTransform: 'uppercase' }}>Ketua Kelompok</Text>
                               <Text style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>
-                                {regItem.leaderName || regItem.groupName || '—'}
+                                {regItem.groupName || '—'}
                               </Text>
                             </div>
                           </div>

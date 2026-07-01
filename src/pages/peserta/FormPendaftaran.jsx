@@ -332,8 +332,9 @@ const FormPendaftaran = () => {
           }
 
           if (targetReg) {
-            // Mode edit existing: load data registrasi targetReg
-            localStorage.removeItem(DRAFT_KEY);
+            // Mode edit existing: load data registrasi targetReg, hapus semua draft
+            localStorage.removeItem('form_pendaftaran_draft');
+            localStorage.removeItem('form_pendaftaran_draft_new');
             setRegistrationId(targetReg.id);
             setSelectedPilarId(targetReg.pillarId || null);
 
@@ -360,7 +361,7 @@ const FormPendaftaran = () => {
               grup_astra_id: targetReg.astraGroupCustom ? 'others' : (targetReg.astraGroup?.id || null),
               binaan_custom: targetReg.astraGroupCustom || '',
               jenis_dsa: targetReg.dsaType ? targetReg.dsaType.toLowerCase() : null,
-              nama_ketua: targetReg.leaderName || '',
+              nama_ketua: targetReg.groupName || '',
               phone_number: targetReg.phoneNumber || '',
               nama_kontak_darurat: targetReg.emergencyContactName || '',
               no_hp_kontak_darurat: targetReg.emergencyContactPhone || '',
@@ -383,6 +384,7 @@ const FormPendaftaran = () => {
               ...prev,
               nama_desa:              firstReg.villageName || '',
               nama_kelompok:          firstReg.groupName || '',
+              nama_ketua:             firstReg.groupName || '',
               phone_number:           firstReg.phoneNumber || '',
               nama_kontak_darurat:    firstReg.emergencyContactName || '',
               no_hp_kontak_darurat:   firstReg.emergencyContactPhone || '',
@@ -437,6 +439,8 @@ const FormPendaftaran = () => {
         break;
 
       case 2:
+        // Skip validasi jika identitas terkunci (data dari pendaftaran sebelumnya)
+        if (isStep2Locked) break;
         if (!formData.nama_desa) e.nama_desa = 'Nama DSA wajib diisi';
         if (!formData.nama_kelompok) e.nama_kelompok = 'Nama Ketua Kelompok wajib diisi';
         if (!formData.phone_number) {
@@ -528,7 +532,7 @@ const FormPendaftaran = () => {
         pillarId: selectedPilarId,
         categoryId: selectedKategoriId,
         villageName: formData.nama_desa,
-        groupName: formData.nama_kelompok,
+        groupName: formData.nama_kelompok ? formData.nama_kelompok: formData.nama_ketua ? formData.nama_ketua : '',
         address: formData.alamat,
         background: formData.latar_belakang,
         programImpact: formData.dampak_program,
@@ -540,7 +544,7 @@ const FormPendaftaran = () => {
         programEvaluation: formData.program_evaluation || '',
       };
       if (formData.jenis_dsa) payload.dsaType = formData.jenis_dsa.charAt(0).toUpperCase() + formData.jenis_dsa.slice(1);
-      if (formData.nama_ketua) payload.leaderName = formData.nama_ketua;
+      // groupName sudah diisi dari nama_kelompok di atas, tidak perlu leaderName
       if (formData.phone_number) payload.phoneNumber = formData.phone_number;
       if (formData.nama_kontak_darurat) payload.emergencyContactName = formData.nama_kontak_darurat;
       if (formData.no_hp_kontak_darurat) payload.emergencyContactPhone = formData.no_hp_kontak_darurat;
@@ -570,7 +574,9 @@ const FormPendaftaran = () => {
         await registrationService.submitRegistration(reg.id);
         message.success('Pendaftaran berhasil dikirim!');
       }
-      localStorage.removeItem(DRAFT_KEY);
+      // Hapus SEMUA draft (normal & new) agar form bersih saat dibuka lagi
+      localStorage.removeItem('form_pendaftaran_draft');
+      localStorage.removeItem('form_pendaftaran_draft_new');
       navigate('/peserta/dashboard');
     } catch (err) {
       const errors = err.response?.data?.errors;
@@ -921,7 +927,7 @@ const FormPendaftaran = () => {
               <Input
                 placeholder="Nama Ketua Kelompok"
                 style={errors.nama_kelompok ? inputErrorStyle : inputStyle}
-                value={formData.nama_kelompok}
+                value={formData.nama_kelompok ? formData.nama_kelompok : formData.nama_ketua ? formData.nama_ketua : ''}
                 onChange={e => handleNameChange('nama_kelompok', e)}
                 disabled={isStep2Locked}
               />
@@ -1221,7 +1227,7 @@ const FormPendaftaran = () => {
         <Row gutter={[16, 12]}>
           <ReviewField label="Nama DSA/Nama Desa" value={formData.nama_desa} />
           <ReviewField label="Jenis DSA" value={formData.jenis_dsa === 'kelompok' ? 'Kelompok' : formData.jenis_dsa === 'individu' ? 'Individu' : '-'} />
-          <ReviewField label={formData.jenis_dsa === 'individu' ? 'Nama Peserta' : 'Nama Ketua Kelompok'} value={formData.nama_kelompok} />
+          <ReviewField label={formData.jenis_dsa === 'individu' ? 'Nama Peserta' : 'Nama Ketua Kelompok'} value={formData.nama_kelompok ? formData.nama_kelompok : formData.nama_ketua ? formData.nama_ketua: ''} />
           <ReviewField label="Nomor HP Ketua Kelompok" value={formData.phone_number} />
           <ReviewField label="Perusahaan/Yayasan Pembina" value={grupLabel || '-'} span={24} />
           <ReviewField label="Nama Kontak Lainnya" value={formData.nama_kontak_darurat} />

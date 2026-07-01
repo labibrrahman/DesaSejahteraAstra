@@ -30,6 +30,8 @@ const SearchSelect = ({
   options = [],
   value,
   onChange,
+  onClear,
+  selectedLabel: selectedLabelProp,
   placeholder = 'Pilih...',
   disabled = false,
   loading = false,
@@ -48,7 +50,7 @@ const SearchSelect = ({
   const dropdownRef = useRef(null);
   const searchRef = useRef(null);
 
-  const selectedLabel = options.find(o => o.value === value)?.label || '';
+  const selectedLabel = options.find(o => o.value === value)?.label || selectedLabelProp || '';
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -69,7 +71,8 @@ const SearchSelect = ({
     }
   }, [open, showSearch]);
 
-  const filteredOptions = showSearch && search
+  // Skip client-side filtering when onSearch is provided (server-side search handles it)
+  const filteredOptions = showSearch && search && !onSearch
     ? options.filter(o => (o.label || '').toLowerCase().includes(search.toLowerCase()))
     : options;
 
@@ -167,6 +170,10 @@ const SearchSelect = ({
                 onChange={e => {
                   setSearch(e.target.value);
                   onSearch?.(e.target.value);
+                }}
+                onClear={() => {
+                  setSearch('');
+                  onClear?.();
                 }}
                 allowClear
                 size="small"

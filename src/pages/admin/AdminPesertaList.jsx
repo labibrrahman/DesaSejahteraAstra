@@ -82,6 +82,8 @@ const mapFromApi = (item) => ({
   durasi_program: item.programDuration || '-',
   latar_belakang: item.background || '-',
   dampak_program: item.programImpact || '-',
+  dampak_program_after: item.programImpactAfter || '-',
+  document_link: item.documentLink || '-',
   rencana_pengembangan: item.developmentPlan || '-',
   metode_pelaksanaan: item.implementationMethod || '-',
   keberlanjutan_program: item.sustainabilityPlan || '-',
@@ -363,6 +365,8 @@ const AdminPesertaList = () => {
           address: detail.address,
           background: detail.background,
           programImpact: detail.programImpact,
+          programImpactAfter: detail.programImpactAfter || '',
+          documentLink: detail.documentLink || '',
           developmentPlan: detail.developmentPlan,
           implementationMethod: detail.implementationMethod || '',
           sustainabilityPlan: detail.sustainabilityPlan || '',
@@ -406,6 +410,8 @@ const AdminPesertaList = () => {
         address: values.address,
         background: values.background,
         programImpact: values.programImpact,
+        programImpactAfter: values.programImpactAfter || '',
+        documentLink: values.documentLink || '',
         developmentPlan: values.developmentPlan,
         implementationMethod: values.implementationMethod || '',
         sustainabilityPlan: values.sustainabilityPlan || '',
@@ -913,8 +919,12 @@ const AdminPesertaList = () => {
                 <Input.TextArea rows={5} placeholder="Jelaskan alasan dan latar belakang inisiatif program ini..." style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
               </Form.Item>
 
-              <Form.Item name="programImpact" label="Dampak Yang Sudah Terealisasi">
-                <Input.TextArea rows={5} placeholder="Jelaskan Dampak Yang Sudah Terealisasi" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
+              <Form.Item name="programImpact" label="Kondisi Sebelum Program">
+                <Input.TextArea rows={5} placeholder="Jelaskan Kondisi Sebelum Program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
+              </Form.Item>
+
+              <Form.Item name="programImpactAfter" label="Kondisi Setelah Program">
+                <Input.TextArea rows={5} placeholder="Jelaskan Kondisi Setelah Program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
               </Form.Item>
 
               <Form.Item name="developmentPlan" label="Rencana dan Potensi Untuk Keberlanjutan Program">
@@ -935,6 +945,10 @@ const AdminPesertaList = () => {
 
               <Form.Item name="socialMedia" label="Media Sosial">
                 <Input.TextArea rows={2} placeholder="Contoh: https://instagram.com/akun, https://facebook.com/akun" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
+              </Form.Item>
+
+              <Form.Item name="documentLink" label="link dokumentasi foto/video/publikasi lainnya">
+                <Input placeholder="https://drive.google.com/drive/folders/..." style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13 }} />
               </Form.Item>
 
               {/* Foto Dokumentasi */}

@@ -125,26 +125,11 @@ const FormPendaftaran = () => {
   const [pillars, setPillars] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
   const [astraGroups, setAstraGroups] = useState([]);
-  const [desaOptions, setDesaOptions] = useState([]);
-  const [loadingDesa, setLoadingDesa] = useState(false);
-  const [provinceOptions, setProvinceOptions] = useState([]);
-  const [cityOptions, setCityOptions] = useState([]);
-  const [districtOptions, setDistrictOptions] = useState([]);
-  const [provincePage, setProvincePage] = useState(1);
-  const [cityPage, setCityPage] = useState(1);
-  const [districtPage, setDistrictPage] = useState(1);
-  const [desaPage, setDesaPage] = useState(1);
-  const [provinceHasMore, setProvinceHasMore] = useState(false);
-  const [cityHasMore, setCityHasMore] = useState(false);
-  const [districtHasMore, setDistrictHasMore] = useState(false);
-  const [desaHasMore, setDesaHasMore] = useState(false);
-  const [provinceSearch, setProvinceSearch] = useState('');
-  const [citySearch, setCitySearch] = useState('');
-  const [districtSearch, setDistrictSearch] = useState('');
-  const [desaSearch, setDesaSearch] = useState('');
-  const [loadingProvinces, setLoadingProvinces] = useState(false);
-  const [loadingCities, setLoadingCities] = useState(false);
-  const [loadingDistricts, setLoadingDistricts] = useState(false);
+  const [villageOptions, setVillageOptions] = useState([]);
+  const [selectedVillageLabel, setSelectedVillageLabel] = useState('');
+  const [villagePage, setVillagePage] = useState(1);
+  const [villageHasMore, setVillageHasMore] = useState(false);
+  const [loadingVillage, setLoadingVillage] = useState(false);
   const [loadingMaster, setLoadingMaster] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [registrationId, setRegistrationId] = useState(null);
@@ -242,84 +227,58 @@ const FormPendaftaran = () => {
     debounceTimers.current[key] = setTimeout(fn, delay);
   };
 
-  // ── Fetch provinces dari API ────────────────────────────────────────────────
+  // ── Search desa dari API (dengan label lengkap) ─────────────────────────────
   const PAGE_SIZE = 10;
 
-  const fetchProvinces = async (search, page = 1, append = false) => {
-    setLoadingProvinces(true);
+  const searchVillages = async (search, page = 1, append = false) => {
+    setLoadingVillage(true);
     try {
       const params = { page, limit: PAGE_SIZE };
       if (search) params.search = search;
-      const result = await masterService.getProvinces(params);
-      const list = Array.isArray(result) ? result.map(p => ({ id: p.id, name: p.name })) : [];
-      setProvinceOptions(prev => append ? [...prev, ...list] : list);
-      setProvinceHasMore(list.length >= PAGE_SIZE);
-      setProvincePage(page);
-      if (search !== undefined) setProvinceSearch(search);
+      const result = await masterService.searchVillages(params);
+      const list = Array.isArray(result) ? result.map(v => ({
+        id: v.id,
+        name: v.name,
+        label: v.label || v.name,
+        hierarchy: v.hierarchy,
+      })) : [];
+      setVillageOptions(prev => append ? [...prev, ...list] : list);
+      setVillageHasMore(list.length >= PAGE_SIZE);
+      setVillagePage(page);
     } catch {
-      logger.error('Gagal memuat provinsi');
+      if (!append) setVillageOptions([]);
     } finally {
-      setLoadingProvinces(false);
+      setLoadingVillage(false);
     }
   };
 
-  // ── Fetch kota/kabupaten dari API ──────────────────────────────────────────
-  const fetchCities = async (provinceId, search, page = 1, append = false) => {
-    if (!provinceId) { setCityOptions([]); return; }
-    setLoadingCities(true);
+  // ── Ambil ancestry (hierarki wilayah) dari ID desa ─────────────────────────
+  const fetchVillageAncestry = async (villageId) => {
     try {
-      const params = { page, limit: PAGE_SIZE };
-      if (search) params.search = search;
-      const result = await masterService.getCities(provinceId, params);
-      const list = Array.isArray(result) ? result.map(c => ({ id: c.id, name: c.name })) : [];
-      setCityOptions(prev => append ? [...prev, ...list] : list);
-      setCityHasMore(list.length >= PAGE_SIZE);
-      setCityPage(page);
-      if (search !== undefined) setCitySearch(search);
+      const ancestry = await masterService.getVillageAncestry(villageId);
+      if (ancestry) {
+        const vName = ancestry.village?.name || '';
+        const dName = ancestry.district?.name || '';
+        const cName = ancestry.city?.name || '';
+        const pName = ancestry.province?.name || '';
+        // Construct label untuk display di select box
+        const label = [vName, dName && `Kec. ${dName}`, cName && `Kab. ${cName}`, pName].filter(Boolean).join(' - ');
+        setSelectedVillageLabel(label);
+        // villageRegionName cukup nama desa saja
+        setFormData(prev => ({
+          ...prev,
+          provinceId: ancestry.province?.id || null,
+          provinceName: ancestry.province?.name || '',
+          cityId: ancestry.city?.id || null,
+          cityName: ancestry.city?.name || '',
+          districtId: ancestry.district?.id || null,
+          districtName: ancestry.district?.name || '',
+          villageRegionId: ancestry.village?.id || villageId,
+          villageRegionName: vName,
+        }));
+      }
     } catch {
-      setCityOptions([]);
-    } finally {
-      setLoadingCities(false);
-    }
-  };
-
-  // ── Fetch kecamatan dari API ───────────────────────────────────────────────
-  const fetchDistricts = async (cityId, search, page = 1, append = false) => {
-    if (!cityId) { setDistrictOptions([]); return; }
-    setLoadingDistricts(true);
-    try {
-      const params = { page, limit: PAGE_SIZE };
-      if (search) params.search = search;
-      const result = await masterService.getDistricts(cityId, params);
-      const list = Array.isArray(result) ? result.map(d => ({ id: d.id, name: d.name })) : [];
-      setDistrictOptions(prev => append ? [...prev, ...list] : list);
-      setDistrictHasMore(list.length >= PAGE_SIZE);
-      setDistrictPage(page);
-      if (search !== undefined) setDistrictSearch(search);
-    } catch {
-      setDistrictOptions([]);
-    } finally {
-      setLoadingDistricts(false);
-    }
-  };
-
-  // ── Fetch desa dari API ────────────────────────────────────────────────────
-  const fetchVillages = async (districtId, search, page = 1, append = false) => {
-    if (!districtId) { setDesaOptions([]); return; }
-    setLoadingDesa(true);
-    try {
-      const params = { page, limit: PAGE_SIZE };
-      if (search) params.search = search;
-      const result = await masterService.getVillages(districtId, params);
-      const list = Array.isArray(result) ? result.map(v => ({ id: v.id, name: v.name })) : [];
-      setDesaOptions(prev => append ? [...prev, ...list] : list);
-      setDesaHasMore(list.length >= PAGE_SIZE);
-      setDesaPage(page);
-      if (search !== undefined) setDesaSearch(search);
-    } catch {
-      setDesaOptions([]);
-    } finally {
-      setLoadingDesa(false);
+      logger.error('Gagal memuat hierarki wilayah');
     }
   };
 
@@ -332,9 +291,6 @@ const FormPendaftaran = () => {
         ]);
         setPillars(pillarsData || []);
         setAstraGroups(groupsData || []);
-
-        // Fetch provinsi
-        await fetchProvinces();
 
         // Fetch semua kategori dari semua pilar
         const allCats = [];
@@ -362,12 +318,13 @@ const FormPendaftaran = () => {
             setRegistrationId(reg.id);
             setSelectedPilarId(reg.pillarId || null);
 
-            // Load wilayah dependent options untuk existing registration
-            if (reg.provinceId) await fetchCities(reg.provinceId);
-            if (reg.cityId) await fetchDistricts(reg.cityId);
-            if (reg.districtId) await fetchVillages(reg.districtId);
+            // Load wilayah via ancestry API untuk existing registration
+            if (reg.villageRegionId) {
+              await fetchVillageAncestry(reg.villageRegionId);
+            }
 
-            setFormData({
+            setFormData(prev => ({
+              ...prev,
               nama_desa: reg.villageName || '',
               nama_kelompok: reg.groupName || '',
               alamat: reg.address || '',
@@ -385,16 +342,10 @@ const FormPendaftaran = () => {
               phone_number: reg.phoneNumber || '',
               nama_kontak_darurat: reg.emergencyContactName || '',
               no_hp_kontak_darurat: reg.emergencyContactPhone || '',
-              provinceId: reg.provinceId || null,
-              cityId: reg.cityId || null,
-              districtId: reg.districtId || null,
-              villageRegionId: reg.villageRegionId || null,
-              provinceName: reg.province?.name || '',
-              cityName: reg.city?.name || '',
-              districtName: reg.district?.name || '',
-              villageRegionName: reg.villageRegion?.name || '',
               social_media: reg.socialMedia || '',
-            });
+              dampak_program_after: reg.programImpactAfter || '',
+              document_link: reg.documentLink || '',
+            }));
             if (reg.categoryId) setSelectedKategoriId(reg.categoryId);
             if (Array.isArray(reg.photos) && reg.photos.length > 0) {
               setPhotos(reg.photos.map(p => ({ url: p.photoUrl, originalName: p.originalName, generatedName: p.generatedName })));
@@ -404,15 +355,12 @@ const FormPendaftaran = () => {
           // ignore — belum ada registrasi
         }
 
-        // Jika tidak ada registrasi dan ada draft, restore wilayah dropdowns
+        // Jika tidak ada registrasi dan ada draft, restore wilayah via ancestry
         if (!hasExistingReg && savedDraft?.formData) {
           const d = savedDraft.formData;
-          // Load semua options secara paralel agar Select segera punya data
-          await Promise.all([
-            d.provinceId ? fetchCities(d.provinceId) : Promise.resolve(),
-            d.cityId ? fetchDistricts(d.cityId) : Promise.resolve(),
-            d.districtId ? fetchVillages(d.districtId) : Promise.resolve(),
-          ]);
+          if (d.villageRegionId) {
+            await fetchVillageAncestry(d.villageRegionId);
+          }
         }
       } catch {
         message.error('Gagal memuat data master');
@@ -455,9 +403,6 @@ const FormPendaftaran = () => {
           e.no_hp_kontak_darurat = 'Tidak boleh sama dengan Nomor HP';
         }
         if (!formData.alamat) e.alamat = 'Alamat wajib diisi';
-        if (!formData.provinceId) e.provinceId = 'Provinsi wajib dipilih';
-        if (!formData.cityId) e.cityId = 'Kabupaten/Kota wajib dipilih';
-        if (!formData.districtId) e.districtId = 'Kecamatan wajib dipilih';
         if (!formData.villageRegionId) e.villageRegionId = 'Desa/Kelurahan wajib dipilih';
         break;
 
@@ -466,9 +411,15 @@ const FormPendaftaran = () => {
         if (!formData.latar_belakang) e.latar_belakang = 'Wajib diisi';
         if (!formData.implementation_method) e.implementation_method = 'Wajib diisi';
         if (!formData.dampak_program) e.dampak_program = 'Wajib diisi';
+        if (!formData.dampak_program_after) e.dampak_program_after = 'Wajib diisi';
         if (!formData.rencana_pengembangan) e.rencana_pengembangan = 'Wajib diisi';
         if (!formData.sustainability_plan) e.sustainability_plan = 'Wajib diisi';
         if (!formData.program_evaluation) e.program_evaluation = 'Wajib diisi';
+        if (!formData.document_link || !formData.document_link.trim()) {
+          e.document_link = 'Wajib diisi';
+        } else if (!/^https?:\/\/.+/i.test(formData.document_link.trim())) {
+          e.document_link = 'Link dokumen harus berupa URL yang valid';
+        }
         if (photos.length === 0) e.photos = 'Minimal 1 foto wajib diunggah';
         break;
     }
@@ -522,6 +473,7 @@ const FormPendaftaran = () => {
         address: formData.alamat,
         background: formData.latar_belakang,
         programImpact: formData.dampak_program,
+        programImpactAfter: formData.dampak_program_after || '',
         programDuration: formData.durasi_program,
         developmentPlan: formData.rencana_pengembangan,
         implementationMethod: formData.implementation_method || '',
@@ -543,6 +495,7 @@ const FormPendaftaran = () => {
         payload.astraGroupId = formData.grup_astra_id;
       }
       if (formData.social_media) payload.socialMedia = formData.social_media;
+      if (formData.document_link && formData.document_link.trim()) payload.documentLink = formData.document_link.trim();
       if (photos.length > 0) {
         payload.photos = photos.map(p => ({ url: p.url, originalName: p.originalName, generatedName: p.generatedName }));
       }
@@ -784,58 +737,46 @@ const FormPendaftaran = () => {
 
   const renderStep2 = () => {
     /** Handle provinsi berubah → fetch kota, reset semua child */
-    const handleProvinceChange = async (provinceId) => {
-      const selected = provinceOptions.find(p => p.id === provinceId);
-      setFormData(prev => ({
-        ...prev,
-        provinceId,
-        provinceName: selected?.name || '',
-        cityId: null, cityName: '',
-        districtId: null, districtName: '',
-        villageRegionId: null, villageRegionName: '',
-      }));
-      setCityOptions([]);
-      setDistrictOptions([]);
-      setDesaOptions([]);
-      if (provinceId) await fetchCities(provinceId);
-    };
-
-    /** Handle kota berubah → fetch kecamatan, reset child */
-    const handleCityChange = async (cityId) => {
-      const selected = cityOptions.find(c => c.id === cityId);
-      setFormData(prev => ({
-        ...prev,
-        cityId,
-        cityName: selected?.name || '',
-        districtId: null, districtName: '',
-        villageRegionId: null, villageRegionName: '',
-      }));
-      setDistrictOptions([]);
-      setDesaOptions([]);
-      if (cityId) await fetchDistricts(cityId);
-    };
-
-    /** Handle kecamatan berubah → fetch desa, reset child */
-    const handleDistrictChange = async (districtId) => {
-      const selected = districtOptions.find(d => d.id === districtId);
-      setFormData(prev => ({
-        ...prev,
-        districtId,
-        districtName: selected?.name || '',
-        villageRegionId: null, villageRegionName: '',
-      }));
-      setDesaOptions([]);
-      if (districtId) await fetchVillages(districtId);
-    };
-
-    /** Handle desa berubah → simpan ID & nama */
-    const handleVillageChange = (villageId) => {
-      const selected = desaOptions.find(v => v.id === villageId);
-      setFormData(prev => ({
-        ...prev,
-        villageRegionId: villageId,
-        villageRegionName: selected?.name || '',
-      }));
+    /** Handle desa dipilih → auto-fill provinsi, kabupaten, kecamatan via ancestry */
+    const handleVillageSelect = async (villageId) => {
+      if (!villageId) {
+        // Clear semua wilayah
+        setSelectedVillageLabel('');
+        setFormData(prev => ({
+          ...prev,
+          villageRegionId: null, villageRegionName: '',
+          districtId: null, districtName: '',
+          cityId: null, cityName: '',
+          provinceId: null, provinceName: '',
+        }));
+        setVillageOptions([]);
+        return;
+      }
+      const selected = villageOptions.find(v => v.id === villageId);
+      setSelectedVillageLabel(selected?.label || '');
+      const villageName = selected?.name || '';
+      // Set village dulu, lalu auto-fill dari hierarchy jika ada
+      if (selected?.hierarchy) {
+        setFormData(prev => ({
+          ...prev,
+          villageRegionId: villageId,
+          villageRegionName: villageName,
+          districtId: selected.hierarchy.district?.id || null,
+          districtName: selected.hierarchy.district?.name || '',
+          cityId: selected.hierarchy.city?.id || null,
+          cityName: selected.hierarchy.city?.name || '',
+          provinceId: selected.hierarchy.province?.id || null,
+          provinceName: selected.hierarchy.province?.name || '',
+        }));
+      } else {
+        // Fallback: fetch ancestry dari API
+        setFormData(prev => ({
+          ...prev,
+          villageRegionId: villageId,
+          villageRegionName: villageName,
+        }));
+        await fetchVillageAncestry(villageId);
+      }
     };
 
     return (
@@ -877,28 +818,6 @@ const FormPendaftaran = () => {
               {formData.grup_astra_id === 'others' && (
                 <Input placeholder="Masukkan nama Perusahaan/Yayasan Pembina lainnya" style={{ ...inputStyle, marginTop: 8 }} value={formData.binaan_custom || ''} onChange={e => updateField('binaan_custom', e.target.value)} />
               )}
-            </div>
-          </Col>
-        </Row>
-
-        <Row gutter={[24, 0]}>
-          <Col xs={24} sm={12}>
-            <div style={fieldWrapper}>
-              <Text style={errors.phone_number ? labelErrorStyle : labelStyle}>Nomor HP Ketua Kelompok *</Text>
-              <Input placeholder="Contoh: 08123456789" style={errors.phone_number ? inputErrorStyle : inputStyle} value={formData.phone_number} onChange={handlePhoneChange} maxLength={15} inputMode="numeric" />
-              {errors.phone_number && <Text style={errorTextStyle}>{errors.phone_number}</Text>}
-            </div>
-          </Col>
-          <Col xs={24} sm={12}>
-            <div style={fieldWrapper}>
-              <Text style={errors.nama_kelompok ? labelErrorStyle : labelStyle}>Nama Ketua Kelompok *</Text>
-              <Input
-                placeholder="Nama Ketua Kelompok"
-                style={errors.nama_kelompok ? inputErrorStyle : inputStyle}
-                value={formData.nama_kelompok}
-                onChange={e => handleNameChange('nama_kelompok', e)}
-              />
-              {errors.nama_kelompok && <Text style={errorTextStyle}>{errors.nama_kelompok}</Text>}
             </div>
           </Col>
         </Row>
@@ -960,126 +879,54 @@ const FormPendaftaran = () => {
         </div>
 
         <Row gutter={[24, 0]}>
-          {/* Provinsi */}
-          <Col xs={24} sm={12}>
-            <div style={fieldWrapper}>
-              <Text style={errors.provinceId ? labelErrorStyle : labelStyle}>Provinsi *</Text>
-              {errors.provinceId && <Text style={errorTextStyle}>{errors.provinceId}</Text>}
-              <SearchSelect
-                placeholder="Ketik untuk cari provinsi..."
-                value={formData.provinceId}
-                onChange={(val) => {
-                  if (!val) {
-                    setFormData(prev => ({ ...prev, provinceId: null, provinceName: '', cityId: null, cityName: '', districtId: null, districtName: '', villageRegionId: null, villageRegionName: '' }));
-                    setCityOptions([]); setDistrictOptions([]); setDesaOptions([]); setProvinceOptions([]);
-                  } else {
-                    handleProvinceChange(val);
-                  }
-                }}
-                allowClear
-                showSearch
-                onSearch={(val) => debounce('province', () => { setProvinceOptions([]); fetchProvinces(val, 1); }, 500)}
-                loading={loadingProvinces}
-                notFoundContent={loadingProvinces ? 'Memuat data...' : 'Tidak ada data'}
-                error={errors.provinceId}
-                options={provinceOptions.map(p => ({ value: p.id, label: p.name }))}
-                hasMore={provinceHasMore}
-                loadingMore={loadingProvinces}
-                onLoadMore={() => fetchProvinces(provinceSearch, provincePage + 1, true)}
-              />
-            </div>
-          </Col>
-          {/* Kabupaten */}
-          <Col xs={24} sm={12}>
-            <div style={fieldWrapper}>
-              <Text style={errors.cityId ? labelErrorStyle : labelStyle}>Kabupaten / Kota *</Text>
-              {errors.cityId && <Text style={errorTextStyle}>{errors.cityId}</Text>}
-              <SearchSelect
-                placeholder="Ketik untuk cari kabupaten..."
-                value={formData.cityId}
-                onChange={(val) => {
-                  if (!val) {
-                    setFormData(prev => ({ ...prev, cityId: null, cityName: '', districtId: null, districtName: '', villageRegionId: null, villageRegionName: '' }));
-                    setDistrictOptions([]); setDesaOptions([]); setCityOptions([]);
-                  } else {
-                    handleCityChange(val);
-                  }
-                }}
-                allowClear
-                showSearch
-                onSearch={(val) => debounce('city', () => formData.provinceId && fetchCities(formData.provinceId, val), 500)}
-                disabled={!formData.provinceId}
-                loading={loadingCities}
-                notFoundContent={loadingCities ? 'Memuat data...' : 'Tidak ada data'}
-                error={errors.cityId}
-                options={cityOptions.map(c => ({ value: c.id, label: c.name }))}
-                hasMore={cityHasMore}
-                loadingMore={loadingCities}
-                onLoadMore={() => fetchCities(formData.provinceId, citySearch, cityPage + 1, true)}
-              />
-            </div>
-          </Col>
-          {/* Kecamatan */}
-          <Col xs={24} sm={12}>
-            <div style={fieldWrapper}>
-              <Text style={errors.districtId ? labelErrorStyle : labelStyle}>Kecamatan *</Text>
-              {errors.districtId && <Text style={errorTextStyle}>{errors.districtId}</Text>}
-              <SearchSelect
-                placeholder="Ketik untuk cari kecamatan..."
-                value={formData.districtId}
-                onChange={(val) => {
-                  if (!val) {
-                    setFormData(prev => ({ ...prev, districtId: null, districtName: '', villageRegionId: null, villageRegionName: '' }));
-                    setDesaOptions([]); setDistrictOptions([]);
-                  } else {
-                    handleDistrictChange(val);
-                  }
-                }}
-                allowClear
-                showSearch
-                onSearch={(val) => debounce('district', () => formData.cityId && fetchDistricts(formData.cityId, val), 500)}
-                disabled={!formData.cityId}
-                loading={loadingDistricts}
-                notFoundContent={loadingDistricts ? 'Memuat data...' : 'Tidak ada data'}
-                error={errors.districtId}
-                options={districtOptions.map(d => ({ value: d.id, label: d.name }))}
-                hasMore={districtHasMore}
-                loadingMore={loadingDistricts}
-                onLoadMore={() => fetchDistricts(formData.cityId, districtSearch, districtPage + 1, true)}
-              />
-            </div>
-          </Col>
-          {/* Desa */}
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
               <Text style={errors.villageRegionId ? labelErrorStyle : labelStyle}>Desa / Kelurahan *</Text>
-              {errors.villageRegionId && <Text style={errorTextStyle}>{errors.villageRegionId}</Text>}
               <SearchSelect
-                placeholder="Ketik untuk cari desa..."
+                placeholder="Ketik nama desa untuk mencari..."
                 value={formData.villageRegionId}
-                onChange={(val) => {
-                  if (!val) {
-                    updateField('villageRegionId', null);
-                    setDesaOptions([]);
-                  } else {
-                    handleVillageChange(val);
-                  }
-                }}
+                onChange={(val) => handleVillageSelect(val)}
+                selectedLabel={selectedVillageLabel}
                 allowClear
                 showSearch
-                onSearch={(val) => debounce('village', () => formData.districtId && fetchVillages(formData.districtId, val), 500)}
-                disabled={!formData.districtId}
-                loading={loadingDesa}
-                notFoundContent={loadingDesa ? 'Memuat data...' : 'Tidak ada data desa'}
+                onSearch={(val) => debounce('village', () => {
+                  if (val && val.length >= 2) {
+                    searchVillages(val, 1);
+                  }
+                }, 500)}
+                onClear={() => setVillageOptions([])}
+                loading={loadingVillage}
+                notFoundContent={loadingVillage ? 'Memuat data...' : 'Tidak ada data desa'}
                 error={errors.villageRegionId}
-                options={desaOptions.map(d => ({ value: d.id, label: d.name }))}
-                hasMore={desaHasMore}
-                loadingMore={loadingDesa}
-                onLoadMore={() => fetchVillages(formData.districtId, desaSearch, desaPage + 1, true)}
+                options={villageOptions.map(v => ({ value: v.id, label: v.label }))}
+                hasMore={villageHasMore}
+                loadingMore={loadingVillage}
+                onLoadMore={() => searchVillages(undefined, villagePage + 1, true)}
               />
             </div>
           </Col>
-          <div style={{visibility :'hidden'}}>
+          <Col xs={24} sm={12}>
+            <div style={fieldWrapper}>
+              <Text style={labelStyle}>Kecamatan</Text>
+              <Input disabled style={{ ...inputStyle, background: '#f5f5f5', color: '#64748b' }} value={formData.districtName || ''} placeholder="Otomatis terisi dari desa" />
+            </div>
+          </Col>
+        </Row>
+
+        <Row gutter={[24, 0]}>
+          <Col xs={24} sm={12}>
+            <div style={fieldWrapper}>
+              <Text style={labelStyle}>Kabupaten / Kota</Text>
+              <Input disabled style={{ ...inputStyle, background: '#f5f5f5', color: '#64748b' }} value={formData.cityName || ''} placeholder="Otomatis terisi dari desa" />
+            </div>
+          </Col>
+          <Col xs={24} sm={12}>
+            <div style={fieldWrapper}>
+              <Text style={labelStyle}>Provinsi</Text>
+              <Input disabled style={{ ...inputStyle, background: '#f5f5f5', color: '#64748b' }} value={formData.provinceName || ''} placeholder="Otomatis terisi dari desa" />
+            </div>
+          </Col>
+          <div style={{ visibility: 'hidden' }}>
             <Text>Jenis DSA *</Text>
             <Input value={formData.jenis_dsa} disabled />
           </div>
@@ -1127,12 +974,22 @@ const FormPendaftaran = () => {
         {errors.implementation_method ? <Text style={errorTextStyle}>{errors.implementation_method}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan bagaimana program ini dilaksanakan</Text>}
       </div>
 
-      <div style={fieldWrapper}>
-        <Text style={errors.dampak_program ? labelErrorStyle : labelStyle}>Dampak Yang Sudah Terealisasi *</Text>
-        <TextArea rows={5} placeholder="Contoh: Peningkatan pendapatan sebesar Rp X, Peningkatan jumlah kunjungan wisata sebesar Y%, Penurunan emisi sebesar Y%" style={{ borderRadius: 8, borderColor: errors.dampak_program ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.dampak_program ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.dampak_program} onChange={e => updateField('dampak_program', e.target.value)} />
-        {errors.dampak_program ? <Text style={errorTextStyle}>{errors.dampak_program}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan target dampak yang ingin dicapai</Text>}
-      </div>
-
+      <Row gutter={[24, 0]}>
+        <Col xs={24} sm={12}>
+          <div style={fieldWrapper}>
+            <Text style={errors.dampak_program ? labelErrorStyle : labelStyle}>Kondisi Sebelum Program *</Text>
+            <TextArea rows={5} placeholder="Contoh: Sebelum program dijalankan, pendapatan masyarakat masih rendah, tingkat literasi masih kurang, dll." style={{ borderRadius: 8, borderColor: errors.dampak_program ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.dampak_program ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.dampak_program} onChange={e => updateField('dampak_program', e.target.value)} />
+            {errors.dampak_program ? <Text style={errorTextStyle}>{errors.dampak_program}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan kondisi Sebelum program dijalankan</Text>}
+          </div>
+        </Col>
+        <Col xs={24} sm={12}>
+          <div style={fieldWrapper}>
+            <Text style={errors.dampak_program_after ? labelErrorStyle : labelStyle}>Kondisi Setelah Program *</Text>
+            <TextArea rows={5} placeholder="Contoh: Peningkatan pendapatan sebesar Rp X, Peningkatan jumlah kunjungan wisata sebesar Y%, Penurunan emisi sebesar Y%" style={{ borderRadius: 8, borderColor: errors.dampak_program_after ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.dampak_program_after ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.dampak_program_after || ''} onChange={e => updateField('dampak_program_after', e.target.value)} />
+            {errors.dampak_program_after ? <Text style={errorTextStyle}>{errors.dampak_program_after}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Jelaskan kondisi yang terjadi setelah program dijalankan</Text>}
+          </div>
+        </Col>
+      </Row>
       <div style={fieldWrapper}>
         <Text style={errors.rencana_pengembangan ? labelErrorStyle : labelStyle}>Rencana dan Potensi Pengembangan *</Text>
         <TextArea rows={5} placeholder="Contoh: Program X akan terus dikembangkan dengan meningkatkan jumlah pelatihan dan memperluas jangkauan program" style={{ borderRadius: 8, borderColor: errors.rencana_pengembangan ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.rencana_pengembangan ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.rencana_pengembangan} onChange={e => updateField('rencana_pengembangan', e.target.value)} />
@@ -1219,6 +1076,12 @@ const FormPendaftaran = () => {
           )}
         </div>
       </div>
+
+      <div className='mt-4' style={fieldWrapper}>
+        <Text style={errors.document_link ? labelErrorStyle : labelStyle}>Link dokumentasi lainnya *</Text>
+        <Input placeholder="https://drive.google.com/drive/folders/..." style={errors.document_link ? inputErrorStyle : inputStyle} value={formData.document_link || ''} onChange={e => updateField('document_link', e.target.value)} />
+        {errors.document_link ? <Text style={errorTextStyle}>{errors.document_link}</Text> : <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Masukkan link dokumentasi foto/video/publikasi lainnya (harus berupa URL valid)</Text>}
+      </div>
     </div>
   );
 
@@ -1282,13 +1145,14 @@ const FormPendaftaran = () => {
           <ReviewField label="Durasi Program" value={formData.durasi_program || '-'} />
           <ReviewField label="Latar Belakang / Rasionalisasi" value={formData.latar_belakang} span={24} />
           <ReviewField label="Metode Pelaksanaan Program" value={formData.implementation_method} span={24} />
-          <ReviewField label="Dampak Yang Sudah Terealisasi" value={formData.dampak_program} span={24} />
+          <ReviewField label="Kondisi Sebelum Program" value={formData.dampak_program} span={24} />
+          <ReviewField label="Kondisi Setelah Program" value={formData.dampak_program_after || '-'} span={24} />
           <ReviewField label="Rencana dan Potensi Pengembangan" value={formData.rencana_pengembangan} span={24} />
           <ReviewField label="Keberlanjutan Program" value={formData.sustainability_plan} span={24} />
           <ReviewField label="Evaluasi Program" value={formData.program_evaluation} span={24} />
         </Row>
         {photos.length > 0 && (
-          <div style={{ marginTop: 12 }}>
+          <div className='mb-4' style={{ marginTop: 12 }}>
             <Text style={{ color: '#94a3b8', fontSize: 11, display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 }}>Foto Dokumentasi</Text>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {photos.map((photo, i) => (
@@ -1299,6 +1163,17 @@ const FormPendaftaran = () => {
             </div>
           </div>
         )}
+        <Col xs={24}>
+          <div style={{ marginBottom: 12 }}>
+            <Text style={{ color: '#94a3b8', fontSize: 11, display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>Link dokumentasi lainnya</Text>
+            {formData.document_link ? (
+              <a href={formData.document_link} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: '#1890ff', wordBreak: 'break-all' }}>{formData.document_link}</a>
+            ) : (
+              <Text strong style={{ fontSize: 13, color: '#0f172a' }}>—</Text>
+            )}
+          </div>
+        </Col>
+
       </ReviewCard>
     </div>
   );

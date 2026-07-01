@@ -96,6 +96,18 @@ const masterService = {
     return data.data || data;
   },
 
+  /** GET /api/regions/villages/search — cari desa dengan label lengkap + hierarchy */
+  searchVillages: async (params = {}) => {
+    const { data } = await api.get('/regions/villages/search', { params });
+    return data.data || data;
+  },
+
+  /** GET /api/regions/:id/ancestry — ambil hierarki wilayah dari ID desa */
+  getVillageAncestry: async (id) => {
+    const { data } = await api.get(`/regions/${id}/ancestry`);
+    return data.data || data;
+  },
+
   /** POST /api/regions — buat wilayah baru (admin) */
   createRegion: async (dto) => {
     const { data } = await api.post('/regions', dto);

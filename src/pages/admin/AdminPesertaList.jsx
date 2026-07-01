@@ -51,6 +51,8 @@ const STATUS_MAP = {
  */
 const mapFromApi = (item) => ({
   id: item.id,
+  nama_user: item.user?.name || '-',
+  email_user: item.user?.email || '-',
   nama_desa: item.villageName || '-',
   nama_kelompok: item.groupName || '-',
   pilar: item.pillar?.name || '-',
@@ -540,6 +542,15 @@ const AdminPesertaList = () => {
   };
 
   const columns = [
+    {
+      title: 'Nama Pendaftar',
+      dataIndex: 'nama_user',
+      key: 'nama_user',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
+      render: (text) => <Text style={{ fontSize: 13 }}>{text}</Text>,
+    },
     {
       title: 'Nama DSA/Nama Desa',
       onHeaderCell: () => ({

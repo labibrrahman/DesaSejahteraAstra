@@ -8,6 +8,7 @@ import {
   Space,
   Spin,
   Modal,
+  Tag,
 } from 'antd';
 import {
   FileTextOutlined,
@@ -23,6 +24,10 @@ import {
   TagOutlined,
   EnvironmentOutlined,
   EditOutlined,
+  PlusOutlined,
+  MedicineBoxOutlined,
+  ReadOutlined,
+  ShopOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import useRegistration from '../../hooks/useRegistration';
@@ -32,12 +37,75 @@ import RegistrationDetailModal from '../../components/RegistrationDetailModal';
 
 const { Title, Text, Paragraph } = Typography;
 
+const PILAR_CONFIG = {
+  kesehatan:     { Icon: MedicineBoxOutlined, color: '#10b981', bgLight: '#ecfdf5', label: 'Kesehatan' },
+  pendidikan:    { Icon: ReadOutlined,        color: '#8b5cf6', bgLight: '#f5f3ff', label: 'Pendidikan' },
+  lingkungan:    { Icon: EnvironmentOutlined, color: '#22c55e', bgLight: '#f0fdf4', label: 'Lingkungan' },
+  kewirausahaan: { Icon: ShopOutlined,        color: '#f59e0b', bgLight: '#fffbeb', label: 'Kewirausahaan' },
+};
+
+const getPilarKey = (name) => {
+  if (!name) return 'kewirausahaan';
+  const lower = name.toLowerCase();
+  if (lower.includes('kesehatan')) return 'kesehatan';
+  if (lower.includes('pendidikan')) return 'pendidikan';
+  if (lower.includes('lingkungan')) return 'lingkungan';
+  return 'kewirausahaan';
+};
+
+const STATUS_TAGS = {
+  draft: { label: 'Draft', color: 'default' },
+  waiting_screening: { label: 'Menunggu Screening', color: 'processing' },
+  being_assessed: { label: 'Sedang Dinilai', color: 'warning' },
+  assessed: { label: 'Selesai Dinilai', color: 'blue' },
+  finalist: { label: 'Lolos', color: 'success' },
+  rejected: { label: 'Tidak Lolos', color: 'error' },
+};
+
 const PesertaDashboard = () => {
   const navigate = useNavigate();
-  const { registration, dashboardData, loading, hasRegistration } = useRegistration();
+  const { registrations, dashboardData, loading, hasRegistration } = useRegistration();
   const [detailOpen, setDetailOpen] = useState(false);
+  const [selectedReg, setSelectedReg] = useState(null);
   const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [timelineData, setTimelineData] = useState([]);
+
+  const [allCategories, setAllCategories] = useState([]);
+  const [canAddMore, setCanAddMore] = useState(false);
+
+  // Fetch all pillars & categories on mount
+  React.useEffect(() => {
+    if (hasRegistration) {
+      import('../../services/masterService').then(({ default: masterService }) => {
+        masterService.getPillars().then(async (pillarsData) => {
+          const cats = [];
+          for (const p of pillarsData) {
+            try {
+              const c = await masterService.getCategories(p.id);
+              if (Array.isArray(c)) cats.push(...c);
+            } catch { /* ignore */ }
+          }
+          setAllCategories(cats);
+        }).catch(() => {});
+      });
+    }
+  }, [hasRegistration]);
+
+  // Check if user can add more registrations
+  React.useEffect(() => {
+    if (allCategories.length > 0 && registrations.length > 0) {
+      const registeredCombos = registrations
+        .filter(r => r.pillarId && r.categoryId)
+        .map(r => `${r.pillarId}__${r.categoryId}`);
+
+      const hasMoreCombos = allCategories.some(
+        cat => !registeredCombos.includes(`${cat.pillarId || cat.pillar?.id}__${cat.id}`)
+      );
+      setCanAddMore(hasMoreCombos);
+    } else if (allCategories.length > 0 && registrations.length === 0) {
+      setCanAddMore(true);
+    }
+  }, [allCategories, registrations]);
 
   // Fetch timeline dari system-settings
   React.useEffect(() => {
@@ -55,12 +123,22 @@ const PesertaDashboard = () => {
     });
   }, []);
 
+  const STATUS_ORDER = ['draft', 'waiting_screening', 'being_assessed', 'assessed', 'finalist', 'rejected'];
+
+  // Find registration with the most advanced status for Welcome Banner step progress
+  const mostAdvancedReg = registrations.reduce((most, r) => {
+    return STATUS_ORDER.indexOf(r.status) > STATUS_ORDER.indexOf(most?.status ?? 'draft') ? r : most;
+  }, registrations[0] ?? null);
+
+  const status = mostAdvancedReg?.status || 'draft';
+  const nama = registrations[0]?.user?.name || 'Peserta';
+
   // Auto-open status modal untuk finalist/rejected
   React.useEffect(() => {
-    if (dashboardData?.registration?.status === 'finalist' || dashboardData?.registration?.status === 'rejected') {
+    if (status === 'finalist' || status === 'rejected') {
       setStatusModalOpen(true);
     }
-  }, [dashboardData?.registration?.status]);
+  }, [status]);
 
   // Belum ada registrasi → redirect ke form
   React.useEffect(() => {
@@ -81,26 +159,6 @@ const PesertaDashboard = () => {
   if (!hasRegistration) {
     return null;
   }
-
-  // Data dari API
-  const reg = registration;
-  const dash = dashboardData;
-  const nama = reg?.user?.name || 'Peserta';
-  const namaDesa = reg?.villageName || '—';
-  const namaKelompok = reg?.groupName || '—';
-  const namaLabel = 'Nama Ketua Kelompok';
-  const pilar = reg?.pillar?.name || '—';
-  const status = dash?.registration?.status || 'draft';
-
-  // Gunakan status_label dari BE dashboard jika ada
-  const statusLabel = dashboardData?.registration?.status_label || {
-    draft: 'Draft',
-    waiting_screening: 'Menunggu Screening',
-    being_assessed: 'Sedang Dinilai',
-    assessed: 'Selesai Dinilai',
-    finalist: 'Selamat! Anda Lolos',
-    rejected: 'Tidak Lolos',
-  }[status] || status;
 
   const statusStep = {
     draft: 0,
@@ -182,14 +240,14 @@ const PesertaDashboard = () => {
               Pantau kemajuan seleksi dan ikuti perkembangan Lomba Apresiasi Desa Sejahtera Astra Anda di sini.
             </Text>
           </Col>
-          <Col xs={24} sm={24} md={8}>
+          <Col xs={24} sm={24} md={8} style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'stretch' }}>
             {!isFinal && (
               <div
                 style={{
                   background: 'rgba(255,255,255,0.1)',
                   backdropFilter: 'blur(12px)',
                   borderRadius: 12,
-                  padding: '14px 20px',
+                  padding: '12px 18px',
                   textAlign: 'center',
                   border: '1px solid rgba(255,255,255,0.15)',
                 }}
@@ -204,15 +262,32 @@ const PesertaDashboard = () => {
                     marginBottom: 6,
                   }}
                 >
-                  Status Saat Ini
+                  Status Seleksi Terjauh
                 </Text>
                 <Space size={8}>
                   <ClockCircleOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
                   <Text strong style={{ color: '#fff', fontSize: 14 }}>
-                    {statusLabel}
+                    {STATUS_TAGS[status]?.label || 'Draft'}
                   </Text>
                 </Space>
               </div>
+            )}
+            {canAddMore && (
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => navigate('/register?mode=new')}
+                style={{
+                  height: 40,
+                  borderRadius: 8,
+                  fontWeight: 600,
+                  background: '#2563eb',
+                  borderColor: '#2563eb',
+                  boxShadow: '0 4px 12px rgba(37,99,235,0.3)',
+                }}
+              >
+                Tambah Pilar Baru
+              </Button>
             )}
           </Col>
         </Row>
@@ -224,7 +299,6 @@ const PesertaDashboard = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
-              // maxWidth: 640,
             }}
           >
             {statusSteps.map((step, index) => (
@@ -319,133 +393,156 @@ const PesertaDashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div style={{ padding: '16px' }}>
+      <div style={{ padding: '24px' }}>
         <Row gutter={24}>
           <Col xs={24} lg={16}>
-            {/* Ringkasan Pendaftaran */}
-            <Card
-              title={
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div
-                    style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 8,
-                      background: '#eff6ff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <FileTextOutlined style={{ color: '#2563eb', fontSize: 16 }} />
-                  </div>
-                  <span style={{ fontWeight: 600 }}>Ringkasan Pendaftaran</span>
-                </div>
-              }
-              extra={
-                <Button
-                  type="link"
-                  onClick={() => setDetailOpen(true)}
-                  style={{
-                    padding: 0,
-                    color: '#2563eb',
-                    fontWeight: 500,
-                  }}
-                >
-                  Lihat Detail <ArrowRightOutlined style={{ fontSize: 12 }} />
-                </Button>
-              }
-              style={{
-                marginBottom: 24,
-                borderRadius: 12,
-                border: '1px solid #e2e8f0',
-              }}
-              bodyStyle={{ padding: 20 }}
-            >
+            {/* Daftar Pendaftaran */}
+            <div style={{ marginBottom: 24 }}>
+              <Title level={4} style={{ marginBottom: 16, color: '#0f172a', fontWeight: 600 }}>
+                Pendaftaran Saya
+              </Title>
               <Row gutter={[16, 16]}>
-                <Col xs={24} sm={8}>
-                  <div
-                    style={{
-                      background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-                      borderRadius: 10,
-                      padding: '16px 18px',
-                      height: '100%',
-                      border: '1px solid #e2e8f0',
-                    }}
-                  >
-                    <Text
+                {registrations.map(regItem => {
+                  const pk = getPilarKey(regItem.pillar?.name);
+                  const pilarConf = PILAR_CONFIG[pk];
+                  const IconComponent = pilarConf.Icon;
+                  const stat = regItem.status || 'draft';
+                  const statConf = STATUS_TAGS[stat];
+
+                  return (
+                    <Col xs={24} sm={12} key={regItem.id}>
+                      <Card
+                        style={{
+                          borderRadius: 12,
+                          border: '1px solid #e2e8f0',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                          height: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                        }}
+                        bodyStyle={{
+                          padding: 20,
+                          flex: 1,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                        }}
+                      >
+                        <div>
+                          {/* Card Header */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                              <div
+                                style={{
+                                  width: 40,
+                                  height: 40,
+                                  borderRadius: 8,
+                                  background: pilarConf.bgLight,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                }}
+                              >
+                                <IconComponent style={{ color: pilarConf.color, fontSize: 20 }} />
+                              </div>
+                              <div>
+                                <Text strong style={{ fontSize: 15, color: '#0f172a', display: 'block' }}>
+                                  {regItem.pillar?.name || 'Pilar'}
+                                </Text>
+                                <Text type="secondary" style={{ fontSize: 12 }}>
+                                  Kategori: {regItem.category?.name || '—'}
+                                </Text>
+                              </div>
+                            </div>
+                            <Tag color={statConf.color} style={{ margin: 0, borderRadius: 6, padding: '2px 8px', fontWeight: 500 }}>
+                              {statConf.label}
+                            </Tag>
+                          </div>
+
+                          {/* Card Content Summary */}
+                          <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 14px', marginBottom: 20 }}>
+                            <div style={{ marginBottom: 6 }}>
+                              <Text style={{ fontSize: 11, color: '#64748b', display: 'block', textTransform: 'uppercase' }}>Nama Desa / Kelompok</Text>
+                              <Text strong style={{ fontSize: 13, color: '#1e293b' }}>
+                                {regItem.villageName || '—'} / {regItem.groupName || '—'}
+                              </Text>
+                            </div>
+                            <div>
+                              <Text style={{ fontSize: 11, color: '#64748b', display: 'block', textTransform: 'uppercase' }}>Ketua Kelompok</Text>
+                              <Text style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>
+                                {regItem.leaderName || regItem.groupName || '—'}
+                              </Text>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Card Actions */}
+                        <div style={{ display: 'flex', gap: 10, marginTop: 'auto' }}>
+                          <Button
+                            style={{ flex: 1, borderRadius: 8 }}
+                            onClick={() => {
+                              setSelectedReg(regItem);
+                              setDetailOpen(true);
+                            }}
+                          >
+                            Lihat Detail
+                          </Button>
+                          {stat === 'draft' && (
+                            <Button
+                              type="primary"
+                              icon={<EditOutlined />}
+                              style={{ flex: 1, borderRadius: 8, background: '#2563eb', borderColor: '#2563eb' }}
+                              onClick={() => navigate(`/register?id=${regItem.id}`)}
+                            >
+                              Edit Draft
+                            </Button>
+                          )}
+                        </div>
+                      </Card>
+                    </Col>
+                  );
+                })}
+
+                {/* Add New Pillar Card */}
+                {canAddMore && (
+                  <Col xs={24} sm={12}>
+                    <div
+                      onClick={() => navigate('/register?mode=new')}
                       style={{
-                        color: '#64748b',
-                        fontSize: 11,
-                        display: 'block',
-                        marginBottom: 8,
-                        textTransform: 'uppercase',
-                        letterSpacing: 0.5,
+                        border: '2px dashed #cbd5e1',
+                        borderRadius: 12,
+                        height: '100%',
+                        minHeight: 180,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        cursor: 'pointer',
+                        padding: 24,
+                        transition: 'all 0.2s',
+                        background: '#fff',
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.borderColor = '#2563eb';
+                        e.currentTarget.style.background = '#eff6ff';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.borderColor = '#cbd5e1';
+                        e.currentTarget.style.background = '#fff';
                       }}
                     >
-                      Pilar Program
-                    </Text>
-                    <Text strong style={{ fontSize: 15, color: '#1e293b' }}>
-                      {pilar}
-                    </Text>
-                  </div>
-                </Col>
-                <Col xs={24} sm={8}>
-                  <div
-                    style={{
-                      background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-                      borderRadius: 10,
-                      padding: '16px 18px',
-                      height: '100%',
-                      border: '1px solid #e2e8f0',
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: '#64748b',
-                        fontSize: 11,
-                        display: 'block',
-                        marginBottom: 8,
-                        textTransform: 'uppercase',
-                        letterSpacing: 0.5,
-                      }}
-                    >
-                      Nama DSA/Nama Desa
-                    </Text>
-                    <Text strong style={{ fontSize: 15, color: '#1e293b' }}>
-                      {namaDesa}
-                    </Text>
-                  </div>
-                </Col>
-                <Col xs={24} sm={8}>
-                  <div
-                    style={{
-                      background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
-                      borderRadius: 10,
-                      padding: '16px 18px',
-                      height: '100%',
-                      border: '1px solid #e2e8f0',
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: '#64748b',
-                        fontSize: 11,
-                        display: 'block',
-                        marginBottom: 8,
-                        textTransform: 'uppercase',
-                        letterSpacing: 0.5,
-                      }}
-                    >
-                      {namaLabel}
-                    </Text>
-                    <Text strong style={{ fontSize: 15, color: '#1e293b' }}>
-                      {namaKelompok}
-                    </Text>
-                  </div>
-                </Col>
+                      <PlusOutlined style={{ fontSize: 24, color: '#64748b', marginBottom: 12 }} />
+                      <Text strong style={{ fontSize: 14, color: '#475569', display: 'block', textAlign: 'center' }}>
+                        Daftar Pilar / Kategori Baru
+                      </Text>
+                      <Text type="secondary" style={{ fontSize: 12, textAlign: 'center', marginTop: 4 }}>
+                        Daftarkan desa Anda untuk pilar lomba lainnya.
+                      </Text>
+                    </div>
+                  </Col>
+                )}
               </Row>
-            </Card>
+            </div>
 
             {/* Timeline Acara — hide jika rejected */}
             {status !== 'rejected' && (
@@ -461,7 +558,6 @@ const PesertaDashboard = () => {
               style={{ borderRadius: 12, border: '1px solid #e2e8f0', marginBottom:'20px' }}
               bodyStyle={{ padding: 0 }}
             >
-              {/* Timeline dari API */}
               {timelineData.map((phase, phaseIdx) => (
                 <React.Fragment key={phaseIdx}>
                   <div style={{ background: phaseIdx === 0 ? '#2563eb' : '#7c3aed', padding: '12px 20px' }}>
@@ -557,72 +653,6 @@ const PesertaDashboard = () => {
                 </Button>
               </div>
             </Card>
-
-            {/* Aktivitas Terakhir */}
-            {/* <Card
-              title={
-                <Text strong style={{ fontSize: 13, letterSpacing: 0.5, textTransform: 'uppercase' }}>
-                  Aktivitas Terakhir
-                </Text>
-              }
-              style={{
-                borderRadius: 12,
-                border: '1px solid #e2e8f0',
-              }}
-              bodyStyle={{ padding: '16px 20px' }}
-            >
-              <div style={{ padding: '4px 0' }}>
-                {[
-                  {
-                    color: '#22c55e',
-                    title: 'Pendaftaran Terverifikasi',
-                    time: '2 hari yang lalu',
-                  },
-                  {
-                    color: '#3b82f6',
-                    title: 'Memulai Tahap Screening',
-                    time: '1 hari yang lalu',
-                  },
-                  {
-                    color: '#f59e0b',
-                    title: 'Formulir Dikirim',
-                    time: '3 hari yang lalu',
-                  },
-                ].map((item, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: 12,
-                      marginBottom: index < 2 ? 18 : 0,
-                      padding: '8px 0',
-                      borderBottom: index < 2 ? '1px solid #f1f5f9' : 'none',
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: '50%',
-                        background: item.color,
-                        marginTop: 5,
-                        flexShrink: 0,
-                        boxShadow: `0 0 0 3px ${item.color}20`,
-                      }}
-                    />
-                    <div>
-                      <Text strong style={{ display: 'block', fontSize: 13, color: '#1e293b', marginBottom: 2 }}>
-                        {item.title}
-                      </Text>
-                      <Text type="secondary" style={{ fontSize: 12 }}>
-                        {item.time}
-                      </Text>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card> */}
           </Col>
         </Row>
       </div>
@@ -631,7 +661,7 @@ const PesertaDashboard = () => {
       <RegistrationDetailModal
         open={detailOpen}
         onClose={() => setDetailOpen(false)}
-        registration={reg}
+        registration={selectedReg}
       />
 
       {/* Status Modal — Finalist / Rejected */}

@@ -4,11 +4,11 @@ import api from '../lib/api';
 /**
  * Hook untuk data peserta dashboard.
  * Menggabungkan data dari:
- * - GET /dashboard/perseta (structured steps, status, support)
- * - GET /registrations/my (full registration data untuk detail modal)
+ * - GET /dashboard/peserta (structured steps, status, support — berisi registrations array)
+ * - GET /registrations/my (full registration data array untuk detail modal)
  */
 const useRegistration = () => {
-  const [registration, setRegistration] = useState(null);
+  const [registrations, setRegistrations] = useState([]);
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -21,15 +21,18 @@ const useRegistration = () => {
           api.get('/dashboard/peserta'),
         ]);
 
-        // Parse registration data
+        // Parse registration data — selalu array
         if (regRes.status === 'fulfilled') {
-          const regData = regRes.value?.data?.data ?? regRes.value?.data;
-          if (regData && regData.id) {
-            setRegistration(regData);
-          }
+          const raw = regRes.value?.data?.data ?? regRes.value?.data;
+          const list = Array.isArray(raw)
+            ? raw
+            : raw?.id
+            ? [raw]
+            : [];
+          setRegistrations(list);
         }
 
-        // Parse dashboard data (steps, status_label, support)
+        // Parse dashboard data (steps, status_label, support, registrations)
         if (dashRes.status === 'fulfilled') {
           const dashData = dashRes.value?.data?.data ?? dashRes.value?.data;
           if (dashData) {
@@ -37,7 +40,7 @@ const useRegistration = () => {
           }
         }
       } catch {
-        setRegistration(null);
+        setRegistrations([]);
       } finally {
         setLoading(false);
       }
@@ -46,10 +49,12 @@ const useRegistration = () => {
   }, []);
 
   return {
-    registration,
+    registrations,
+    // Backward-compat alias: registrasi pertama (untuk komponen lama)
+    registration: registrations[0] ?? null,
     dashboardData,
     loading,
-    hasRegistration: !!registration,
+    hasRegistration: registrations.length > 0,
   };
 };
 

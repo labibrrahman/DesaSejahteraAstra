@@ -14,13 +14,13 @@ import {
   SearchOutlined,
   FormOutlined,
   ClockCircleOutlined,
-  QuestionCircleOutlined,
   EnvironmentOutlined,
   EditOutlined,
   PlusOutlined,
   MedicineBoxOutlined,
   ReadOutlined,
   ShopOutlined,
+  MessageOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import useRegistration from '../../hooks/useRegistration';
@@ -202,6 +202,42 @@ const PesertaDashboard = () => {
             <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, lineHeight: 1.6 }}>
               Pantau kemajuan seleksi dan ikuti perkembangan Lomba Apresiasi Desa Sejahtera Astra Anda di sini.
             </Text>
+          </Col>
+          <Col xs={24} sm={24} md={8} style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button
+              onClick={() => {
+                const url = dashboardData?.support?.whatsapp || 'https://wa.me/6285713043230';
+                if (url.match(/^https:\/\/(wa\.me|api\.whatsapp\.com)\//)) {
+                  window.open(url, '_blank', 'noopener,noreferrer');
+                }
+              }}
+              style={{
+                background: 'rgba(255,255,255,0.15)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255,255,255,0.25)',
+                color: '#fff',
+                fontWeight: 600,
+                height: 44,
+                borderRadius: 10,
+                padding: '0 20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.25)';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)';
+              }}
+            >
+              <MessageOutlined style={{ fontSize: 16 }} />
+              <span>Hubungi Support</span>
+            </Button>
           </Col>
         </Row>
       </div>
@@ -426,115 +462,44 @@ const PesertaDashboard = () => {
               </Row>
             </div>
 
-            {/* Timeline Acara — hide jika semua rejected */}
-            {!allRejected && (
-            <Card
-              title={
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 8, background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <ClockCircleOutlined style={{ color: '#2563eb', fontSize: 16 }} />
-                  </div>
-                  <span style={{ fontWeight: 600 }}>Jadwal Acara</span>
-                </div>
-              }
-              style={{ borderRadius: 12, border: '1px solid #e2e8f0', marginBottom:'20px' }}
-              bodyStyle={{ padding: 0 }}
-            >
-              {timelineData.map((phase, phaseIdx) => (
-                <React.Fragment key={phaseIdx}>
-                  <div style={{ background: phaseIdx === 0 ? '#2563eb' : '#7c3aed', padding: '12px 20px' }}>
-                    <Text strong style={{ color: '#fff', fontSize: 13, letterSpacing: 0.5 }}>{phase.phase}</Text>
-                  </div>
-                  {phase.schedules.map((schedule, idx) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '14px 20px', borderBottom: idx < phase.schedules.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                      <div style={{ width: 10, height: 10, borderRadius: '50%', marginTop: 5, flexShrink: 0, background: '#d1d5db' }} />
-                      <div style={{ flex: 1 }}>
-                        <Text style={{ fontSize: 12, color: '#64748b', fontWeight: 500 }}>{schedule.date}</Text>
-                        {schedule.activities.map((act, actIdx) => (
-                          <Text key={actIdx} style={{ fontSize: 13, color: '#1e293b', display: 'block', marginTop: 2 }}>{act}</Text>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </React.Fragment>
-              ))}
-            </Card>
-            )}
           </Col>
 
           {/* Right Sidebar */}
           <Col xs={24} lg={8}>
-            {/* Butuh Bantuan */}
-            <Card
-              style={{
-                marginBottom: 24,
-                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-                border: 'none',
-                borderRadius: 12,
-                boxShadow: '0 8px 24px rgba(37,99,235,0.3)',
-              }}
-              bodyStyle={{ padding: '28px 24px' }}
-            >
-              <div style={{ textAlign: 'center' }}>
-                <div
-                  style={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: '50%',
-                    background: 'rgba(255,255,255,0.2)',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    margin: '0 auto 18px',
-                    border: '2px solid rgba(255,255,255,0.3)',
-                  }}
-                >
-                  <QuestionCircleOutlined style={{ fontSize: 28, color: '#fff' }} />
-                </div>
-                <Text
-                  strong
-                  style={{
-                    color: '#fff',
-                    fontSize: 17,
-                    display: 'block',
-                    marginBottom: 10,
-                  }}
-                >
-                  Butuh Bantuan?
-                </Text>
-                <Text
-                  style={{
-                    color: 'rgba(255,255,255,0.85)',
-                    display: 'block',
-                    marginBottom: 20,
-                    fontSize: 13,
-                    lineHeight: 1.6,
-                  }}
-                >
-                  Tim pendamping Astra siap membantu Anda dalam setiap tahapan program.
-                </Text>
-                <Button
-                  onClick={() => {
-                    const url = dashboardData?.support?.whatsapp || 'https://wa.me/6285713043230';
-                    if (url.match(/^https:\/\/(wa\.me|api\.whatsapp\.com)\//)) {
-                      window.open(url, '_blank', 'noopener,noreferrer');
-                    }
-                  }}
-                  style={{
-                    background: '#fff',
-                    borderColor: '#fff',
-                    color: '#2563eb',
-                    fontWeight: 600,
-                    height: 42,
-                    borderRadius: 8,
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                  }}
-                  block
-                >
-                  Hubungi Support
-                </Button>
-              </div>
-            </Card>
+            {/* Jadwal Acara — hide jika semua rejected */}
+            {!allRejected && (
+              <Card
+                title={
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 8, background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <ClockCircleOutlined style={{ color: '#2563eb', fontSize: 16 }} />
+                    </div>
+                    <span style={{ fontWeight: 600 }}>Jadwal Acara</span>
+                  </div>
+                }
+                style={{ borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 24 }}
+                bodyStyle={{ padding: 0 }}
+              >
+                {timelineData.map((phase, phaseIdx) => (
+                  <React.Fragment key={phaseIdx}>
+                    <div style={{ background: phaseIdx === 0 ? '#2563eb' : '#7c3aed', padding: '12px 20px' }}>
+                      <Text strong style={{ color: '#fff', fontSize: 13, letterSpacing: 0.5 }}>{phase.phase}</Text>
+                    </div>
+                    {phase.schedules.map((schedule, idx) => (
+                      <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', borderBottom: idx < phase.schedules.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', marginTop: 6, flexShrink: 0, background: '#d1d5db' }} />
+                        <div style={{ flex: 1 }}>
+                          <Text style={{ fontSize: 11, color: '#64748b', fontWeight: 500 }}>{schedule.date}</Text>
+                          {schedule.activities.map((act, actIdx) => (
+                            <Text key={actIdx} style={{ fontSize: 12, color: '#1e293b', display: 'block', marginTop: 2 }}>{act}</Text>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </React.Fragment>
+                ))}
+              </Card>
+            )}
           </Col>
         </Row>
       </div>

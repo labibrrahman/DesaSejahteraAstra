@@ -28,6 +28,8 @@ const Login = ({ adminMode = false }) => {
     if (error) { message.error(error); clearError(); }
   }, [error, clearError]);
 
+  const BRAND_SUBTITLE = <>Apresiasi ini adalah semangat Astra untuk terus mendorong inovasi 4 bidang (kesehatan, pendidikan, lingkungan, dan kewirausahaan) di desa binaan Grup Astra &amp; Yayasan Astra melalui <i>flagship program</i> Desa Sejahtera Astra yang menjadi semangat bersama dalam pemberdayaan dan pengembangan desa.</>;
+
   const onFinish = async (values) => {
     try {
       const role = await login({ email: values.email, password: values.password });
@@ -90,7 +92,7 @@ const Login = ({ adminMode = false }) => {
             <img src={dsaLogo} alt="DSA" style={{ height: 36, objectFit: 'contain', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} />
             <img src={satuIndoLogo} alt="Satu Indonesia" style={{ height: 32, objectFit: 'contain' }} />
           </div>
-          <MobileBranding title="Lomba Apresiasi Desa Sejahtera Astra" subtitle="Apresiasi ini adalah semangat Astra untuk terus mendorong inovasi 4 bidang (kesehatan, pendidikan, lingkungan, kewirausahaan) di desa binaan Grup & Yayasan Astra melalui flagship program Desa Sejahtera Astra yang menjadi semangat bersama dalam pemberdayaan rural development." />
+          <MobileBranding title="Apresiasi Desa Sejahtera Astra" subtitle={BRAND_SUBTITLE} />
           <MobileFormCard title="Masuk" subtitle="Gunakan akun Admin atau Juri yang telah terdaftar">
             <Form form={form} layout="vertical" onFinish={onFinish} size="large">
               <Form.Item name="email" rules={[{ required: true, message: 'Masukkan email Anda' }, { type: 'email', message: 'Email tidak valid' }]}>
@@ -117,7 +119,7 @@ const Login = ({ adminMode = false }) => {
           <img src={dsaLogo} alt="DSA" style={{ height: 36, objectFit: 'contain', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }} />
           <img src={satuIndoLogo} alt="Satu Indonesia" style={{ height: 32, objectFit: 'contain' }} />
         </div>
-        <MobileBranding title="Desa Sejahtera Astra" subtitle="Apresiasi ini adalah semangat Astra untuk terus mendorong inovasi 4 bidang (kesehatan, pendidikan, lingkungan, kewirausahaan) di desa binaan Grup & Yayasan Astra melalui flagship program Desa Sejahtera Astra yang menjadi semangat bersama dalam pemberdayaan rural development." />
+        <MobileBranding title="Desa Sejahtera Astra" subtitle={BRAND_SUBTITLE} />
         <MobileFormCard title="Masuk sebagai Peserta" subtitle="Gunakan akun Google yang terdaftar untuk mengakses dashboard peserta.">
           <Button type="default" icon={<GoogleOutlined style={{ color: '#4285f4', fontSize: 18 }} />} size="large" block onClick={loginWithGoogle} loading={loading}
             style={{ height: 48, borderRadius: 10, border: '1px solid #e2e8f0', fontWeight: 500, fontSize: 14, color: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
@@ -140,12 +142,12 @@ const Login = ({ adminMode = false }) => {
       <div style={{ position: 'absolute', right: -80, top: -80, width: 300, height: 300, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)' }} />
       <div style={{ position: 'absolute', right: 40, top: -120, width: 400, height: 400, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.05)' }} />
       <div style={{ position: 'relative', zIndex: 1, textAlign: 'center', maxWidth: 400 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 24, marginBottom: 24 }}>
-          <img src={astraLogo} alt="Astra" style={{ height: 48, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
-          <img src={satuIndoLogo} alt="Satu Indonesia" style={{ height: 55, objectFit: 'contain' }} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 150, marginBottom: 24 }}>
+          <img src={astraLogo} alt="Astra" style={{ height: 30, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+          <img src={satuIndoLogo} alt="Satu Indonesia" style={{ height: 40, objectFit: 'contain' }} />
         </div>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 32 }}>
-          <img src={dsaLogo} alt="Desa Sejahtera Astra" style={{ height: 72, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
+          <img src={dsaLogo} alt="Desa Sejahtera Astra" style={{ height: 125, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
         </div>
         <Title level={2} style={{ color: '#fff', fontWeight: 700, fontSize: 32, lineHeight: 1.2, marginBottom: 16 }}>{title}</Title>
         <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 15, lineHeight: 1.7, display: 'block' }}>{subtitle}</Text>
@@ -183,7 +185,7 @@ const Login = ({ adminMode = false }) => {
     return (
       <Layout style={{ minHeight: '100vh', background: '#f8fafc' }}>
         <Content style={{ display: 'flex', minHeight: '100vh' }}>
-          <DesktopBranding title="Lomba Apresiasi Desa Sejahtera Astra" subtitle="Apresiasi ini adalah semangat Astra untuk terus mendorong inovasi 4 bidang (kesehatan, pendidikan, lingkungan, kewirausahaan) di desa binaan Grup & Yayasan Astra melalui flagship program Desa Sejahtera Astra yang menjadi semangat bersama dalam pemberdayaan rural development." />
+          <DesktopBranding title="Apresiasi Desa Sejahtera Astra" subtitle={BRAND_SUBTITLE} />
           <DesktopFormPanel title="Masuk" subtitle="Gunakan akun Admin atau Juri yang telah terdaftar">
             <Form form={form} layout="vertical" onFinish={onFinish} size="large">
               <Form.Item name="email" rules={[{ required: true, message: 'Masukkan email Anda' }, { type: 'email', message: 'Email tidak valid' }]}>
@@ -208,8 +210,8 @@ const Login = ({ adminMode = false }) => {
     <Layout style={{ minHeight: '100vh', background: '#f8fafc' }}>
       <Content style={{ display: 'flex', minHeight: '100vh' }}>
         <DesktopBranding
-          title="Lomba Apresiasi Desa Sejahtera Astra"
-          subtitle="Apresiasi ini adalah semangat Astra untuk terus mendorong inovasi 4 bidang (kesehatan, pendidikan, lingkungan, kewirausahaan) di desa binaan Grup & Yayasan Astra melalui flagship program Desa Sejahtera Astra yang menjadi semangat bersama dalam pemberdayaan rural development."
+          title="Apresiasi Desa Sejahtera Astra"
+          subtitle={BRAND_SUBTITLE}
           // stats={[{ num: '900+', label: 'Desa' }, { num: '4.5M', label: 'Manfaat' }, { num: '34', label: 'Provinsi' }]}
         />
         <DesktopFormPanel title="Masuk sebagai Peserta" subtitle="Gunakan akun Google yang terdaftar untuk mengakses dashboard peserta.">

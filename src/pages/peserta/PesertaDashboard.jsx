@@ -293,49 +293,68 @@ const PesertaDashboard = () => {
                         {/* Bottom Section: Status Step + Actions */}
                         <div style={{ marginTop: 'auto', paddingTop: 16 }}>
                           {/* Compact Status Step */}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 14 }}>
-                            {(() => {
-                              const stepIdx = { draft: 0, waiting_screening: 1, being_assessed: 2, assessed: 3, finalist: 4, rejected: 4 }[stat] || 0;
-                              const isFinal = stat === 'finalist' || stat === 'rejected';
-                              const steps = [
-                                { label: 'Draft', icon: <FileTextOutlined /> },
-                                { label: 'Screening', icon: <SearchOutlined /> },
-                                { label: 'Dinilai', icon: <FormOutlined /> },
-                                { label: 'Selesai', icon: <CheckCircleFilled /> },
-                              ];
-                              return steps.map((s, i) => {
-                                const completed = i < stepIdx;
-                                const current = i === stepIdx;
-                                const active = completed || current;
-                                return (
-                                  <React.Fragment key={i}>
-                                    <div style={{
-                                      width: 28, height: 28, borderRadius: '50%',
-                                      background: completed
-                                        ? 'linear-gradient(135deg, #22c55e, #16a34a)'
-                                        : current
-                                          ? isFinal
-                                            ? stat === 'finalist'
-                                              ? 'linear-gradient(135deg, #22c55e, #16a34a)'
-                                              : 'linear-gradient(135deg, #ef4444, #dc2626)'
-                                            : 'linear-gradient(135deg, #3b82f6, #2563eb)'
-                                          : '#e5e7eb',
-                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                      fontSize: 12, color: active ? '#fff' : '#9ca3af',
-                                      flexShrink: 0,
-                                    }}>
-                                      {s.icon}
-                                    </div>
-                                    {i < steps.length - 1 && (
-                                      <div style={{
-                                        flex: 1, height: 2, borderRadius: 1,
-                                        background: completed ? '#22c55e' : '#e5e7eb',
-                                      }} />
-                                    )}
-                                  </React.Fragment>
-                                );
-                              });
-                            })()}
+                          <div style={{ marginBottom: 14 }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                              {(() => {
+                                const stepIdx = { draft: 0, waiting_screening: 1, being_assessed: 2, assessed: 3, finalist: 4, rejected: 4 }[stat] || 0;
+                                const isFinal = stat === 'finalist' || stat === 'rejected';
+                                const steps = [
+                                  { label: 'Draft', icon: <FileTextOutlined /> },
+                                  { label: 'Screening', icon: <SearchOutlined /> },
+                                  { label: 'Dinilai', icon: <FormOutlined /> },
+                                  { label: 'Selesai', icon: <CheckCircleFilled /> },
+                                ];
+                                return steps.map((s, i) => {
+                                  const completed = i < stepIdx;
+                                  const current = i === stepIdx;
+                                  const active = completed || current;
+                                  return (
+                                    <React.Fragment key={i}>
+                                      <div style={{ textAlign: 'center', flex: 1 }}>
+                                        <div style={{
+                                          width: 28, height: 28, borderRadius: '50%',
+                                          background: completed
+                                            ? 'linear-gradient(135deg, #22c55e, #16a34a)'
+                                            : current
+                                              ? isFinal
+                                                ? stat === 'finalist'
+                                                  ? 'linear-gradient(135deg, #22c55e, #16a34a)'
+                                                  : 'linear-gradient(135deg, #ef4444, #dc2626)'
+                                                : 'linear-gradient(135deg, #3b82f6, #2563eb)'
+                                              : '#e5e7eb',
+                                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                          fontSize: 12, color: active ? '#fff' : '#9ca3af',
+                                          margin: '0 auto',
+                                        }}>
+                                          {completed || (current && isFinal) ? <CheckCircleFilled style={{ fontSize: 12 }} /> : s.icon}
+                                        </div>
+                                        <Text style={{
+                                          fontSize: 10,
+                                          color: active ? '#1e293b' : '#9ca3af',
+                                          fontWeight: active ? 600 : 400,
+                                          marginTop: 4,
+                                          display: 'block',
+                                          lineHeight: 1.2,
+                                        }}>
+                                          {s.label}
+                                        </Text>
+                                      </div>
+                                      {i < steps.length - 1 && (
+                                        <div style={{
+                                          width: 20, height: 2, borderRadius: 1, flexShrink: 0,
+                                          marginTop: 13,
+                                        }}>
+                                          <div style={{
+                                            width: '100%', height: '100%', borderRadius: 1,
+                                            background: completed ? '#22c55e' : '#e5e7eb',
+                                          }} />
+                                        </div>
+                                      )}
+                                    </React.Fragment>
+                                  );
+                                });
+                              })()}
+                            </div>
                           </div>
 
                           {/* Card Actions */}

@@ -260,7 +260,7 @@ const LandingPage = () => {
                 {lazyImages.titleImage ? (
                   <img
                     src={lazyImages.titleImage}
-                    alt="Lomba Apresiasi Desa Sejahtera Astra"
+                    alt="Apresiasi Desa Sejahtera Astra"
                     style={{
                       maxWidth: isMobile ? 160 : 180,
                       width: '100%',
@@ -323,7 +323,7 @@ const LandingPage = () => {
                 textShadow: '0 2px 8px rgba(0,0,0,0.1)',
               }}
             >
-              Apresiasi ini adalah semangat Astra untuk terus mendorong inovasi 4 bidang (kesehatan, pendidikan, lingkungan, kewirausahaan) di desa binaan Grup & Yayasan Astra melalui flagship program Desa Sejahtera Astra yang menjadi semangat bersama dalam pemberdayaan rural development.
+              Apresiasi ini adalah semangat Astra untuk terus mendorong inovasi 4 bidang (kesehatan, pendidikan, lingkungan, dan kewirausahaan) di desa binaan Grup Astra & Yayasan Astra melalui <i>flagship program</i> Desa Sejahtera Astra yang menjadi semangat bersama dalam pemberdayaan dan pengembangan desa.
               {/* Membangun masa depan berkelanjutan melalui sinergi dan inovasi sosial. */}
             </p>
 

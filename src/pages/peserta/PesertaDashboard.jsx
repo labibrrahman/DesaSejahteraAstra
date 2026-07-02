@@ -5,9 +5,7 @@ import {
   Col,
   Typography,
   Button,
-  Space,
   Spin,
-  Modal,
   Tag,
 } from 'antd';
 import {
@@ -15,13 +13,8 @@ import {
   CheckCircleFilled,
   SearchOutlined,
   FormOutlined,
-  TrophyOutlined,
   ClockCircleOutlined,
   QuestionCircleOutlined,
-  ArrowRightOutlined,
-  InfoCircleOutlined,
-  CloseOutlined,
-  TagOutlined,
   EnvironmentOutlined,
   EditOutlined,
   PlusOutlined,
@@ -67,7 +60,6 @@ const PesertaDashboard = () => {
   const { registrations, dashboardData, loading, hasRegistration } = useRegistration();
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedReg, setSelectedReg] = useState(null);
-  const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [timelineData, setTimelineData] = useState([]);
 
   const [allCategories, setAllCategories] = useState([]);
@@ -123,22 +115,10 @@ const PesertaDashboard = () => {
     });
   }, []);
 
-  const STATUS_ORDER = ['draft', 'waiting_screening', 'being_assessed', 'assessed', 'finalist', 'rejected'];
-
-  // Find registration with the most advanced status for Welcome Banner step progress
-  const mostAdvancedReg = registrations.reduce((most, r) => {
-    return STATUS_ORDER.indexOf(r.status) > STATUS_ORDER.indexOf(most?.status ?? 'draft') ? r : most;
-  }, registrations[0] ?? null);
-
-  const status = mostAdvancedReg?.status || 'draft';
   const nama = registrations[0]?.user?.name || 'Peserta';
 
-  // Auto-open status modal untuk finalist/rejected
-  React.useEffect(() => {
-    if (status === 'finalist' || status === 'rejected') {
-      setStatusModalOpen(true);
-    }
-  }, [status]);
+  // Sembunyikan timeline jika semua pendaftaran rejected
+  const allRejected = registrations.length > 0 && registrations.every(r => r.status === 'rejected');
 
   // Belum ada registrasi → redirect ke form
   React.useEffect(() => {
@@ -159,23 +139,6 @@ const PesertaDashboard = () => {
   if (!hasRegistration) {
     return null;
   }
-
-  const statusStep = {
-    draft: 0,
-    waiting_screening: 1,
-    being_assessed: 2,
-    assessed: 3,
-    finalist: 4,
-    rejected: 4,
-  }[status] || 0;
-
-  const isFinal = status === 'finalist' || status === 'rejected';
-
-  const statusSteps = [
-    { title: 'Registrasi', icon: <CheckCircleFilled />, completed: statusStep >= 1 },
-    { title: 'Menunggu Screening', icon: <SearchOutlined />, current: statusStep === 1, completed: statusStep > 1 },
-    { title: isFinal ? 'Sudah Dinilai' : 'Sedang Dinilai', icon: <FormOutlined />, current: statusStep === 2, completed: statusStep > 2 },
-  ];
 
   return (
     <div>
@@ -240,156 +203,7 @@ const PesertaDashboard = () => {
               Pantau kemajuan seleksi dan ikuti perkembangan Lomba Apresiasi Desa Sejahtera Astra Anda di sini.
             </Text>
           </Col>
-          <Col xs={24} sm={24} md={8} style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'stretch' }}>
-            {!isFinal && (
-              <div
-                style={{
-                  background: 'rgba(255,255,255,0.1)',
-                  backdropFilter: 'blur(12px)',
-                  borderRadius: 12,
-                  padding: '12px 18px',
-                  textAlign: 'center',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 10,
-                    color: 'rgba(255,255,255,0.5)',
-                    display: 'block',
-                    letterSpacing: 1.5,
-                    textTransform: 'uppercase',
-                    marginBottom: 6,
-                  }}
-                >
-                  Status Seleksi Terjauh
-                </Text>
-                <Space size={8}>
-                  <ClockCircleOutlined style={{ color: '#60a5fa', fontSize: 16 }} />
-                  <Text strong style={{ color: '#fff', fontSize: 14 }}>
-                    {STATUS_TAGS[status]?.label || 'Draft'}
-                  </Text>
-                </Space>
-              </div>
-            )}
-            {/* {canAddMore && (
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => navigate('/register?mode=new')}
-                style={{
-                  height: 40,
-                  borderRadius: 8,
-                  fontWeight: 600,
-                  background: '#2563eb',
-                  borderColor: '#2563eb',
-                  boxShadow: '0 4px 12px rgba(37,99,235,0.3)',
-                }}
-              >
-                Tambah Pilar Baru
-              </Button>
-            )} */}
-          </Col>
         </Row>
-
-        {/* Progress Steps */}
-        <div style={{ marginTop: 32 }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            {statusSteps.map((step, index) => (
-              <React.Fragment key={step.title}>
-                <div style={{ textAlign: 'center', flex: 1 }}>
-                  <div
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: '50%',
-                      background: step.completed
-                        ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'
-                        : step.current
-                        ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'
-                        : 'rgba(255,255,255,0.15)',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      margin: '0 auto',
-                      fontSize: 18,
-                      color: '#fff',
-                      border: step.current ? '3px solid rgba(255,255,255,0.4)' : 'none',
-                      boxShadow: step.completed || step.current
-                        ? '0 4px 12px rgba(0,0,0,0.2)'
-                        : 'none',
-                      transition: 'all 0.3s ease',
-                    }}
-                  >
-                    {step.icon}
-                  </div>
-                  <Text
-                    style={{
-                      color: step.completed || step.current ? '#fff' : 'rgba(255,255,255,0.4)',
-                      fontSize: 12,
-                      fontWeight: step.completed || step.current ? 600 : 400,
-                      marginTop: 8,
-                      display: 'block',
-                    }}
-                  >
-                    {step.title}
-                  </Text>
-                </div>
-                {index < statusSteps.length - 1 && (
-                  <div
-                    style={{
-                      flex: 1,
-                      height: 3,
-                      background: step.completed
-                        ? 'linear-gradient(90deg, #22c55e 0%, #16a34a 100%)'
-                        : 'rgba(255,255,255,0.15)',
-                      margin: '0 8px',
-                      marginBottom: 22,
-                      borderRadius: 2,
-                    }}
-                  />
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-
-          {/* Status Message — Finalis / Ditolak */}
-          {isFinal && (
-            <div
-              style={{
-                marginTop: 24,
-                padding: '16px 24px',
-                borderRadius: 12,
-                background: status === 'finalist' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
-                border: `1px solid ${status === 'finalist' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-              }}
-            >
-              {status === 'finalist'
-                ? <CheckCircleFilled style={{ fontSize: 24, color: '#22c55e' }} />
-                : <CloseOutlined style={{ fontSize: 24, color: '#ef4444' }} />
-              }
-              <div>
-                <Text strong style={{ color: status === 'finalist' ? '#22c55e' : '#ef4444', fontSize: 15, display: 'block' }}>
-                  {status === 'finalist' ? 'Selamat! Anda Lolos' : 'Maaf, Anda Tidak Lolos'}
-                </Text>
-                <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>
-                  {status === 'finalist'
-                    ? 'Pendaftaran Anda telah dinyatakan lolos ke tahap berikutnya.'
-                    : 'Pendaftaran Anda belum memenuhi kriteria untuk tahap berikutnya.'}
-                </Text>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Main Content */}
@@ -460,7 +274,7 @@ const PesertaDashboard = () => {
                           </div>
 
                           {/* Card Content Summary */}
-                          <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 14px', marginBottom: 20 }}>
+                          <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 14px' }}>
                             <div style={{ marginBottom: 6 }}>
                               <Text style={{ fontSize: 11, color: '#64748b', display: 'block', textTransform: 'uppercase' }}>Nama Desa / Kelompok</Text>
                               <Text strong style={{ fontSize: 13, color: '#1e293b' }}>
@@ -476,27 +290,76 @@ const PesertaDashboard = () => {
                           </div>
                         </div>
 
-                        {/* Card Actions */}
-                        <div style={{ display: 'flex', gap: 10, marginTop: 'auto' }}>
-                          <Button
-                            style={{ flex: 1, borderRadius: 8 }}
-                            onClick={() => {
-                              setSelectedReg(regItem);
-                              setDetailOpen(true);
-                            }}
-                          >
-                            Lihat Detail
-                          </Button>
-                          {stat === 'draft' && (
+                        {/* Bottom Section: Status Step + Actions */}
+                        <div style={{ marginTop: 'auto', paddingTop: 16 }}>
+                          {/* Compact Status Step */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 14 }}>
+                            {(() => {
+                              const stepIdx = { draft: 0, waiting_screening: 1, being_assessed: 2, assessed: 3, finalist: 4, rejected: 4 }[stat] || 0;
+                              const isFinal = stat === 'finalist' || stat === 'rejected';
+                              const steps = [
+                                { label: 'Draft', icon: <FileTextOutlined /> },
+                                { label: 'Screening', icon: <SearchOutlined /> },
+                                { label: 'Dinilai', icon: <FormOutlined /> },
+                                { label: 'Selesai', icon: <CheckCircleFilled /> },
+                              ];
+                              return steps.map((s, i) => {
+                                const completed = i < stepIdx;
+                                const current = i === stepIdx;
+                                const active = completed || current;
+                                return (
+                                  <React.Fragment key={i}>
+                                    <div style={{
+                                      width: 28, height: 28, borderRadius: '50%',
+                                      background: completed
+                                        ? 'linear-gradient(135deg, #22c55e, #16a34a)'
+                                        : current
+                                          ? isFinal
+                                            ? stat === 'finalist'
+                                              ? 'linear-gradient(135deg, #22c55e, #16a34a)'
+                                              : 'linear-gradient(135deg, #ef4444, #dc2626)'
+                                            : 'linear-gradient(135deg, #3b82f6, #2563eb)'
+                                          : '#e5e7eb',
+                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                      fontSize: 12, color: active ? '#fff' : '#9ca3af',
+                                      flexShrink: 0,
+                                    }}>
+                                      {s.icon}
+                                    </div>
+                                    {i < steps.length - 1 && (
+                                      <div style={{
+                                        flex: 1, height: 2, borderRadius: 1,
+                                        background: completed ? '#22c55e' : '#e5e7eb',
+                                      }} />
+                                    )}
+                                  </React.Fragment>
+                                );
+                              });
+                            })()}
+                          </div>
+
+                          {/* Card Actions */}
+                          <div style={{ display: 'flex', gap: 10 }}>
                             <Button
-                              type="primary"
-                              icon={<EditOutlined />}
-                              style={{ flex: 1, borderRadius: 8, background: '#2563eb', borderColor: '#2563eb' }}
-                              onClick={() => navigate(`/register?id=${regItem.id}`)}
+                              style={{ flex: 1, borderRadius: 8 }}
+                              onClick={() => {
+                                setSelectedReg(regItem);
+                                setDetailOpen(true);
+                              }}
                             >
-                              Edit Draft
+                              Lihat Detail
                             </Button>
-                          )}
+                            {stat === 'draft' && (
+                              <Button
+                                type="primary"
+                                icon={<EditOutlined />}
+                                style={{ flex: 1, borderRadius: 8, background: '#2563eb', borderColor: '#2563eb' }}
+                                onClick={() => navigate(`/register?id=${regItem.id}`)}
+                              >
+                                Edit Draft
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </Card>
                     </Col>
@@ -544,8 +407,8 @@ const PesertaDashboard = () => {
               </Row>
             </div>
 
-            {/* Timeline Acara — hide jika rejected */}
-            {status !== 'rejected' && (
+            {/* Timeline Acara — hide jika semua rejected */}
+            {!allRejected && (
             <Card
               title={
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -663,46 +526,6 @@ const PesertaDashboard = () => {
         onClose={() => setDetailOpen(false)}
         registration={selectedReg}
       />
-
-      {/* Status Modal — Finalist / Rejected */}
-      <Modal
-        open={statusModalOpen}
-        closable={false}
-        footer={[
-          <Button key="close" type="primary" onClick={() => setStatusModalOpen(false)} style={{ background: status === 'finalist' ? '#10b981' : '#ef4444', borderColor: status === 'finalist' ? '#10b981' : '#ef4444' }}>
-            Tutup
-          </Button>,
-        ]}
-        width={480}
-        centered
-      >
-        <div style={{ textAlign: 'center', padding: '16px 0' }}>
-          <div style={{
-            width: 80,
-            height: 80,
-            borderRadius: '50%',
-            background: status === 'finalist' ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #ef4444, #dc2626)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 20px',
-            boxShadow: status === 'finalist' ? '0 8px 24px rgba(16,185,129,0.3)' : '0 8px 24px rgba(239,68,68,0.3)',
-          }}>
-            {status === 'finalist'
-              ? <CheckCircleFilled style={{ fontSize: 40, color: '#fff' }} />
-              : <CloseOutlined style={{ fontSize: 40, color: '#fff' }} />
-            }
-          </div>
-          <Title level={3} style={{ marginBottom: 8, color: status === 'finalist' ? '#10b981' : '#ef4444' }}>
-            {status === 'finalist' ? 'Selamat! Anda Lolos' : 'Maaf, Anda Tidak Lolos'}
-          </Title>
-          <Text style={{ fontSize: 15, color: '#64748b', display: 'block', lineHeight: 1.6 }}>
-            {status === 'finalist'
-              ? 'Pendaftaran Anda telah dinyatakan lolos ke tahap berikutnya. Silakan pantau perkembangan selanjutnya.'
-              : 'Mohon maaf, pendaftaran Anda belum memenuhi kriteria untuk tahap berikutnya. Terima kasih telah berpartisipasi.'}
-          </Text>
-        </div>
-      </Modal>
     </div>
   );
 };

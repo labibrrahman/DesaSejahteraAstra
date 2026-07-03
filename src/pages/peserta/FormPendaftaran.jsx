@@ -29,18 +29,29 @@ const { TextArea } = Input;
 
 // ─── Static Config ───────────────────────────────────────────────────────────
 
-const STEPS = ['Pilar', 'Identitas', 'Program', 'Review'];
+const STEPS_ALL = ['Pilar', 'Identitas', 'Program', 'Review'];
+const STEPS_ADD = ['Pilar', 'Program', 'Review'];
 
-const STEP_TITLES = [
+const STEP_TITLES_ALL = [
   'Pilih Pilar & Kategori Lomba',
   'Identitas Pendaftar',
   'Detail Program Berjalan',
   'Review & Konfirmasi',
 ];
+const STEP_TITLES_ADD = [
+  'Pilih Pilar & Kategori Lomba',
+  'Detail Program Berjalan',
+  'Review & Konfirmasi',
+];
 
-const STEP_SUBTITLES = [
+const STEP_SUBTITLES_ALL = [
   'Silakan pilih pilar program yang akan didaftarkan.',
   'Lengkapi data identitas desa dan Ketua Kelompok program.',
+  'Jelaskan detail program, latar belakang, dan dampaknya.',
+  'Periksa kembali data yang telah Anda isi sebelum mengirimkan pendaftaran.',
+];
+const STEP_SUBTITLES_ADD = [
+  'Silakan pilih pilar program yang akan didaftarkan.',
   'Jelaskan detail program, latar belakang, dan dampaknya.',
   'Periksa kembali data yang telah Anda isi sebelum mengirimkan pendaftaran.',
 ];
@@ -147,6 +158,18 @@ const FormPendaftaran = () => {
   const [registeredCombos, setRegisteredCombos] = useState([]);
   // Step 2 dikunci jika mode=new atau jika mengedit pendaftaran non-pertama
   const [isStep2Locked, setIsStep2Locked] = useState(isAddNew);
+
+  // Dynamic steps: skip "Identitas" saat mode=new
+  const STEPS = isAddNew ? STEPS_ADD : STEPS_ALL;
+  const STEP_TITLES = isAddNew ? STEP_TITLES_ADD : STEP_TITLES_ALL;
+  const STEP_SUBTITLES = isAddNew ? STEP_SUBTITLES_ADD : STEP_SUBTITLES_ALL;
+
+  // Map visible step number → actual step number (for rendering & validation)
+  const mapToActualStep = (visibleStep) => {
+    if (!isAddNew) return visibleStep;
+    // Visible: 1→1, 2→3, 3→4
+    return [1, 3, 4][visibleStep - 1] || visibleStep;
+  };
 
   const updateField = (key, value) => {
     setFormData(prev => ({ ...prev, [key]: value }));
@@ -432,8 +455,9 @@ const FormPendaftaran = () => {
   // ── Validasi per step sebelum lanjut ───────────────────────────────────────
 
   const validateStep = (step) => {
+    const actualStep = mapToActualStep(step);
     const e = {};
-    switch (step) {
+    switch (actualStep) {
       case 1:
         if (!selectedKategoriId) e.kategori = 'Silakan pilih kategori terlebih dahulu';
         break;
@@ -487,7 +511,7 @@ const FormPendaftaran = () => {
 
   const nextStep = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, 4));
+      setCurrentStep(prev => Math.min(prev + 1, STEPS.length));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
@@ -1280,7 +1304,8 @@ const FormPendaftaran = () => {
   );
 
   const renderStepContent = () => {
-    switch (currentStep) {
+    const actualStep = mapToActualStep(currentStep);
+    switch (actualStep) {
       case 1: return renderStep1();
       case 2: return renderStep2();
       case 3: return renderStep3();
@@ -1355,7 +1380,7 @@ const FormPendaftaran = () => {
               ) : (
                 <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} style={{ fontWeight: 600, color: '#64748b', height: 40 }}>Kembali ke Beranda</Button>
               )}
-              {currentStep < 4 ? (
+              {currentStep < STEPS.length ? (
                 <Button onClick={nextStep} style={{ background: '#002444', borderColor: '#002444', color: '#fff', fontWeight: 600, height: 40, paddingLeft: 24, paddingRight: 24, borderRadius: 8 }}>
                   Lanjut ke {STEPS[currentStep]} <ArrowRightOutlined />
                 </Button>

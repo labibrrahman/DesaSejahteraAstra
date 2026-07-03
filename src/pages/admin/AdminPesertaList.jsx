@@ -317,8 +317,7 @@ const AdminPesertaList = () => {
           villageName: raw.villageName,
           groupName: raw.groupName,
           phoneNumber: raw.phoneNumber,
-          dsaType: raw.dsaType,
-          astraGroupId: raw.astraGroup?.id || null,
+          astraGroupId: raw.astraGroupCustom ? 'others' : (raw.astraGroupId || raw.astraGroup?.id || null),
           astraGroupCustom: raw.astraGroupCustom || '',
           address: raw.address,
           emergencyContactName: raw.emergencyContactName,
@@ -349,7 +348,6 @@ const AdminPesertaList = () => {
         groupName: values.groupName,
         phoneNumber: values.phoneNumber,
         address: values.address,
-        dsaType: values.dsaType,
         emergencyContactName: values.emergencyContactName,
         emergencyContactPhone: values.emergencyContactPhone,
         provinceId: values.provinceId || null,
@@ -360,13 +358,8 @@ const AdminPesertaList = () => {
 
       if (values.astraGroupId === 'others') {
         payload.astraGroupCustom = values.astraGroupCustom || '';
-        payload.astraGroupId = null;
       } else if (values.astraGroupId) {
         payload.astraGroupId = values.astraGroupId;
-        payload.astraGroupCustom = null;
-      } else {
-        payload.astraGroupId = null;
-        payload.astraGroupCustom = null;
       }
 
       if (values.socialMedia) payload.socialMedia = values.socialMedia;
@@ -762,9 +755,6 @@ const AdminPesertaList = () => {
                       <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Email</Text><Text strong style={{ fontSize: 13 }}>{raw.user?.email || '-'}</Text></div>
                     </Col>
                     <Col xs={12} sm={8}>
-                      <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Jenis DSA</Text><Text strong style={{ fontSize: 13 }}>{raw.dsaType || '-'}</Text></div>
-                    </Col>
-                    <Col xs={12} sm={8}>
                       <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nomor HP</Text><Text strong style={{ fontSize: 13 }}>{raw.phoneNumber || '-'}</Text></div>
                     </Col>
                     <Col xs={12} sm={8}>
@@ -774,7 +764,7 @@ const AdminPesertaList = () => {
                       <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>No HP Kontak Lainnya</Text><Text strong style={{ fontSize: 13 }}>{raw.emergencyContactPhone || '-'}</Text></div>
                     </Col>
                     <Col xs={12} sm={8}>
-                      <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Perusahaan/Yayasan Pembina</Text><Text strong style={{ fontSize: 13 }}>{raw.astraGroup?.name || raw.astraGroupCustom || '-'}</Text></div>
+                      <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Perusahaan/Yayasan Pembina</Text><Text strong style={{ fontSize: 13 }}>{raw.astraGroup?.name || astraGroupOptions.find(g => g.id === raw.astraGroupId)?.name || raw.astraGroupCustom || '-'}</Text></div>
                     </Col>
                     {raw.socialMedia && (
                       <Col xs={24}>
@@ -978,31 +968,27 @@ const AdminPesertaList = () => {
 
               <Row gutter={16}>
                 <Col span={12}>
-                  <Form.Item name="dsaType" label="Jenis DSA">
-                    <Select placeholder="Pilih Jenis DSA" allowClear>
-                      <Option value="Kelompok">Kelompok</Option>
-                      <Option value="Individu">Individu</Option>
-                    </Select>
+                  <Form.Item name="phoneNumber" label="Nomor HP Ketua Kelompok">
+                    <Input placeholder="Contoh: 08123456789" maxLength={15} />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item name="phoneNumber" label="Nomor HP Ketua Kelompok">
-                    <Input placeholder="Contoh: 08123456789" maxLength={15} />
+                  <Form.Item name="astraGroupId" label="Perusahaan/Yayasan Pembina">
+                    <Select
+                      placeholder="Pilih Perusahaan/Yayasan Pembina"
+                      allowClear
+                      showSearch
+                      optionFilterProp="label"
+                      options={[
+                        ...astraGroupOptions.map(g => ({ value: g.id, label: g.name })),
+                        { value: 'others', label: 'Lainnya...' },
+                      ]}
+                    />
                   </Form.Item>
                 </Col>
               </Row>
 
               <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item name="astraGroupId" label="Perusahaan/Yayasan Pembina">
-                    <Select placeholder="Pilih Perusahaan/Yayasan Pembina" allowClear>
-                      {astraGroupOptions.map(g => (
-                        <Option key={g.id} value={g.id}>{g.name}</Option>
-                      ))}
-                      <Option value="others">Lainnya...</Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
                 <Col span={12}>
                   <Form.Item noStyle shouldUpdate={(prev, cur) => prev.astraGroupId !== cur.astraGroupId}>
                     {({ getFieldValue }) => getFieldValue('astraGroupId') === 'others' && (

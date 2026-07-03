@@ -359,6 +359,25 @@ const LandingPage = () => {
                 Daftar Sekarang
               </button>
             </div>
+            <a
+              href="https://drive.google.com/file/d/1fiqjbVy9OG_ZkknXEjFt2Qw0eEaEiItN/view?usp=sharing"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'block',
+                textAlign: 'center',
+                marginTop: 16,
+                color: 'rgba(255,255,255,0.7)',
+                fontSize: isMobile ? 13 : 14,
+                textDecoration: 'underline',
+                textUnderlineOffset: 3,
+                transition: 'color 0.2s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#fff'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
+            >
+              Syarat dan Ketentuan
+            </a>
           </div>
 
           {/* Bounce Arrow */}
@@ -618,7 +637,7 @@ const LandingPage = () => {
             gap: isMobile ? 12 : 0,
           }}>
             <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12 }}>
-              © 2026 Astra International. All Rights Reserved.
+              © 2026 Astra. All Rights Reserved.
             </Text>
             <div style={{ display: 'flex', gap: 20 }}>
               <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, cursor: 'pointer', transition: 'color 0.2s' }} onClick={() => navigate('/privacy')} onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}>Kebijakan Privasi</Text>

@@ -195,7 +195,7 @@ const TermsPage = () => {
         <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: 'center', gap: isMobile ? 12 : 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <img src={astraLogo} alt="Astra" style={{ height: 20, filter: 'brightness(0) invert(1)', opacity: 0.6 }} />
-            <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12 }}>© 2026 Astra International. All Rights Reserved.</Text>
+            <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12 }}>© 2026 Astra. All Rights Reserved.</Text>
           </div>
           <div style={{ display: 'flex', gap: 20 }}>
             <Text style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, cursor: 'pointer' }} onClick={() => navigate('/terms')}>Ketentuan Layanan</Text>

@@ -1322,7 +1322,7 @@ const FormPendaftaran = () => {
       {!registrationId && (
         <div style={{ position: 'sticky', top: 0, zIndex: 100, background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} style={{ fontWeight: 600, color: '#64748b' }}>
+            <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(isAddNew ? '/peserta/dashboard' : '/')} style={{ fontWeight: 600, color: '#64748b' }}>
               Kembali
             </Button>
             <div style={{ height: 20, width: 1, background: '#e2e8f0' }} />
@@ -1378,7 +1378,7 @@ const FormPendaftaran = () => {
               {currentStep > 1 ? (
                 <Button type="text" icon={<ArrowLeftOutlined />} onClick={prevStep} style={{ fontWeight: 600, color: '#64748b', height: 40 }}>Kembali</Button>
               ) : (
-                <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} style={{ fontWeight: 600, color: '#64748b', height: 40 }}>Kembali ke Beranda</Button>
+                <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(isAddNew ? '/peserta/dashboard' : '/')} style={{ fontWeight: 600, color: '#64748b', height: 40 }}>Kembali</Button>
               )}
               {currentStep < STEPS.length ? (
                 <Button onClick={nextStep} style={{ background: '#002444', borderColor: '#002444', color: '#fff', fontWeight: 600, height: 40, paddingLeft: 24, paddingRight: 24, borderRadius: 8 }}>

@@ -343,6 +343,20 @@ const AdminPesertaList = () => {
       const values = await editParticipantForm.validateFields();
       setEditParticipantSubmitting(true);
 
+      // Cross-field validation (sama seperti FormPendaftaran Step 2)
+      const crossErrors = [];
+      if (values.emergencyContactName && values.groupName && values.emergencyContactName === values.groupName) {
+        crossErrors.push('Nama Kontak Lainnya tidak boleh sama dengan Nama Ketua Kelompok');
+      }
+      if (values.emergencyContactPhone && values.phoneNumber && values.emergencyContactPhone === values.phoneNumber) {
+        crossErrors.push('Nomor HP Kontak Lainnya tidak boleh sama dengan Nomor HP Ketua Kelompok');
+      }
+      if (crossErrors.length > 0) {
+        crossErrors.forEach(msg => message.error(msg));
+        setEditParticipantSubmitting(false);
+        return;
+      }
+
       const payload = {
         villageName: values.villageName,
         groupName: values.groupName,
@@ -434,6 +448,13 @@ const AdminPesertaList = () => {
     try {
       const values = await editProgramForm.validateFields();
       setEditProgramSubmitting(true);
+
+      // Validasi foto minimal 1
+      if (!editPhotos || editPhotos.length === 0) {
+        message.error('Minimal 1 foto wajib diunggah');
+        setEditProgramSubmitting(false);
+        return;
+      }
 
       const payload = {
         pillarId: values.pillarId,
@@ -955,12 +976,12 @@ const AdminPesertaList = () => {
               {/* Data DSA */}
               <Row gutter={16}>
                 <Col span={12}>
-                  <Form.Item name="villageName" label="Nama DSA/Nama Desa" rules={[{ required: true, message: 'Wajib diisi' }]}>
+                  <Form.Item name="villageName" label="Nama DSA/Nama Desa" rules={[{ required: true, message: 'Nama DSA wajib diisi' }]}>
                     <Input placeholder="Contoh: Desa Suka Maju" />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item name="groupName" label="Nama Ketua Kelompok">
+                  <Form.Item name="groupName" label="Nama Ketua Kelompok" rules={[{ required: true, message: 'Nama Ketua Kelompok wajib diisi' }]}>
                     <Input placeholder="Masukan Nama Ketua Kelompok" />
                   </Form.Item>
                 </Col>
@@ -968,7 +989,7 @@ const AdminPesertaList = () => {
 
               <Row gutter={16}>
                 <Col span={12}>
-                  <Form.Item name="phoneNumber" label="Nomor HP Ketua Kelompok">
+                  <Form.Item name="phoneNumber" label="Nomor HP Ketua Kelompok" rules={[{ required: true, message: 'Nomor HP wajib diisi' }, { min: 8, message: 'Nomor HP minimal 8 digit' }, { pattern: /^[0-9]+$/, message: 'Nomor HP hanya boleh angka' }]}>
                     <Input placeholder="Contoh: 08123456789" maxLength={15} />
                   </Form.Item>
                 </Col>
@@ -1002,18 +1023,18 @@ const AdminPesertaList = () => {
 
               <Row gutter={16}>
                 <Col span={12}>
-                  <Form.Item name="emergencyContactName" label="Nama Kontak Lainnya">
+                  <Form.Item name="emergencyContactName" label="Nama Kontak Lainnya" rules={[{ required: true, message: 'Nama Kontak Lainnya wajib diisi' }, { pattern: /^[a-zA-Z\s.\-]+$/, message: 'Hanya boleh huruf, spasi, titik, dan tanda hubung' }]}>
                     <Input placeholder="Contoh: Siti Aminah" />
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item name="emergencyContactPhone" label="Nomor Kontak Lainnya">
+                  <Form.Item name="emergencyContactPhone" label="Nomor Kontak Lainnya" rules={[{ required: true, message: 'Nomor HP Kontak Lainnya wajib diisi' }, { min: 8, message: 'Minimal 8 digit' }, { pattern: /^[0-9]+$/, message: 'Hanya boleh angka' }]}>
                     <Input placeholder="Contoh: 08123456789" maxLength={15} />
                   </Form.Item>
                 </Col>
               </Row>
 
-              <Form.Item name="address" label="Alamat Lengkap">
+              <Form.Item name="address" label="Alamat Lengkap" rules={[{ required: true, message: 'Alamat wajib diisi' }]}>
                 <Input.TextArea rows={3} placeholder="Detail jalan, RW/RT..." style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
               </Form.Item>
 
@@ -1028,14 +1049,14 @@ const AdminPesertaList = () => {
                       <div style={{ marginTop: 12, marginBottom: 12, fontWeight: 600 }}>Wilayah Administratif</div>
                       <Row gutter={16}>
                         <Col span={12}>
-                          <Form.Item name="provinceId" label="Provinsi">
+                          <Form.Item name="provinceId" label="Provinsi" rules={[{ required: true, message: 'Provinsi wajib dipilih' }]}>
                             <Select placeholder="Pilih Provinsi" allowClear showSearch optionFilterProp="children" onChange={handleProvinceChange} loading={loadingProvinces}>
                               {provinceOptions.map(p => (<Option key={p.id} value={p.id}>{p.name}</Option>))}
                             </Select>
                           </Form.Item>
                         </Col>
                         <Col span={12}>
-                          <Form.Item name="cityId" label="Kabupaten / Kota">
+                          <Form.Item name="cityId" label="Kabupaten / Kota" rules={[{ required: true, message: 'Kabupaten/Kota wajib dipilih' }]}>
                             <Select placeholder="Pilih Kabupaten / Kota" allowClear showSearch optionFilterProp="children" onChange={handleCityChange} loading={loadingCities} disabled={!provinceId}>
                               {cityOptions.map(c => (<Option key={c.id} value={c.id}>{c.name}</Option>))}
                             </Select>
@@ -1044,14 +1065,14 @@ const AdminPesertaList = () => {
                       </Row>
                       <Row gutter={16}>
                         <Col span={12}>
-                          <Form.Item name="districtId" label="Kecamatan">
+                          <Form.Item name="districtId" label="Kecamatan" rules={[{ required: true, message: 'Kecamatan wajib dipilih' }]}>
                             <Select placeholder="Pilih Kecamatan" allowClear showSearch optionFilterProp="children" onChange={handleDistrictChange} loading={loadingDistricts} disabled={!cityId}>
                               {districtOptions.map(d => (<Option key={d.id} value={d.id}>{d.name}</Option>))}
                             </Select>
                           </Form.Item>
                         </Col>
                         <Col span={12}>
-                          <Form.Item name="villageRegionId" label="Desa / Kelurahan">
+                          <Form.Item name="villageRegionId" label="Desa / Kelurahan" rules={[{ required: true, message: 'Desa/Kelurahan wajib dipilih' }]}>
                             <Select placeholder="Pilih Desa / Kelurahan" allowClear showSearch optionFilterProp="children" loading={loadingDesa} disabled={!districtId}>
                               {desaOptions.map(v => (<Option key={v.id} value={v.id}>{v.name}</Option>))}
                             </Select>
@@ -1092,7 +1113,7 @@ const AdminPesertaList = () => {
               {/* Pilar & Kategori */}
               <Row gutter={16}>
                 <Col span={12}>
-                  <Form.Item name="pillarId" label="Pilar">
+                  <Form.Item name="pillarId" label="Pilar" rules={[{ required: true, message: 'Pilar wajib dipilih' }]}>
                     <Select
                       placeholder="Pilih Pilar"
                       allowClear
@@ -1104,7 +1125,7 @@ const AdminPesertaList = () => {
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item name="categoryId" label="Kategori">
+                  <Form.Item name="categoryId" label="Kategori" rules={[{ required: true, message: 'Kategori wajib dipilih' }]}>
                     <Select
                       placeholder="Pilih Kategori"
                       allowClear
@@ -1116,7 +1137,7 @@ const AdminPesertaList = () => {
                 </Col>
               </Row>
 
-              <Form.Item name="programDuration" label="Durasi Program">
+              <Form.Item name="programDuration" label="Durasi Program" rules={[{ required: true, message: 'Durasi program wajib diisi' }]}>
                 <Select placeholder="Pilih durasi program..." allowClear>
                   <Option value="<1 Tahun">&lt;1 Tahun</Option>
                   <Option value="1-3 Tahun">1-3 Tahun</Option>
@@ -1125,35 +1146,35 @@ const AdminPesertaList = () => {
                 </Select>
               </Form.Item>
 
-              <Form.Item name="background" label="Latar Belakang / Rasionalisasi">
+              <Form.Item name="background" label="Latar Belakang / Rasionalisasi" rules={[{ required: true, message: 'Latar belakang wajib diisi' }]}>
                 <Input.TextArea rows={5} placeholder="Jelaskan alasan dan latar belakang inisiatif program ini..." style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
               </Form.Item>
 
-              <Form.Item name="programImpact" label="Kondisi Sebelum Program">
+              <Form.Item name="programImpact" label="Kondisi Sebelum Program" rules={[{ required: true, message: 'Kondisi sebelum program wajib diisi' }]}>
                 <Input.TextArea rows={5} placeholder="Jelaskan Kondisi Sebelum Program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
               </Form.Item>
 
-              <Form.Item name="programImpactAfter" label="Kondisi Setelah Program">
+              <Form.Item name="programImpactAfter" label="Kondisi Setelah Program" rules={[{ required: true, message: 'Kondisi setelah program wajib diisi' }]}>
                 <Input.TextArea rows={5} placeholder="Jelaskan Kondisi Setelah Program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
               </Form.Item>
 
-              <Form.Item name="developmentPlan" label="Rencana dan Potensi Untuk Keberlanjutan Program">
+              <Form.Item name="developmentPlan" label="Rencana dan Potensi Untuk Keberlanjutan Program" rules={[{ required: true, message: 'Rencana pengembangan wajib diisi' }]}>
                 <Input.TextArea rows={5} placeholder="Jelaskan Rencana dan Potensi Untuk Keberlanjutan Program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
               </Form.Item>
 
-              <Form.Item name="implementationMethod" label="Metode Pelaksanaan Program">
+              <Form.Item name="implementationMethod" label="Metode Pelaksanaan Program" rules={[{ required: true, message: 'Metode pelaksanaan wajib diisi' }]}>
                 <Input.TextArea rows={5} placeholder="Jelaskan metode pelaksanaan program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
               </Form.Item>
 
-              <Form.Item name="sustainabilityPlan" label="Keberlanjutan Program">
+              <Form.Item name="sustainabilityPlan" label="Keberlanjutan Program" rules={[{ required: true, message: 'Keberlanjutan program wajib diisi' }]}>
                 <Input.TextArea rows={5} placeholder="Jelaskan rencana keberlanjutan program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
               </Form.Item>
 
-              <Form.Item name="programEvaluation" label="Evaluasi Program">
+              <Form.Item name="programEvaluation" label="Evaluasi Program" rules={[{ required: true, message: 'Evaluasi program wajib diisi' }]}>
                 <Input.TextArea rows={5} placeholder="Jelaskan mekanisme evaluasi program" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} />
               </Form.Item>
 
-              <Form.Item name="documentLink" label="Link dokumentasi foto/video/publikasi lainnya">
+              <Form.Item name="documentLink" label="Link dokumentasi foto/video/publikasi lainnya" rules={[{ required: true, message: 'Link dokumen wajib diisi' }, { pattern: /^https?:\/\/.+/i, message: 'Link harus berupa URL yang valid' }]}>
                 <Input placeholder="https://drive.google.com/drive/folders/..." style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13 }} />
               </Form.Item>
 

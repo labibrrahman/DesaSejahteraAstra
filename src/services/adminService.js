@@ -25,6 +25,47 @@ const adminService = {
   },
 
   /**
+   * GET /api/registrations/admin/by-user — daftar peserta terkelompok (grouped by user)
+   * @param {{ search?: string, pillar_id?: string, category_id?: string, province_id?: string, city_id?: string, district_id?: string, village_region_id?: string, page?: number, limit?: number }} params
+   */
+  getGroupedParticipants: async (params = {}) => {
+    const { data } = await api.get('/registrations/admin/by-user', { params });
+    return data;
+  },
+
+  /**
+   * GET /api/registrations/admin/by-user/export — export data peserta terkelompok
+   * @param {{ search?: string, pillar_id?: string, category_id?: string, province_id?: string, city_id?: string, district_id?: string, village_region_id?: string }} params
+   */
+  exportGroupedParticipants: async (params = {}) => {
+    const { data } = await api.get('/registrations/admin/by-user/export', {
+      params,
+      responseType: 'blob',
+    });
+    return data;
+  },
+
+  /**
+   * PATCH /api/registrations/admin/participant/:userId — update info peserta (berlaku untuk semua lomba)
+   * @param {string} userId
+   * @param {object} dto
+   */
+  updateParticipantInfo: async (userId, dto) => {
+    const { data } = await api.patch(`/registrations/admin/participant/${userId}`, dto);
+    return data.data || data;
+  },
+
+  /**
+   * PATCH /api/registrations/admin/program/:id — update info program lomba (per registrasi)
+   * @param {string} id
+   * @param {object} dto
+   */
+  updateProgramInfo: async (id, dto) => {
+    const { data } = await api.patch(`/registrations/admin/program/${id}`, dto);
+    return data.data || data;
+  },
+
+  /**
    * GET /api/registrations/:id — detail satu pendaftaran
    * @param {string} id
    */

@@ -29,18 +29,29 @@ const { TextArea } = Input;
 
 // ─── Static Config ───────────────────────────────────────────────────────────
 
-const STEPS = ['Pilar', 'Identitas', 'Program', 'Review'];
+const STEPS_ALL = ['Pilar', 'Identitas', 'Program', 'Review'];
+const STEPS_ADD = ['Pilar', 'Program', 'Review'];
 
-const STEP_TITLES = [
+const STEP_TITLES_ALL = [
   'Pilih Pilar & Kategori Lomba',
   'Identitas Pendaftar',
   'Detail Program Berjalan',
   'Review & Konfirmasi',
 ];
+const STEP_TITLES_ADD = [
+  'Pilih Pilar & Kategori Lomba',
+  'Detail Program Berjalan',
+  'Review & Konfirmasi',
+];
 
-const STEP_SUBTITLES = [
+const STEP_SUBTITLES_ALL = [
   'Silakan pilih pilar program yang akan didaftarkan.',
   'Lengkapi data identitas desa dan Ketua Kelompok program.',
+  'Jelaskan detail program, latar belakang, dan dampaknya.',
+  'Periksa kembali data yang telah Anda isi sebelum mengirimkan pendaftaran.',
+];
+const STEP_SUBTITLES_ADD = [
+  'Silakan pilih pilar program yang akan didaftarkan.',
   'Jelaskan detail program, latar belakang, dan dampaknya.',
   'Periksa kembali data yang telah Anda isi sebelum mengirimkan pendaftaran.',
 ];
@@ -147,6 +158,18 @@ const FormPendaftaran = () => {
   const [registeredCombos, setRegisteredCombos] = useState([]);
   // Step 2 dikunci jika mode=new atau jika mengedit pendaftaran non-pertama
   const [isStep2Locked, setIsStep2Locked] = useState(isAddNew);
+
+  // Dynamic steps: skip "Identitas" saat mode=new
+  const STEPS = isAddNew ? STEPS_ADD : STEPS_ALL;
+  const STEP_TITLES = isAddNew ? STEP_TITLES_ADD : STEP_TITLES_ALL;
+  const STEP_SUBTITLES = isAddNew ? STEP_SUBTITLES_ADD : STEP_SUBTITLES_ALL;
+
+  // Map visible step number → actual step number (for rendering & validation)
+  const mapToActualStep = (visibleStep) => {
+    if (!isAddNew) return visibleStep;
+    // Visible: 1→1, 2→3, 3→4
+    return [1, 3, 4][visibleStep - 1] || visibleStep;
+  };
 
   const updateField = (key, value) => {
     setFormData(prev => ({ ...prev, [key]: value }));
@@ -332,8 +355,9 @@ const FormPendaftaran = () => {
           }
 
           if (targetReg) {
-            // Mode edit existing: load data registrasi targetReg
-            localStorage.removeItem(DRAFT_KEY);
+            // Mode edit existing: load data registrasi targetReg, hapus semua draft
+            localStorage.removeItem('form_pendaftaran_draft');
+            localStorage.removeItem('form_pendaftaran_draft_new');
             setRegistrationId(targetReg.id);
             setSelectedPilarId(targetReg.pillarId || null);
 
@@ -360,7 +384,7 @@ const FormPendaftaran = () => {
               grup_astra_id: targetReg.astraGroupCustom ? 'others' : (targetReg.astraGroup?.id || null),
               binaan_custom: targetReg.astraGroupCustom || '',
               jenis_dsa: targetReg.dsaType ? targetReg.dsaType.toLowerCase() : null,
-              nama_ketua: targetReg.leaderName || '',
+              nama_ketua: targetReg.groupName || '',
               phone_number: targetReg.phoneNumber || '',
               nama_kontak_darurat: targetReg.emergencyContactName || '',
               no_hp_kontak_darurat: targetReg.emergencyContactPhone || '',
@@ -383,6 +407,7 @@ const FormPendaftaran = () => {
               ...prev,
               nama_desa:              firstReg.villageName || '',
               nama_kelompok:          firstReg.groupName || '',
+              nama_ketua:             firstReg.groupName || '',
               phone_number:           firstReg.phoneNumber || '',
               nama_kontak_darurat:    firstReg.emergencyContactName || '',
               no_hp_kontak_darurat:   firstReg.emergencyContactPhone || '',
@@ -430,13 +455,16 @@ const FormPendaftaran = () => {
   // ── Validasi per step sebelum lanjut ───────────────────────────────────────
 
   const validateStep = (step) => {
+    const actualStep = mapToActualStep(step);
     const e = {};
-    switch (step) {
+    switch (actualStep) {
       case 1:
         if (!selectedKategoriId) e.kategori = 'Silakan pilih kategori terlebih dahulu';
         break;
 
       case 2:
+        // Skip validasi jika identitas terkunci (data dari pendaftaran sebelumnya)
+        if (isStep2Locked) break;
         if (!formData.nama_desa) e.nama_desa = 'Nama DSA wajib diisi';
         if (!formData.nama_kelompok) e.nama_kelompok = 'Nama Ketua Kelompok wajib diisi';
         if (!formData.phone_number) {
@@ -483,7 +511,7 @@ const FormPendaftaran = () => {
 
   const nextStep = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, 4));
+      setCurrentStep(prev => Math.min(prev + 1, STEPS.length));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
@@ -528,7 +556,7 @@ const FormPendaftaran = () => {
         pillarId: selectedPilarId,
         categoryId: selectedKategoriId,
         villageName: formData.nama_desa,
-        groupName: formData.nama_kelompok,
+        groupName: formData.nama_kelompok ? formData.nama_kelompok: formData.nama_ketua ? formData.nama_ketua : '',
         address: formData.alamat,
         background: formData.latar_belakang,
         programImpact: formData.dampak_program,
@@ -540,7 +568,7 @@ const FormPendaftaran = () => {
         programEvaluation: formData.program_evaluation || '',
       };
       if (formData.jenis_dsa) payload.dsaType = formData.jenis_dsa.charAt(0).toUpperCase() + formData.jenis_dsa.slice(1);
-      if (formData.nama_ketua) payload.leaderName = formData.nama_ketua;
+      // groupName sudah diisi dari nama_kelompok di atas, tidak perlu leaderName
       if (formData.phone_number) payload.phoneNumber = formData.phone_number;
       if (formData.nama_kontak_darurat) payload.emergencyContactName = formData.nama_kontak_darurat;
       if (formData.no_hp_kontak_darurat) payload.emergencyContactPhone = formData.no_hp_kontak_darurat;
@@ -570,7 +598,9 @@ const FormPendaftaran = () => {
         await registrationService.submitRegistration(reg.id);
         message.success('Pendaftaran berhasil dikirim!');
       }
-      localStorage.removeItem(DRAFT_KEY);
+      // Hapus SEMUA draft (normal & new) agar form bersih saat dibuka lagi
+      localStorage.removeItem('form_pendaftaran_draft');
+      localStorage.removeItem('form_pendaftaran_draft_new');
       navigate('/peserta/dashboard');
     } catch (err) {
       const errors = err.response?.data?.errors;
@@ -921,7 +951,7 @@ const FormPendaftaran = () => {
               <Input
                 placeholder="Nama Ketua Kelompok"
                 style={errors.nama_kelompok ? inputErrorStyle : inputStyle}
-                value={formData.nama_kelompok}
+                value={formData.nama_kelompok ? formData.nama_kelompok : formData.nama_ketua ? formData.nama_ketua : ''}
                 onChange={e => handleNameChange('nama_kelompok', e)}
                 disabled={isStep2Locked}
               />
@@ -1221,7 +1251,7 @@ const FormPendaftaran = () => {
         <Row gutter={[16, 12]}>
           <ReviewField label="Nama DSA/Nama Desa" value={formData.nama_desa} />
           <ReviewField label="Jenis DSA" value={formData.jenis_dsa === 'kelompok' ? 'Kelompok' : formData.jenis_dsa === 'individu' ? 'Individu' : '-'} />
-          <ReviewField label={formData.jenis_dsa === 'individu' ? 'Nama Peserta' : 'Nama Ketua Kelompok'} value={formData.nama_kelompok} />
+          <ReviewField label={formData.jenis_dsa === 'individu' ? 'Nama Peserta' : 'Nama Ketua Kelompok'} value={formData.nama_kelompok ? formData.nama_kelompok : formData.nama_ketua ? formData.nama_ketua: ''} />
           <ReviewField label="Nomor HP Ketua Kelompok" value={formData.phone_number} />
           <ReviewField label="Perusahaan/Yayasan Pembina" value={grupLabel || '-'} span={24} />
           <ReviewField label="Nama Kontak Lainnya" value={formData.nama_kontak_darurat} />
@@ -1274,7 +1304,8 @@ const FormPendaftaran = () => {
   );
 
   const renderStepContent = () => {
-    switch (currentStep) {
+    const actualStep = mapToActualStep(currentStep);
+    switch (actualStep) {
       case 1: return renderStep1();
       case 2: return renderStep2();
       case 3: return renderStep3();
@@ -1291,7 +1322,7 @@ const FormPendaftaran = () => {
       {!registrationId && (
         <div style={{ position: 'sticky', top: 0, zIndex: 100, background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 24px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} style={{ fontWeight: 600, color: '#64748b' }}>
+            <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(isAddNew ? '/peserta/dashboard' : '/')} style={{ fontWeight: 600, color: '#64748b' }}>
               Kembali
             </Button>
             <div style={{ height: 20, width: 1, background: '#e2e8f0' }} />
@@ -1347,9 +1378,9 @@ const FormPendaftaran = () => {
               {currentStep > 1 ? (
                 <Button type="text" icon={<ArrowLeftOutlined />} onClick={prevStep} style={{ fontWeight: 600, color: '#64748b', height: 40 }}>Kembali</Button>
               ) : (
-                <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate('/')} style={{ fontWeight: 600, color: '#64748b', height: 40 }}>Kembali ke Beranda</Button>
+                <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => navigate(isAddNew ? '/peserta/dashboard' : '/')} style={{ fontWeight: 600, color: '#64748b', height: 40 }}>Kembali</Button>
               )}
-              {currentStep < 4 ? (
+              {currentStep < STEPS.length ? (
                 <Button onClick={nextStep} style={{ background: '#002444', borderColor: '#002444', color: '#fff', fontWeight: 600, height: 40, paddingLeft: 24, paddingRight: 24, borderRadius: 8 }}>
                   Lanjut ke {STEPS[currentStep]} <ArrowRightOutlined />
                 </Button>

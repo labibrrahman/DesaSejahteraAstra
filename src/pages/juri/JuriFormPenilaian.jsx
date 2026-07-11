@@ -69,9 +69,21 @@ const JuriFormPenilaian = () => {
     setTotalScore(hasAny ? Math.round((c1 + c2 + c3 + c4) / 4) : 0);
   };
 
+  const handlePreSubmit = async () => {
+    try {
+      await form.validateFields();
+      setShowConfirmModal(true);
+    } catch (errorInfo) {
+      if (errorInfo.errorFields && errorInfo.errorFields.length > 0) {
+        form.scrollToField(errorInfo.errorFields[0].name, { behavior: 'smooth', block: 'center' });
+      }
+    }
+  };
+
   const handleSubmit = async () => {
     try {
-      const v = await form.validateFields(); setSubmitting(true);
+      const v = await form.validateFields();
+      setSubmitting(true);
       await adminService.createAssessment({
         registrationId: id,
         criteria1: Number(v.criteria1),
@@ -80,9 +92,20 @@ const JuriFormPenilaian = () => {
         criteria4: Number(v.criteria4),
         notes: v.notes || undefined
       });
-      message.success('Penilaian berhasil disubmit!'); setSubmitted(true);
-    } catch (e) { if (e.response) message.error(e.response.data?.message || 'Gagal menyimpan'); }
-    finally { setSubmitting(false); }
+      message.success('Penilaian berhasil disubmit!');
+      setSubmitted(true);
+    } catch (e) {
+      setShowConfirmModal(false);
+      if (e.response) {
+        message.error(e.response.data?.message || 'Gagal menyimpan');
+      } else if (e.errorFields) {
+        if (e.errorFields.length > 0) {
+          form.scrollToField(e.errorFields[0].name, { behavior: 'smooth', block: 'center' });
+        }
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const scoreColor = totalScore >= 90 ? '#2563eb' : totalScore >= 75 ? '#22c55e' : totalScore >= 60 ? '#f59e0b' : totalScore > 0 ? '#ef4444' : '#94a3b8';
@@ -370,7 +393,7 @@ const JuriFormPenilaian = () => {
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
               <Button onClick={() => navigate('/juri/peserta')} style={{ height: 44, borderRadius: 8 }}>Batal</Button>
-              <Button type="primary" icon={<SaveOutlined />} onClick={() => setShowConfirmModal(true)} disabled={totalScore === 0} style={{ height: 44, borderRadius: 8, fontWeight: 600 }}>Submit Penilaian</Button>
+              <Button type="primary" icon={<SaveOutlined />} onClick={handlePreSubmit} disabled={totalScore === 0} style={{ height: 44, borderRadius: 8, fontWeight: 600 }}>Submit Penilaian</Button>
             </div>
           </Form>
         </Col>

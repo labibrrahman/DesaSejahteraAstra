@@ -652,7 +652,7 @@ const FormPendaftaran = () => {
         <Modal
           open={showAstraPopup}
           closable={false}
-          maskClosable={false}
+          mask={{ closable: false }}
           footer={null}
           centered
           width={440}
@@ -697,7 +697,7 @@ const FormPendaftaran = () => {
         <Modal
           open={showDeniedPopup}
           closable={false}
-          maskClosable={false}
+          mask={{ closable: false }}
           footer={null}
           centered
           width={440}
@@ -1284,7 +1284,6 @@ const FormPendaftaran = () => {
       <ReviewCard title="Data Peserta" icon={<MedicineBoxOutlined style={{ color: '#1890ff', fontSize: 16 }} />}>
         <Row gutter={[16, 12]}>
           <ReviewField label="Nama DSA/Nama Desa" value={formData.nama_desa} />
-          <ReviewField label="Jenis DSA" value={formData.jenis_dsa === 'kelompok' ? 'Kelompok' : formData.jenis_dsa === 'individu' ? 'Individu' : '-'} />
           <ReviewField label={formData.jenis_dsa === 'individu' ? 'Nama Peserta' : 'Nama Ketua Kelompok'} value={formData.nama_kelompok ? formData.nama_kelompok : formData.nama_ketua ? formData.nama_ketua: ''} />
           <ReviewField label="Nomor HP Ketua Kelompok" value={formData.phone_number} />
           <ReviewField label="Perusahaan/Yayasan Pembina" value={grupLabel || '-'} span={24} />

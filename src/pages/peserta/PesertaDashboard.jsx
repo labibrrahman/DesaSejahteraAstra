@@ -61,6 +61,7 @@ const PesertaDashboard = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedReg, setSelectedReg] = useState(null);
   const [timelineData, setTimelineData] = useState([]);
+  const [announcementDate, setAnnouncementDate] = useState(null);
 
   const [allCategories, setAllCategories] = useState([]);
   const [canAddMore, setCanAddMore] = useState(false);
@@ -125,16 +126,45 @@ const PesertaDashboard = () => {
             setTimelineData(Array.isArray(parsed) ? parsed : []);
           } catch { /* ignore invalid JSON */ }
         }
+        const sadSetting = settings.find(s => s.key === 'selection_announcement_date');
+        if (sadSetting?.value) {
+          setAnnouncementDate(sadSetting.value);
+        }
       }).catch(() => {});
     });
   }, []);
 
   const nama = registrations[0]?.user?.name || 'Peserta';
 
-  // Sembunyikan timeline jika semua pendaftaran rejected
-  const allRejected = registrations.length > 0 && registrations.every(r => r.status === 'rejected');
+  const isAnnouncementPassed = React.useMemo(() => {
+    if (!announcementDate) return false;
+    try {
+      const annTime = new Date(announcementDate).getTime();
+      const nowTime = new Date().getTime();
+      return nowTime >= annTime;
+    } catch {
+      return false;
+    }
+  }, [announcementDate]);
 
-  const leftItemsCount = registrations.length + (canAddMore ? 1 : 0);
+  const processedRegistrations = React.useMemo(() => {
+    if (!Array.isArray(registrations)) return [];
+    return registrations.map(reg => {
+      let status = reg.status || 'draft';
+      if ((status === 'finalist' || status === 'rejected') && !isAnnouncementPassed) {
+        status = 'assessed';
+      }
+      return {
+        ...reg,
+        status,
+      };
+    });
+  }, [registrations, isAnnouncementPassed]);
+
+  // Sembunyikan timeline jika semua pendaftaran rejected
+  const allRejected = processedRegistrations.length > 0 && processedRegistrations.every(r => r.status === 'rejected');
+
+  const leftItemsCount = processedRegistrations.length + (canAddMore ? 1 : 0);
   const cardSpan = leftItemsCount === 1 ? 24 : 12;
 
   // Belum ada registrasi → redirect ke form
@@ -270,7 +300,7 @@ const PesertaDashboard = () => {
               </Title>
             </div>
             <Row gutter={[20, 20]} align="stretch">
-              {registrations.map(regItem => {
+              {processedRegistrations.map(regItem => {
                 const pk = getPilarKey(regItem.pillar?.name);
                 const pilarConf = PILAR_CONFIG[pk];
                 const IconComponent = pilarConf.Icon;

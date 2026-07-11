@@ -85,17 +85,31 @@ const PesertaDashboard = () => {
 
   // Check if user can add more registrations
   React.useEffect(() => {
-    if (allCategories.length > 0 && registrations.length > 0) {
-      const registeredCombos = registrations
-        .filter(r => r.pillarId && r.categoryId)
-        .map(r => `${r.pillarId}__${r.categoryId}`);
+    if (allCategories.length > 0) {
+      // 1. Max 2 registrations limit (regardless of status)
+      if (registrations.length >= 2) {
+        setCanAddMore(false);
+        return;
+      }
 
-      const hasMoreCombos = allCategories.some(
-        cat => !registeredCombos.includes(`${cat.pillarId || cat.pillar?.id}__${cat.id}`)
-      );
-      setCanAddMore(hasMoreCombos);
-    } else if (allCategories.length > 0 && registrations.length === 0) {
-      setCanAddMore(true);
+      // 2. Max 1 category per pillar limit
+      if (registrations.length > 0) {
+        const registeredPillarIds = registrations
+          .map(r => r.pillarId || r.pillar?.id)
+          .filter(Boolean);
+
+        const hasMoreCombos = allCategories.some(
+          cat => {
+            const pId = cat.pillarId || cat.pillar?.id;
+            // Cannot register if this pilar is already registered
+            if (registeredPillarIds.includes(pId)) return false;
+            return true;
+          }
+        );
+        setCanAddMore(hasMoreCombos);
+      } else {
+        setCanAddMore(true);
+      }
     }
   }, [allCategories, registrations]);
 
@@ -244,230 +258,231 @@ const PesertaDashboard = () => {
 
       {/* Main Content */}
       <div style={{ padding: '24px' }}>
-        <Row gutter={24}>
-          <Col xs={24} lg={16}>
-            {/* Daftar Pendaftaran */}
-            <div style={{ marginBottom: 24 }}>
-              <Title level={4} style={{ marginBottom: 16, color: '#0f172a', fontWeight: 600 }}>
-                Pendaftaran Saya
-              </Title>
-              <Row gutter={[16, 16]}>
-                {registrations.map(regItem => {
-                  const pk = getPilarKey(regItem.pillar?.name);
-                  const pilarConf = PILAR_CONFIG[pk];
-                  const IconComponent = pilarConf.Icon;
-                  const stat = regItem.status || 'draft';
-                  const statConf = STATUS_TAGS[stat];
+        <div style={{ marginBottom: 16 }}>
+          <Title level={4} style={{ margin: 0, color: '#0f172a', fontWeight: 600 }}>
+            Pendaftaran Saya
+          </Title>
+        </div>
+        <Row gutter={[20, 20]} style={{ display: 'flex', flexWrap: 'wrap' }} align="stretch">
+          {registrations.map(regItem => {
+            const pk = getPilarKey(regItem.pillar?.name);
+            const pilarConf = PILAR_CONFIG[pk];
+            const IconComponent = pilarConf.Icon;
+            const stat = regItem.status || 'draft';
+            const statConf = STATUS_TAGS[stat];
 
-                  return (
-                    <Col xs={24} sm={12} key={regItem.id}>
-                      <Card
-                        style={{
-                          borderRadius: 12,
-                          border: '1px solid #e2e8f0',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                          height: '100%',
-                          display: 'flex',
-                          flexDirection: 'column',
-                        }}
-                        bodyStyle={{
-                          padding: 20,
-                          flex: 1,
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'space-between',
+            return (
+              <Col xs={24} md={12} lg={8} key={regItem.id} style={{ display: 'flex' }}>
+                <Card
+                  style={{
+                    borderRadius: 12,
+                    border: '1px solid #e2e8f0',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                  bodyStyle={{
+                    padding: 20,
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <div>
+                    {/* Card Header */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 8,
+                            background: pilarConf.bgLight,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}
+                        >
+                          <IconComponent style={{ color: pilarConf.color, fontSize: 20 }} />
+                        </div>
+                        <div>
+                          <Text strong style={{ fontSize: 15, color: '#0f172a', display: 'block' }}>
+                            {regItem.pillar?.name || 'Pilar'}
+                          </Text>
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            Kategori: {regItem.category?.name || '—'}
+                          </Text>
+                        </div>
+                      </div>
+                      <Tag color={statConf.color} style={{ margin: 0, borderRadius: 6, padding: '2px 8px', fontWeight: 500 }}>
+                        {statConf.label}
+                      </Tag>
+                    </div>
+
+                    {/* Card Content Summary */}
+                    <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 14px' }}>
+                      {(regItem.innovationTitle || regItem.innovation_title || regItem.summary?.innovation_title || regItem.program_info?.innovation_title) && (
+                        <div style={{ marginBottom: 6 }}>
+                          <Text style={{ fontSize: 11, color: '#64748b', display: 'block', textTransform: 'uppercase' }}>Judul Inovasi</Text>
+                          <Text strong style={{ fontSize: 13, color: '#1e293b' }}>
+                            {regItem.innovationTitle || regItem.innovation_title || regItem.summary?.innovation_title || regItem.program_info?.innovation_title}
+                          </Text>
+                        </div>
+                      )}
+                      <div style={{ marginBottom: 6 }}>
+                        <Text style={{ fontSize: 11, color: '#64748b', display: 'block', textTransform: 'uppercase' }}>Nama Desa / Kelompok</Text>
+                        <Text strong style={{ fontSize: 13, color: '#1e293b' }}>
+                          {regItem.villageName || '—'} / {regItem.groupName || '—'}
+                        </Text>
+                      </div>
+                      <div>
+                        <Text style={{ fontSize: 11, color: '#64748b', display: 'block', textTransform: 'uppercase' }}>Ketua Kelompok</Text>
+                        <Text style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>
+                          {regItem.groupName || '—'}
+                        </Text>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom Section: Status Step + Actions */}
+                  <div style={{ marginTop: '20px', paddingTop: 16, borderTop: '1px solid #f1f5f9' }}>
+                    {/* Compact Status Step */}
+                    <div style={{ marginBottom: 14 }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                        {(() => {
+                          const stepIdx = { draft: 0, waiting_screening: 1, being_assessed: 2, assessed: 3, finalist: 4, rejected: 4 }[stat] || 0;
+                          const isFinal = stat === 'finalist' || stat === 'rejected';
+                          const steps = [
+                            { label: 'Draft', icon: <FileTextOutlined /> },
+                            { label: 'Screening', icon: <SearchOutlined /> },
+                            { label: 'Dinilai', icon: <FormOutlined /> },
+                            { label: 'Selesai', icon: <CheckCircleFilled /> },
+                          ];
+                          return steps.map((s, i) => {
+                            const completed = i < stepIdx;
+                            const current = i === stepIdx;
+                            const active = completed || current;
+                            return (
+                              <React.Fragment key={i}>
+                                <div style={{ textAlign: 'center', flex: 1 }}>
+                                  <div style={{
+                                    width: 28, height: 28, borderRadius: '50%',
+                                    background: completed
+                                      ? 'linear-gradient(135deg, #22c55e, #16a34a)'
+                                      : current
+                                        ? isFinal
+                                          ? stat === 'finalist'
+                                            ? 'linear-gradient(135deg, #22c55e, #16a34a)'
+                                            : 'linear-gradient(135deg, #ef4444, #dc2626)'
+                                          : 'linear-gradient(135deg, #3b82f6, #2563eb)'
+                                        : '#e5e7eb',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: 12, color: active ? '#fff' : '#9ca3af',
+                                    margin: '0 auto',
+                                  }}>
+                                    {completed || (current && isFinal) ? <CheckCircleFilled style={{ fontSize: 12 }} /> : s.icon}
+                                  </div>
+                                  <Text style={{
+                                    fontSize: 10,
+                                    color: active ? '#1e293b' : '#9ca3af',
+                                    fontWeight: active ? 600 : 400,
+                                    marginTop: 4,
+                                    display: 'block',
+                                    lineHeight: 1.2,
+                                  }}>
+                                    {s.label}
+                                  </Text>
+                                </div>
+                                {i < steps.length - 1 && (
+                                  <div style={{
+                                    width: 20, height: 2, borderRadius: 1, flexShrink: 0,
+                                    marginTop: 13,
+                                  }}>
+                                    <div style={{
+                                      width: '100%', height: '100%', borderRadius: 1,
+                                      background: completed ? '#22c55e' : '#e5e7eb',
+                                    }} />
+                                  </div>
+                                )}
+                              </React.Fragment>
+                            );
+                          });
+                        })()}
+                      </div>
+                    </div>
+
+                    {/* Card Actions */}
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <Button
+                        style={{ flex: 1, borderRadius: 8 }}
+                        onClick={() => {
+                          setSelectedReg(regItem);
+                          setDetailOpen(true);
                         }}
                       >
-                        <div>
-                          {/* Card Header */}
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                              <div
-                                style={{
-                                  width: 40,
-                                  height: 40,
-                                  borderRadius: 8,
-                                  background: pilarConf.bgLight,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                }}
-                              >
-                                <IconComponent style={{ color: pilarConf.color, fontSize: 20 }} />
-                              </div>
-                              <div>
-                                <Text strong style={{ fontSize: 15, color: '#0f172a', display: 'block' }}>
-                                  {regItem.pillar?.name || 'Pilar'}
-                                </Text>
-                                <Text type="secondary" style={{ fontSize: 12 }}>
-                                  Kategori: {regItem.category?.name || '—'}
-                                </Text>
-                              </div>
-                            </div>
-                            <Tag color={statConf.color} style={{ margin: 0, borderRadius: 6, padding: '2px 8px', fontWeight: 500 }}>
-                              {statConf.label}
-                            </Tag>
-                          </div>
-
-                          {/* Card Content Summary */}
-                          <div style={{ background: '#f8fafc', borderRadius: 8, padding: '12px 14px' }}>
-                            <div style={{ marginBottom: 6 }}>
-                              <Text style={{ fontSize: 11, color: '#64748b', display: 'block', textTransform: 'uppercase' }}>Nama Desa / Kelompok</Text>
-                              <Text strong style={{ fontSize: 13, color: '#1e293b' }}>
-                                {regItem.villageName || '—'} / {regItem.groupName || '—'}
-                              </Text>
-                            </div>
-                            <div>
-                              <Text style={{ fontSize: 11, color: '#64748b', display: 'block', textTransform: 'uppercase' }}>Ketua Kelompok</Text>
-                              <Text style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>
-                                {regItem.groupName || '—'}
-                              </Text>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Bottom Section: Status Step + Actions */}
-                        <div style={{ marginTop: 'auto', paddingTop: 16 }}>
-                          {/* Compact Status Step */}
-                          <div style={{ marginBottom: 14 }}>
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                              {(() => {
-                                const stepIdx = { draft: 0, waiting_screening: 1, being_assessed: 2, assessed: 3, finalist: 4, rejected: 4 }[stat] || 0;
-                                const isFinal = stat === 'finalist' || stat === 'rejected';
-                                const steps = [
-                                  { label: 'Draft', icon: <FileTextOutlined /> },
-                                  { label: 'Screening', icon: <SearchOutlined /> },
-                                  { label: 'Dinilai', icon: <FormOutlined /> },
-                                  { label: 'Selesai', icon: <CheckCircleFilled /> },
-                                ];
-                                return steps.map((s, i) => {
-                                  const completed = i < stepIdx;
-                                  const current = i === stepIdx;
-                                  const active = completed || current;
-                                  return (
-                                    <React.Fragment key={i}>
-                                      <div style={{ textAlign: 'center', flex: 1 }}>
-                                        <div style={{
-                                          width: 28, height: 28, borderRadius: '50%',
-                                          background: completed
-                                            ? 'linear-gradient(135deg, #22c55e, #16a34a)'
-                                            : current
-                                              ? isFinal
-                                                ? stat === 'finalist'
-                                                  ? 'linear-gradient(135deg, #22c55e, #16a34a)'
-                                                  : 'linear-gradient(135deg, #ef4444, #dc2626)'
-                                                : 'linear-gradient(135deg, #3b82f6, #2563eb)'
-                                              : '#e5e7eb',
-                                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                          fontSize: 12, color: active ? '#fff' : '#9ca3af',
-                                          margin: '0 auto',
-                                        }}>
-                                          {completed || (current && isFinal) ? <CheckCircleFilled style={{ fontSize: 12 }} /> : s.icon}
-                                        </div>
-                                        <Text style={{
-                                          fontSize: 10,
-                                          color: active ? '#1e293b' : '#9ca3af',
-                                          fontWeight: active ? 600 : 400,
-                                          marginTop: 4,
-                                          display: 'block',
-                                          lineHeight: 1.2,
-                                        }}>
-                                          {s.label}
-                                        </Text>
-                                      </div>
-                                      {i < steps.length - 1 && (
-                                        <div style={{
-                                          width: 20, height: 2, borderRadius: 1, flexShrink: 0,
-                                          marginTop: 13,
-                                        }}>
-                                          <div style={{
-                                            width: '100%', height: '100%', borderRadius: 1,
-                                            background: completed ? '#22c55e' : '#e5e7eb',
-                                          }} />
-                                        </div>
-                                      )}
-                                    </React.Fragment>
-                                  );
-                                });
-                              })()}
-                            </div>
-                          </div>
-
-                          {/* Card Actions */}
-                          <div style={{ display: 'flex', gap: 10 }}>
-                            <Button
-                              style={{ flex: 1, borderRadius: 8 }}
-                              onClick={() => {
-                                setSelectedReg(regItem);
-                                setDetailOpen(true);
-                              }}
-                            >
-                              Lihat Detail
-                            </Button>
-                            {stat === 'draft' && (
-                              <Button
-                                type="primary"
-                                icon={<EditOutlined />}
-                                style={{ flex: 1, borderRadius: 8, background: '#2563eb', borderColor: '#2563eb' }}
-                                onClick={() => navigate(`/register?id=${regItem.id}`)}
-                              >
-                                Edit Draft
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </Card>
-                    </Col>
-                  );
-                })}
-
-                {/* Add New Pillar Card */}
-                {canAddMore && (
-                  <Col xs={24} sm={12}>
-                    <div
-                      onClick={() => navigate('/register?mode=new')}
-                      style={{
-                        border: '2px dashed #cbd5e1',
-                        borderRadius: 12,
-                        height: '100%',
-                        minHeight: 180,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        cursor: 'pointer',
-                        padding: 24,
-                        transition: 'all 0.2s',
-                        background: '#fff',
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.borderColor = '#2563eb';
-                        e.currentTarget.style.background = '#eff6ff';
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.borderColor = '#cbd5e1';
-                        e.currentTarget.style.background = '#fff';
-                      }}
-                    >
-                      <PlusOutlined style={{ fontSize: 24, color: '#64748b', marginBottom: 12 }} />
-                      <Text strong style={{ fontSize: 14, color: '#475569', display: 'block', textAlign: 'center' }}>
-                        Daftar Pilar / Kategori Baru
-                      </Text>
-                      <Text type="secondary" style={{ fontSize: 12, textAlign: 'center', marginTop: 4 }}>
-                        Daftarkan desa Anda untuk pilar lomba lainnya.
-                      </Text>
+                        Lihat Detail
+                      </Button>
+                      {stat === 'draft' && (
+                        <Button
+                          type="primary"
+                          icon={<EditOutlined />}
+                          style={{ flex: 1, borderRadius: 8, background: '#2563eb', borderColor: '#2563eb' }}
+                          onClick={() => navigate(`/register?id=${regItem.id}`)}
+                        >
+                          Edit Draft
+                        </Button>
+                      )}
                     </div>
-                  </Col>
-                )}
-              </Row>
-            </div>
+                  </div>
+                </Card>
+              </Col>
+            );
+          })}
 
-          </Col>
+          {/* Add New Pillar Card */}
+          {canAddMore && (
+            <Col xs={24} md={12} lg={8} style={{ display: 'flex' }}>
+              <div
+                onClick={() => navigate('/register?mode=new')}
+                style={{
+                  border: '2px dashed #cbd5e1',
+                  borderRadius: 12,
+                  width: '100%',
+                  minHeight: 180,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  padding: 24,
+                  transition: 'all 0.2s',
+                  background: '#fff',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = '#2563eb';
+                  e.currentTarget.style.background = '#eff6ff';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = '#cbd5e1';
+                  e.currentTarget.style.background = '#fff';
+                }}
+              >
+                <PlusOutlined style={{ fontSize: 24, color: '#64748b', marginBottom: 12 }} />
+                <Text strong style={{ fontSize: 14, color: '#475569', display: 'block', textAlign: 'center' }}>
+                  Daftar Pilar / Kategori Baru
+                </Text>
+                <Text type="secondary" style={{ fontSize: 12, textAlign: 'center', marginTop: 4 }}>
+                  Daftarkan desa Anda untuk pilar lomba lainnya.
+                </Text>
+              </div>
+            </Col>
+          )}
 
-          {/* Right Sidebar */}
-          <Col xs={24} lg={8}>
-            {/* Jadwal Acara — hide jika semua rejected */}
-            {!allRejected && (
+          {/* Jadwal Acara */}
+          {!allRejected && (
+            <Col xs={24} md={12} lg={8} style={{ display: 'flex' }}>
               <Card
                 title={
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -477,30 +492,39 @@ const PesertaDashboard = () => {
                     <span style={{ fontWeight: 600 }}>Jadwal Acara</span>
                   </div>
                 }
-                style={{ borderRadius: 12, border: '1px solid #e2e8f0', marginBottom: 24 }}
-                bodyStyle={{ padding: 0 }}
+                style={{
+                  borderRadius: 12,
+                  border: '1px solid #e2e8f0',
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflow: 'hidden',
+                }}
+                bodyStyle={{ padding: 0, flex: 1, display: 'flex', flexDirection: 'column' }}
               >
                 {timelineData.map((phase, phaseIdx) => (
                   <React.Fragment key={phaseIdx}>
                     <div style={{ background: phaseIdx === 0 ? '#2563eb' : '#7c3aed', padding: '12px 20px' }}>
                       <Text strong style={{ color: '#fff', fontSize: 13, letterSpacing: 0.5 }}>{phase.phase}</Text>
                     </div>
-                    {phase.schedules.map((schedule, idx) => (
-                      <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', borderBottom: idx < phase.schedules.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                        <div style={{ width: 8, height: 8, borderRadius: '50%', marginTop: 6, flexShrink: 0, background: '#d1d5db' }} />
-                        <div style={{ flex: 1 }}>
-                          <Text style={{ fontSize: 11, color: '#64748b', fontWeight: 500 }}>{schedule.date}</Text>
-                          {schedule.activities.map((act, actIdx) => (
-                            <Text key={actIdx} style={{ fontSize: 12, color: '#1e293b', display: 'block', marginTop: 2 }}>{act}</Text>
-                          ))}
+                    <div style={{ flex: 1, overflowY: 'auto' }}>
+                      {phase.schedules.map((schedule, idx) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 16px', borderBottom: idx < phase.schedules.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                          <div style={{ width: 8, height: 8, borderRadius: '50%', marginTop: 6, flexShrink: 0, background: '#d1d5db' }} />
+                          <div style={{ flex: 1 }}>
+                            <Text style={{ fontSize: 11, color: '#64748b', fontWeight: 500 }}>{schedule.date}</Text>
+                            {schedule.activities.map((act, actIdx) => (
+                              <Text key={actIdx} style={{ fontSize: 12, color: '#1e293b', display: 'block', marginTop: 2 }}>{act}</Text>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </React.Fragment>
                 ))}
               </Card>
-            )}
-          </Col>
+            </Col>
+          )}
         </Row>
       </div>
 

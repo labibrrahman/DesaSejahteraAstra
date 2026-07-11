@@ -158,6 +158,9 @@ const RegistrationDetailModal = ({
                 <Col xs={12} sm={8}>
                   <FieldLabel label="Kategori" value={reg.category?.name} />
                 </Col>
+                <Col xs={24} style={{ marginBottom: 4 }}>
+                  <FieldLabel label="Judul Inovasi" value={reg.innovationTitle || reg.innovation_title} />
+                </Col>
                 <Col xs={12} sm={8}>
                   <FieldLabel label="Durasi Program" value={reg.programDuration} />
                 </Col>

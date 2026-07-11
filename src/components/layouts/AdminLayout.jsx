@@ -214,10 +214,12 @@ const AdminLayout = () => {
           placement="left"
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
-          width={220}
+          size={220}
           closable={false}
-          bodyStyle={{ padding: 0 }}
-          headerStyle={{ display: 'none' }}
+          styles={{
+            body: { padding: 0 },
+            header: { display: 'none' }
+          }}
         >
           {sidebarContent}
         </Drawer>

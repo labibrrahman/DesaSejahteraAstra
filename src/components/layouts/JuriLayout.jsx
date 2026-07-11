@@ -107,7 +107,17 @@ const JuriLayout = () => {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       {isMobile ? (
-        <Drawer placement="left" open={drawerOpen} onClose={() => setDrawerOpen(false)} width={220} closable={false} bodyStyle={{ padding: 0 }} headerStyle={{ display: 'none' }}>
+        <Drawer
+          placement="left"
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          size={220}
+          closable={false}
+          styles={{
+            body: { padding: 0 },
+            header: { display: 'none' }
+          }}
+        >
           {sidebarContent}
         </Drawer>
       ) : (

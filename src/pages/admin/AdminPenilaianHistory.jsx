@@ -49,6 +49,7 @@ const mapFromApi = (item) => ({
     : '-',
   catatan: item.notes || '-',
   durasi_program: item.registration?.programDuration || '-',
+  judul_inovasi: item.registration?.innovationTitle || item.registration?.innovation_title || '-',
 });
 
 const AdminPenilaianHistory = () => {
@@ -197,7 +198,7 @@ const AdminPenilaianHistory = () => {
       ),
     },
     { 
-      title: 'NNama Ketua Kelompok', 
+      title: 'Nama Ketua Kelompok', 
       onHeaderCell: () => ({
         style: { whiteSpace: 'nowrap' },
       }),
@@ -442,6 +443,10 @@ const AdminPenilaianHistory = () => {
                 <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13, marginTop: 4, display: 'block' }}>
                   {selectedRecord.nama_kelompok}
                 </Text>
+                <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+                  <Tag style={{ border: 'none', background: 'rgba(24,144,255,0.2)', color: '#38bdf8', fontWeight: 600, margin: 0 }}>{selectedRecord.pilar}</Tag>
+                  <Tag style={{ border: 'none', background: 'rgba(19,194,194,0.2)', color: '#2dd4bf', fontWeight: 600, margin: 0 }}>{selectedRecord.kategori}</Tag>
+                </div>
               </div>
 
               {/* Content */}
@@ -452,14 +457,20 @@ const AdminPenilaianHistory = () => {
                     <span style={{ marginRight: 6 }}><FileTextOutlined /></span> Informasi Penilaian
                   </Text>
                   <Row gutter={[20, 12]}>
+                    <Col xs={24}>
+                      <Text style={{ fontSize: 11, color: '#94a3b8', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                        Judul Inovasi
+                      </Text>
+                      <Text strong style={{ fontSize: 13, color: '#1e293b', display: 'block', marginBottom: 12 }}>
+                        {selectedRecord.judul_inovasi || '-'}
+                      </Text>
+                    </Col>
                     {[
-                      { label: 'Pilar', value: selectedRecord.pilar },
-                      { label: 'Kategori', value: selectedRecord.kategori },
                       { label: 'Durasi Program', value: selectedRecord.durasi_program },
                       { label: 'Juri', value: selectedRecord.juri },
                       { label: 'Tanggal', value: selectedRecord.tanggal_nilai },
                     ].map((item, idx) => (
-                      <Col xs={12} sm={6} key={idx}>
+                      <Col xs={12} sm={8} key={idx}>
                         <Text style={{ fontSize: 11, color: '#94a3b8', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                           {item.label}
                         </Text>

@@ -374,6 +374,7 @@ const FormPendaftaran = () => {
               nama_desa: targetReg.villageName || '',
               nama_kelompok: targetReg.groupName || '',
               alamat: targetReg.address || '',
+              innovationTitle: targetReg.innovationTitle || '',
               latar_belakang: targetReg.background || '',
               dampak_program: targetReg.programImpact || '',
               rencana_pengembangan: targetReg.developmentPlan || '',
@@ -489,6 +490,11 @@ const FormPendaftaran = () => {
         break;
 
       case 3:
+        if (!formData.innovationTitle || !formData.innovationTitle.trim()) {
+          e.innovationTitle = 'Judul Inovasi wajib diisi';
+        } else if (formData.innovationTitle.length > 255) {
+          e.innovationTitle = 'Judul Inovasi maksimal 255 karakter';
+        }
         if (!formData.durasi_program) e.durasi_program = 'Wajib diisi';
         if (!formData.latar_belakang) e.latar_belakang = 'Wajib diisi';
         if (!formData.implementation_method) e.implementation_method = 'Wajib diisi';
@@ -526,11 +532,14 @@ const FormPendaftaran = () => {
     const cat = allCategories.find(c => c.id === categoryId);
     if (cat) {
       const pilarId = cat.pillarId || cat.pillar?.id;
-      // Jangan izinkan pilih pilar/kategori yang sudah terdaftar
+      // Jangan izinkan pilih pilar/kategori yang sudah terdaftar atau pilar yang diblokir
       const isRegistered = registeredCombos.some(
         combo => combo.pillarId === pilarId && combo.categoryId === categoryId
       );
-      if (isRegistered) return;
+      const isPilarBlocked = registeredCombos.some(
+        combo => combo.pillarId === pilarId && (!registrationId || combo.pillarId !== selectedPilarId)
+      );
+      if (isRegistered || isPilarBlocked) return;
 
       setSelectedKategoriId(categoryId);
       if (pilarId) setSelectedPilarId(pilarId);
@@ -555,6 +564,7 @@ const FormPendaftaran = () => {
       const payload = {
         pillarId: selectedPilarId,
         categoryId: selectedKategoriId,
+        innovationTitle: formData.innovationTitle || '',
         villageName: formData.nama_desa,
         groupName: formData.nama_kelompok ? formData.nama_kelompok: formData.nama_ketua ? formData.nama_ketua : '',
         address: formData.alamat,
@@ -787,6 +797,10 @@ const FormPendaftaran = () => {
                           const isRegistered = registeredCombos.some(
                             combo => combo.pillarId === pilar.id && combo.categoryId === cat.id
                           );
+                          const isPilarBlocked = registeredCombos.some(
+                            combo => combo.pillarId === pilar.id && (!registrationId || combo.pillarId !== selectedPilarId)
+                          );
+                          const isDisabled = isRegistered || isPilarBlocked;
                           return (
                             <div
                               key={cat.id}
@@ -794,21 +808,23 @@ const FormPendaftaran = () => {
                                 border: `1px solid ${isSelected ? `${color}60` : '#e2e8f0'}`,
                                 borderRadius: 8,
                                 padding: '10px 14px',
-                                background: isRegistered ? '#f1f5f9' : isSelected ? `${color}10` : '#fafbfc',
-                                cursor: isRegistered ? 'not-allowed' : 'pointer',
+                                background: isDisabled ? '#f1f5f9' : isSelected ? `${color}10` : '#fafbfc',
+                                cursor: isDisabled ? 'not-allowed' : 'pointer',
                                 transition: 'all 0.2s ease',
-                                opacity: isRegistered ? 0.6 : 1,
+                                opacity: isDisabled ? 0.6 : 1,
                               }}
-                              onClick={() => { if (!isRegistered) handleKategoriSelect(cat.id); }}
-                              onMouseEnter={e => { if (!isSelected && !isRegistered) { e.currentTarget.style.borderColor = `${color}40`; } }}
-                              onMouseLeave={e => { if (!isSelected && !isRegistered) { e.currentTarget.style.borderColor = '#e2e8f0'; } }}
+                              onClick={() => { if (!isDisabled) handleKategoriSelect(cat.id); }}
+                              onMouseEnter={e => { if (!isSelected && !isDisabled) { e.currentTarget.style.borderColor = `${color}40`; } }}
+                              onMouseLeave={e => { if (!isSelected && !isDisabled) { e.currentTarget.style.borderColor = '#e2e8f0'; } }}
                             >
-                              <Radio value={cat.id} disabled={isRegistered} style={{ width: '100%' }}>
+                              <Radio value={cat.id} disabled={isDisabled} style={{ width: '100%' }}>
                                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                                  <Text style={{ fontSize: 14, color: isRegistered ? '#94a3b8' : '#1e293b' }}>{cat.name}</Text>
-                                  {isRegistered && (
+                                  <Text style={{ fontSize: 14, color: isDisabled ? '#94a3b8' : '#1e293b' }}>{cat.name}</Text>
+                                  {isRegistered ? (
                                     <Tag color="orange" style={{ margin: 0, fontSize: 11 }}>Sudah Didaftarkan</Tag>
-                                  )}
+                                  ) : isPilarBlocked ? (
+                                    <Tag color="default" style={{ margin: 0, fontSize: 11 }}>Pilar Sudah Terdaftar</Tag>
+                                  ) : null}
                                 </div>
                               </Radio>
                             </div>
@@ -1072,6 +1088,24 @@ const FormPendaftaran = () => {
       </div>
 
       <div style={fieldWrapper}>
+        <Text style={errors.innovationTitle ? labelErrorStyle : labelStyle}>Judul Inovasi *</Text>
+        <Input
+          placeholder="Masukkan judul inovasi program Anda..."
+          maxLength={255}
+          style={errors.innovationTitle ? inputErrorStyle : inputStyle}
+          value={formData.innovationTitle || ''}
+          onChange={e => updateField('innovationTitle', e.target.value)}
+        />
+        {errors.innovationTitle ? (
+          <Text style={errorTextStyle}>{errors.innovationTitle}</Text>
+        ) : (
+          <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>
+            Maksimal 255 karakter
+          </Text>
+        )}
+      </div>
+
+      <div style={fieldWrapper}>
         <Text style={errors.durasi_program ? labelErrorStyle : labelStyle}>Durasi Program *</Text>
         <SearchSelect
           placeholder="Pilih durasi program..."
@@ -1267,6 +1301,7 @@ const FormPendaftaran = () => {
 
       <ReviewCard title="Detail Program" icon={<EnvironmentOutlined style={{ color: '#1890ff', fontSize: 16 }} />}>
         <Row gutter={[16, 12]}>
+          <ReviewField label="Judul Inovasi" value={formData.innovationTitle || '-'} span={24} />
           <ReviewField label="Durasi Program" value={formData.durasi_program || '-'} />
           <ReviewField label="Latar Belakang / Rasionalisasi" value={formData.latar_belakang} span={24} />
           <ReviewField label="Metode Pelaksanaan Program" value={formData.implementation_method} span={24} />

@@ -87,6 +87,7 @@ const AdminPesertaList = () => {
   // Detail modal
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState(null);
+  const [previewPhoto, setPreviewPhoto] = useState(null);
 
   // Edit Info Peserta modal
   const [editParticipantModalVisible, setEditParticipantModalVisible] = useState(false);
@@ -965,7 +966,11 @@ const AdminPesertaList = () => {
                                 <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 8 }}>Foto Dokumentasi</Text>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                                   {prog.photos.map((photo, i) => (
-                                    <div key={i} style={{ width: 80, height: 80, borderRadius: 6, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+                                    <div
+                                      key={i}
+                                      onClick={() => setPreviewPhoto(photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`)}
+                                      style={{ width: 80, height: 80, borderRadius: 6, overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer' }}
+                                    >
                                       <img
                                         src={photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`}
                                         alt={photo.originalName || `Foto ${i + 1}`}
@@ -1229,7 +1234,11 @@ const AdminPesertaList = () => {
                 <Text style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>Foto Dokumentasi (Maks. 2 foto, 5 MB per foto)</Text>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
                   {editPhotos.map((photo, index) => (
-                    <div key={index} style={{ width: 100, height: 100, borderRadius: 8, overflow: 'hidden', border: '1px solid #e2e8f0', position: 'relative' }}>
+                    <div
+                      key={index}
+                      onClick={() => setPreviewPhoto(photo.url?.startsWith('http') ? photo.url : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.url}`)}
+                      style={{ width: 100, height: 100, borderRadius: 8, overflow: 'hidden', border: '1px solid #e2e8f0', position: 'relative', cursor: 'pointer' }}
+                    >
                       <img
                         src={photo.url?.startsWith('http') ? photo.url : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.url}`}
                         alt={photo.originalName}
@@ -1239,7 +1248,7 @@ const AdminPesertaList = () => {
                         type="text"
                         size="small"
                         icon={<CloseOutlined style={{ fontSize: 12, color: '#fff' }} />}
-                        onClick={() => handleEditPhotoDelete(index)}
+                        onClick={(e) => { e.stopPropagation(); handleEditPhotoDelete(index); }}
                         style={{ position: 'absolute', top: 4, right: 4, width: 24, height: 24, minWidth: 24, background: 'rgba(0,0,0,0.5)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       />
                     </div>
@@ -1256,6 +1265,21 @@ const AdminPesertaList = () => {
             </Form>
           )}
         </Spin>
+      </Modal>
+
+      {/* Modal Preview Foto */}
+      <Modal
+        open={!!previewPhoto}
+        onCancel={() => setPreviewPhoto(null)}
+        footer={null}
+        centered
+        width={'90vw'}
+        style={{ maxWidth: 900 }}
+        styles={{ body: { padding: 0, background: 'transparent' } }}
+      >
+        {previewPhoto && (
+          <img src={previewPhoto} alt="Preview" style={{ width: '100%', height: 'auto', maxHeight: '80vh', objectFit: 'contain', borderRadius: 8 }} />
+        )}
       </Modal>
     </div>
   );

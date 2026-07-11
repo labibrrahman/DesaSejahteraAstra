@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Button, Input, Row, Col, message, Modal, Spin, Radio, Card, Upload, Tag } from 'antd';
+import { Typography, Button, Input, Row, Col, message, Modal, Spin, Radio, Card, Upload } from 'antd';
 import SearchSelect from '../../components/SearchSelect';
 import {
   ArrowLeftOutlined,
@@ -15,10 +15,9 @@ import {
   QuestionCircleOutlined,
   PlusOutlined,
   CloseOutlined,
-  InfoCircleOutlined,
 } from '@ant-design/icons';
 import useAuthStore from '../../stores/authStore';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import api from '../../lib/api';
 import masterService from '../../services/masterService';
 import registrationService from '../../services/registrationService';
@@ -78,18 +77,13 @@ const errorTextStyle = { fontSize: 12, color: '#ef4444', marginTop: 4, display: 
 const FormPendaftaran = () => {
   const navigate = useNavigate();
   const { logout, user } = useAuthStore();
-  const [searchParams] = useSearchParams();
-
-  // Mode tambah pendaftaran baru (pilar/kategori baru, Step 2 locked)
-  const isAddNew = searchParams.get('mode') === 'new';
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
-  // Draft key berbeda untuk mode baru vs edit existing
-  const DRAFT_KEY = isAddNew ? 'form_pendaftaran_draft_new' : 'form_pendaftaran_draft';
+  const DRAFT_KEY = 'form_pendaftaran_draft';
 
   // ── Popup Konfirmasi Astra Grup ─────────────────────────────────────────────
   const [showAstraPopup, setShowAstraPopup] = useState(false);
@@ -154,10 +148,6 @@ const FormPendaftaran = () => {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [previewPhoto, setPreviewPhoto] = useState(null);
   const [errors, setErrors] = useState({});
-  // Kombinasi pillarId+categoryId yang sudah terdaftar (untuk mode=new)
-  const [registeredCombos, setRegisteredCombos] = useState([]);
-  // Step 2 dikunci jika mode=new atau jika mengedit pendaftaran non-pertama
-  const [isStep2Locked, setIsStep2Locked] = useState(isAddNew);
 
   // Dynamic steps: skip "Identitas" saat mode=new
   const STEPS = isAddNew ? STEPS_ADD : STEPS_ALL;
@@ -340,33 +330,20 @@ const FormPendaftaran = () => {
         setAllCategories(allCats);
 
         // Cek apakah sudah punya registrasi
+        let hasExistingReg = false;
         try {
           const { data } = await api.get('/registrations/my');
-          const raw = data?.data ?? data;
-          const regs = Array.isArray(raw) ? raw : (raw?.id ? [raw] : []);
-          const firstReg = regs[0] ?? null;
+          const reg = data?.data ?? data;
+          if (reg && reg.id) {
+            hasExistingReg = true;
+            // Sudah punya registrasi, hapus draft lama
+            localStorage.removeItem(DRAFT_KEY);
+            setRegistrationId(reg.id);
+            setSelectedPilarId(reg.pillarId || null);
 
-          const loadId = searchParams.get('id');
-          let targetReg = null;
-          if (loadId) {
-            targetReg = regs.find(r => r.id === loadId);
-          } else if (!isAddNew) {
-            targetReg = firstReg;
-          }
-
-          if (targetReg) {
-            // Mode edit existing: load data registrasi targetReg, hapus semua draft
-            localStorage.removeItem('form_pendaftaran_draft');
-            localStorage.removeItem('form_pendaftaran_draft_new');
-            setRegistrationId(targetReg.id);
-            setSelectedPilarId(targetReg.pillarId || null);
-
-            // Kunci Step 2 jika pendaftaran yang diedit ini bukan pendaftaran pertama (tertua)
-            const shouldLock = firstReg && targetReg.id !== firstReg.id;
-            setIsStep2Locked(shouldLock || isAddNew);
-
-            if (targetReg.villageRegionId) {
-              await fetchVillageAncestry(targetReg.villageRegionId);
+            // Load wilayah via ancestry API untuk existing registration
+            if (reg.villageRegionId) {
+              await fetchVillageAncestry(reg.villageRegionId);
             }
 
             setFormData(prev => ({
@@ -393,50 +370,17 @@ const FormPendaftaran = () => {
               dampak_program_after: targetReg.programImpactAfter || '',
               document_link: targetReg.documentLink || '',
             }));
-            if (targetReg.categoryId) setSelectedKategoriId(targetReg.categoryId);
-            if (Array.isArray(targetReg.photos) && targetReg.photos.length > 0) {
-              setPhotos(targetReg.photos.map(p => ({ url: p.photoUrl, originalName: p.originalName, generatedName: p.generatedName })));
+            if (reg.categoryId) setSelectedKategoriId(reg.categoryId);
+            if (Array.isArray(reg.photos) && reg.photos.length > 0) {
+              setPhotos(reg.photos.map(p => ({ url: p.photoUrl, originalName: p.originalName, generatedName: p.generatedName })));
             }
-          } else if (isAddNew && firstReg) {
-            // Mode tambah pilar baru: HANYA prefill Step 2 (identitas), dikunci
-            // Step 1 & 3 tetap kosong (pilar baru, program baru)
-            setIsStep2Locked(true);
-            if (firstReg.villageRegionId) {
-              await fetchVillageAncestry(firstReg.villageRegionId);
-            }
-            setFormData(prev => ({
-              ...prev,
-              nama_desa:              firstReg.villageName || '',
-              nama_kelompok:          firstReg.groupName || '',
-              nama_ketua:             firstReg.groupName || '',
-              phone_number:           firstReg.phoneNumber || '',
-              nama_kontak_darurat:    firstReg.emergencyContactName || '',
-              no_hp_kontak_darurat:   firstReg.emergencyContactPhone || '',
-              alamat:                 firstReg.address || '',
-              grup_astra_id:          firstReg.astraGroupCustom ? 'others' : (firstReg.astraGroup?.id || null),
-              binaan_custom:          firstReg.astraGroupCustom || '',
-              jenis_dsa:              firstReg.dsaType ? firstReg.dsaType.toLowerCase() : null,
-              villageRegionId:        firstReg.villageRegionId || null,
-              provinceId:             firstReg.province?.id || null,
-              provinceName:           firstReg.province?.name || '',
-              cityId:                 firstReg.city?.id || null,
-              cityName:               firstReg.city?.name || '',
-              districtId:             firstReg.district?.id || null,
-              districtName:           firstReg.district?.name || '',
-            }));
-            // Simpan kombinasi pilar+kategori yang sudah terdaftar
-            setRegisteredCombos(
-              regs
-                .filter(r => r.pillarId && r.categoryId)
-                .map(r => ({ pillarId: r.pillarId, categoryId: r.categoryId }))
-            );
           }
         } catch {
           // ignore — belum ada registrasi
         }
 
         // Jika tidak ada registrasi dan ada draft, restore wilayah via ancestry
-        if (!isAddNew && registeredCombos.length === 0 && savedDraft?.formData) {
+        if (!hasExistingReg && savedDraft?.formData) {
           const d = savedDraft.formData;
           if (d.villageRegionId) {
             await fetchVillageAncestry(d.villageRegionId);
@@ -464,8 +408,6 @@ const FormPendaftaran = () => {
         break;
 
       case 2:
-        // Skip validasi jika identitas terkunci (data dari pendaftaran sebelumnya)
-        if (isStep2Locked) break;
         if (!formData.nama_desa) e.nama_desa = 'Nama DSA wajib diisi';
         if (!formData.nama_kelompok) e.nama_kelompok = 'Nama Ketua Kelompok wajib diisi';
         if (!formData.phone_number) {
@@ -529,6 +471,8 @@ const FormPendaftaran = () => {
   // ── Handle pemilihan kategori — otomatis set pilar parent ──────────────────
 
   const handleKategoriSelect = (categoryId) => {
+    setSelectedKategoriId(categoryId);
+    // Cari kategori → pillar id
     const cat = allCategories.find(c => c.id === categoryId);
     if (cat) {
       const pilarId = cat.pillarId || cat.pillar?.id;
@@ -566,7 +510,7 @@ const FormPendaftaran = () => {
         categoryId: selectedKategoriId,
         innovationTitle: formData.innovationTitle || '',
         villageName: formData.nama_desa,
-        groupName: formData.nama_kelompok ? formData.nama_kelompok: formData.nama_ketua ? formData.nama_ketua : '',
+        groupName: formData.nama_kelompok,
         address: formData.alamat,
         background: formData.latar_belakang,
         programImpact: formData.dampak_program,
@@ -578,7 +522,7 @@ const FormPendaftaran = () => {
         programEvaluation: formData.program_evaluation || '',
       };
       if (formData.jenis_dsa) payload.dsaType = formData.jenis_dsa.charAt(0).toUpperCase() + formData.jenis_dsa.slice(1);
-      // groupName sudah diisi dari nama_kelompok di atas, tidak perlu leaderName
+      if (formData.nama_ketua) payload.leaderName = formData.nama_ketua;
       if (formData.phone_number) payload.phoneNumber = formData.phone_number;
       if (formData.nama_kontak_darurat) payload.emergencyContactName = formData.nama_kontak_darurat;
       if (formData.no_hp_kontak_darurat) payload.emergencyContactPhone = formData.no_hp_kontak_darurat;
@@ -597,8 +541,8 @@ const FormPendaftaran = () => {
         payload.photos = photos.map(p => ({ url: p.url, originalName: p.originalName, generatedName: p.generatedName }));
       }
 
-      if (registrationId && !isAddNew) {
-        // Update registrasi existing (bukan mode=new)
+      if (registrationId) {
+        // Update registrasi yang sudah ada
         await registrationService.updateRegistration(registrationId, payload);
         await registrationService.submitRegistration(registrationId);
         message.success('Pendaftaran berhasil diupdate!');
@@ -608,9 +552,7 @@ const FormPendaftaran = () => {
         await registrationService.submitRegistration(reg.id);
         message.success('Pendaftaran berhasil dikirim!');
       }
-      // Hapus SEMUA draft (normal & new) agar form bersih saat dibuka lagi
-      localStorage.removeItem('form_pendaftaran_draft');
-      localStorage.removeItem('form_pendaftaran_draft_new');
+      localStorage.removeItem(DRAFT_KEY);
       navigate('/peserta/dashboard');
     } catch (err) {
       const errors = err.response?.data?.errors;
@@ -902,29 +844,6 @@ const FormPendaftaran = () => {
           </span>
         </div>
 
-        {isStep2Locked && (
-          <div style={{
-            background: '#eff6ff',
-            border: '1px solid #bfdbfe',
-            borderRadius: 8,
-            padding: '12px 16px',
-            marginBottom: 24,
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: 12
-          }}>
-            <InfoCircleOutlined style={{ color: '#2563eb', fontSize: 18, marginTop: 2 }} />
-            <div>
-              <Text strong style={{ color: '#1e3a8a', fontSize: 13, display: 'block', marginBottom: 2 }}>
-                Identitas Terkunci
-              </Text>
-              <Text style={{ color: '#1e40af', fontSize: 12 }}>
-                Data identitas desa dan kelompok diambil secara otomatis dari pendaftaran Anda sebelumnya dan tidak dapat diubah.
-              </Text>
-            </div>
-          </div>
-        )}
-
         <div style={{ marginBottom: 24 }}>
           <Text style={{ ...labelStyle, fontSize: 15 }}>Data Desa & Kelompok</Text>
           <Text type="secondary" style={{ fontSize: 13 }}>Isi informasi identitas desa dan kelompok yang mendaftar</Text>
@@ -934,7 +853,7 @@ const FormPendaftaran = () => {
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
               <Text style={errors.nama_desa ? labelErrorStyle : labelStyle}>Nama DSA/Nama Desa *</Text>
-              <Input placeholder="Contoh: Desa Suka Maju" style={errors.nama_desa ? inputErrorStyle : inputStyle} value={formData.nama_desa} onChange={e => updateField('nama_desa', e.target.value)} disabled={isStep2Locked} />
+              <Input placeholder="Contoh: Desa Suka Maju" style={errors.nama_desa ? inputErrorStyle : inputStyle} value={formData.nama_desa} onChange={e => updateField('nama_desa', e.target.value)} />
               {errors.nama_desa && <Text style={errorTextStyle}>{errors.nama_desa}</Text>}
             </div>
           </Col>
@@ -947,14 +866,13 @@ const FormPendaftaran = () => {
                 onChange={val => updateField('grup_astra_id', val)}
                 allowClear
                 showSearch
-                disabled={isStep2Locked}
                 options={[
                   ...astraGroups.map(g => ({ value: g.id, label: g.name })),
                   { value: 'others', label: 'Lainnya...' },
                 ]}
               />
               {formData.grup_astra_id === 'others' && (
-                <Input placeholder="Masukkan nama Perusahaan/Yayasan Pembina lainnya" style={{ ...inputStyle, marginTop: 8 }} value={formData.binaan_custom || ''} onChange={e => updateField('binaan_custom', e.target.value)} disabled={isStep2Locked} />
+                <Input placeholder="Masukkan nama Perusahaan/Yayasan Pembina lainnya" style={{ ...inputStyle, marginTop: 8 }} value={formData.binaan_custom || ''} onChange={e => updateField('binaan_custom', e.target.value)} />
               )}
             </div>
           </Col>
@@ -967,9 +885,8 @@ const FormPendaftaran = () => {
               <Input
                 placeholder="Nama Ketua Kelompok"
                 style={errors.nama_kelompok ? inputErrorStyle : inputStyle}
-                value={formData.nama_kelompok ? formData.nama_kelompok : formData.nama_ketua ? formData.nama_ketua : ''}
+                value={formData.nama_kelompok}
                 onChange={e => handleNameChange('nama_kelompok', e)}
-                disabled={isStep2Locked}
               />
               {errors.nama_kelompok && <Text style={errorTextStyle}>{errors.nama_kelompok}</Text>}
             </div>
@@ -977,7 +894,7 @@ const FormPendaftaran = () => {
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
               <Text style={errors.phone_number ? labelErrorStyle : labelStyle}>Nomor HP Ketua Kelompok *</Text>
-              <Input placeholder="Contoh: 08123456789" style={errors.phone_number ? inputErrorStyle : inputStyle} value={formData.phone_number} onChange={handlePhoneChange} maxLength={15} inputMode="numeric" disabled={isStep2Locked} />
+              <Input placeholder="Contoh: 08123456789" style={errors.phone_number ? inputErrorStyle : inputStyle} value={formData.phone_number} onChange={handlePhoneChange} maxLength={15} inputMode="numeric" />
               {errors.phone_number && <Text style={errorTextStyle}>{errors.phone_number}</Text>}
             </div>
           </Col>
@@ -987,14 +904,14 @@ const FormPendaftaran = () => {
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
               <Text style={errors.nama_kontak_darurat ? labelErrorStyle : labelStyle}>Nama Kontak Lainnya *</Text>
-              <Input placeholder="Contoh: Siti Aminah" style={errors.nama_kontak_darurat ? inputErrorStyle : inputStyle} value={formData.nama_kontak_darurat} onChange={e => handleNameChange('nama_kontak_darurat', e)} disabled={isStep2Locked} />
+              <Input placeholder="Contoh: Siti Aminah" style={errors.nama_kontak_darurat ? inputErrorStyle : inputStyle} value={formData.nama_kontak_darurat} onChange={e => handleNameChange('nama_kontak_darurat', e)} />
               {errors.nama_kontak_darurat && <Text style={errorTextStyle}>{errors.nama_kontak_darurat}</Text>}
             </div>
           </Col>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
               <Text style={errors.no_hp_kontak_darurat ? labelErrorStyle : labelStyle}>Nomor Kontak Lainnya *</Text>
-              <Input placeholder="Contoh: 08123456789" style={errors.no_hp_kontak_darurat ? inputErrorStyle : inputStyle} value={formData.no_hp_kontak_darurat} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); updateField('no_hp_kontak_darurat', v); }} maxLength={15} inputMode="numeric" disabled={isStep2Locked} />
+              <Input placeholder="Contoh: 08123456789" style={errors.no_hp_kontak_darurat ? inputErrorStyle : inputStyle} value={formData.no_hp_kontak_darurat} onChange={e => { const v = e.target.value.replace(/[^0-9]/g, ''); updateField('no_hp_kontak_darurat', v); }} maxLength={15} inputMode="numeric" />
               {errors.no_hp_kontak_darurat && <Text style={errorTextStyle}>{errors.no_hp_kontak_darurat}</Text>}
             </div>
           </Col>
@@ -1002,13 +919,13 @@ const FormPendaftaran = () => {
 
         <div style={fieldWrapper}>
           <Text style={errors.alamat ? labelErrorStyle : labelStyle}>Alamat Lengkap *</Text>
-          <TextArea rows={3} placeholder="Detail jalan, RW/RT..." style={{ borderRadius: 8, borderColor: errors.alamat ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.alamat ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.alamat} onChange={e => updateField('alamat', e.target.value)} disabled={isStep2Locked} />
+          <TextArea rows={3} placeholder="Detail jalan, RW/RT..." style={{ borderRadius: 8, borderColor: errors.alamat ? '#ef4444' : '#e2e8f0', fontSize: 13, resize: 'none', boxShadow: errors.alamat ? '0 0 0 2px rgba(239,68,68,0.1)' : 'none' }} value={formData.alamat} onChange={e => updateField('alamat', e.target.value)} />
           {errors.alamat && <Text style={errorTextStyle}>{errors.alamat}</Text>}
         </div>
 
         <div style={fieldWrapper}>
           <Text style={labelStyle}>Media Sosial (Opsional)</Text>
-          <TextArea rows={2} placeholder="Contoh: https://instagram.com/akun, https://facebook.com/akun" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.social_media || ''} onChange={e => updateField('social_media', e.target.value)} disabled={isStep2Locked} />
+          <TextArea rows={2} placeholder="Contoh: https://instagram.com/akun, https://facebook.com/akun" style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13, resize: 'none' }} value={formData.social_media || ''} onChange={e => updateField('social_media', e.target.value)} />
           <Text type="secondary" style={{ fontSize: 11, marginTop: 4, display: 'block' }}>Isi dengan tautan media sosial yang relevan (pisahkan dengan koma jika lebih dari satu)</Text>
         </div>
 
@@ -1028,7 +945,6 @@ const FormPendaftaran = () => {
                 selectedLabel={selectedVillageLabel}
                 allowClear
                 showSearch
-                disabled={isStep2Locked}
                 onSearch={(val) => debounce('village', () => {
                   if (val && val.length >= 2) {
                     searchVillages(val, 1);
@@ -1073,7 +989,6 @@ const FormPendaftaran = () => {
         </Row>
       </div>
     );
-
   };
 
   // ── Step 3: Program Details ─────────────────────────────────────────────────

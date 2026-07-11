@@ -1,19 +1,15 @@
 import React from 'react';
 import { Spin } from 'antd';
-import { Outlet, Navigate, useSearchParams } from 'react-router-dom';
+import { Outlet, Navigate } from 'react-router-dom';
 import useRegistration from '../../hooks/useRegistration';
 
 /**
- * Wrapper untuk route /register.
+ * Wrapper untuk route /peserta/pendaftaran.
  * - Belum daftar: tampilkan FormPendaftaran tanpa sidebar
- * - Sudah daftar + mode=new: tampilkan FormPendaftaran untuk tambah pilar baru
- * - Sudah daftar (normal): redirect ke /peserta/dashboard
+ * - Sudah daftar: redirect ke /peserta/dashboard (tidak boleh akses form lagi)
  */
 const PendaftaranGuard = () => {
   const { loading, hasRegistration } = useRegistration();
-  const [searchParams] = useSearchParams();
-  const isAddNew = searchParams.get('mode') === 'new';
-  const hasEditId = !!searchParams.get('id');
 
   if (loading) {
     return (
@@ -23,12 +19,12 @@ const PendaftaranGuard = () => {
     );
   }
 
-  // Sudah daftar & BUKAN mode tambah baru & BUKAN sedang edit draft tertentu → redirect ke dashboard
-  if (hasRegistration && !isAddNew && !hasEditId) {
+  // Sudah daftar → redirect ke dashboard, tidak boleh akses form pendaftaran lagi
+  if (hasRegistration) {
     return <Navigate to="/peserta/dashboard" replace />;
   }
 
-  // Belum daftar / mode=new / edit draft → tampilkan form tanpa sidebar (FormPendaftaran punya header sendiri)
+  // Belum daftar → tampilkan tanpa sidebar (FormPendaftaran punya header sendiri)
   return <Outlet />;
 };
 

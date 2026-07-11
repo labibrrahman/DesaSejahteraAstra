@@ -16,8 +16,6 @@ import {
   Spin,
   message,
   Upload,
-  Collapse,
-  Divider,
 } from 'antd';
 import {
   SearchOutlined,
@@ -26,17 +24,15 @@ import {
   ExportOutlined,
   CloseOutlined,
   PlusOutlined,
-  UserOutlined,
-  FileTextOutlined,
 } from '@ant-design/icons';
 import adminService from '../../services/adminService';
 import masterService from '../../services/masterService';
 import registrationService from '../../services/registrationService';
+import RegistrationDetailModal from '../../components/RegistrationDetailModal';
 import logger from '../../lib/logger';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
-const { Panel } = Collapse;
 
 /** Mapping status dari backend */
 const STATUS_MAP = {
@@ -49,24 +45,53 @@ const STATUS_MAP = {
 };
 
 /**
- * Mapping data grouped participant dari API ke format UI.
- * Response: { userId, user, villageName, groupName, ..., programText, programs[] }
+ * Mapping data registration dari API ke format UI.
+ * findAll hanya load: user, pillar, category, assignedJuror.
+ * Relasi province/city/district/villageRegion/astraGroup TIDAK di-load di list.
  */
-const mapGroupedFromApi = (item) => ({
-  userId: item.userId,
-  user: item.user,
+const mapFromApi = (item) => ({
+  id: item.id,
   nama_desa: item.villageName || '-',
   nama_kelompok: item.groupName || '-',
+  pilar: item.pillar?.name || '-',
+  pilar_id: item.pillarId,
+  kategori: item.category?.name || '-',
+  // Region — gabungkan semua level wilayah
   wilayah: [
-    item.villageRegion?.name,
-    item.district?.name,
-    item.city?.name,
     item.province?.name,
-  ].filter(Boolean).join(' - ') || '-',
-  programText: item.programText || '-',
-  programs: item.programs || [],
-  // Raw data untuk detail & edit
-  _raw: item,
+    item.city?.name,
+    item.district?.name,
+    item.villageRegion?.name,
+  ].filter(Boolean).join(', ') || '-',
+  provinsi: item.province?.name || '-',
+  kota: item.city?.name || '-',
+  status: item.status,
+  tanggal_daftar: item.submittedAt
+    ? new Date(item.submittedAt).toLocaleDateString('id-ID')
+    : item.createdAt
+      ? new Date(item.createdAt).toLocaleDateString('id-ID')
+      : '-',
+  juri: item.assessments?.[0]?.juror?.name || item.assignedJuror?.name || '-',
+  // Detail fields (hanya tersedia saat fetch detail via findOne)
+  jenis_dsa: item.dsaType || '-',
+  phone_number: item.phoneNumber || '-',
+  nama_kontak_darurat: item.emergencyContactName || '-',
+  no_hp_kontak_darurat: item.emergencyContactPhone || '-',
+  alamat: item.address || '-',
+  grup_astra: item.astraGroupCustom || item.astraGroup?.name || '-',
+  durasi_program: item.programDuration || '-',
+  latar_belakang: item.background || '-',
+  dampak_program: item.programImpact || '-',
+  dampak_program_after: item.programImpactAfter || '-',
+  document_link: item.documentLink || '-',
+  rencana_pengembangan: item.developmentPlan || '-',
+  metode_pelaksanaan: item.implementationMethod || '-',
+  keberlanjutan_program: item.sustainabilityPlan || '-',
+  evaluasi_program: item.programEvaluation || '-',
+  social_media: item.socialMedia || '-',
+  foto: Array.isArray(item.photos) ? item.photos : [],
+  kecamatan: item.district?.name || '-',
+  desa: item.villageRegion?.name || '-',
 });
 
 const AdminPesertaList = () => {
@@ -76,35 +101,29 @@ const AdminPesertaList = () => {
   const [astraGroupOptions, setAstraGroupOptions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [statusFilter, setStatusFilter] = useState(null);
   const [pilarFilter, setPilarFilter] = useState(null);
-  const [kategoriFilter, setKategoriFilter] = useState(null);
+  const [durasiFilter, setDurasiFilter] = useState(null);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
     total: 0,
   });
-
-  // Detail modal
   const [detailModalVisible, setDetailModalVisible] = useState(false);
-  const [selectedParticipant, setSelectedParticipant] = useState(null);
+  const [selectedPeserta, setSelectedPeserta] = useState(null);
+  const [selectedPesertaRaw, setSelectedPesertaRaw] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
-  // Edit Info Peserta modal
-  const [editParticipantModalVisible, setEditParticipantModalVisible] = useState(false);
-  const [editParticipantRecord, setEditParticipantRecord] = useState(null);
-  const [editParticipantLoading, setEditParticipantLoading] = useState(false);
-  const [editParticipantSubmitting, setEditParticipantSubmitting] = useState(false);
-  const [editParticipantForm] = Form.useForm();
-
-  // Edit Program Lomba modal
-  const [editProgramModalVisible, setEditProgramModalVisible] = useState(false);
-  const [editProgramRecord, setEditProgramRecord] = useState(null);
-  const [editProgramLoading, setEditProgramLoading] = useState(false);
-  const [editProgramSubmitting, setEditProgramSubmitting] = useState(false);
-  const [editProgramForm] = Form.useForm();
+  // Edit modal
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editRecord, setEditRecord] = useState(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editSubmitting, setEditSubmitting] = useState(false);
+  const [editForm] = Form.useForm();
   const [editPhotos, setEditPhotos] = useState([]);
   const [uploadingEditPhoto, setUploadingEditPhoto] = useState(false);
 
-  // Region options & loading for Edit Participant Modal
+  // Region options & loading for Edit Modal
   const [provinceOptions, setProvinceOptions] = useState([]);
   const [cityOptions, setCityOptions] = useState([]);
   const [districtOptions, setDistrictOptions] = useState([]);
@@ -115,23 +134,23 @@ const AdminPesertaList = () => {
   const [loadingDistricts, setLoadingDistricts] = useState(false);
   const [loadingDesa, setLoadingDesa] = useState(false);
 
-  // ─── Data Fetching ──────────────────────────────────────────
-
-  /** Fetch grouped participants dari API */
-  const fetchParticipants = useCallback(async (page = 1, limit = 10) => {
+  /** Fetch registrations dari API */
+  const fetchRegistrations = useCallback(async (page = 1, limit = 10) => {
     setLoading(true);
     try {
       const params = { page, limit };
       if (searchText) params.search = searchText;
+      if (statusFilter) params.status = statusFilter;
       if (pilarFilter) params.pillar_id = pilarFilter;
-      if (kategoriFilter) params.category_id = kategoriFilter;
+      if (durasiFilter) params.program_duration = durasiFilter;
 
-      const result = await adminService.getGroupedParticipants(params);
+      const result = await adminService.getRegistrations(params);
 
+      // Handle paginated response
       const list = Array.isArray(result) ? result : result?.data || [];
       const meta = result?.meta || {};
 
-      setData(list.map(mapGroupedFromApi));
+      setData(list.map(mapFromApi));
       setPagination((prev) => ({
         ...prev,
         current: meta.page || page,
@@ -148,11 +167,11 @@ const AdminPesertaList = () => {
         message.error(backendMsg || 'Gagal memuat data peserta');
       }
 
-      logger.error('Fetch grouped participants error:', error.response?.data || error.message);
+      logger.error('Fetch registrations error:', error.response?.data || error.message);
     } finally {
       setLoading(false);
     }
-  }, [searchText, pilarFilter, kategoriFilter]);
+  }, [searchText, statusFilter, pilarFilter, durasiFilter]);
 
   /** Fetch pilar options untuk filter */
   const fetchPillars = useCallback(async () => {
@@ -236,7 +255,7 @@ const AdminPesertaList = () => {
   };
 
   const handleProvinceChange = async (provinceId) => {
-    editParticipantForm.setFieldsValue({
+    editForm.setFieldsValue({
       cityId: null,
       districtId: null,
       villageRegionId: null,
@@ -250,7 +269,7 @@ const AdminPesertaList = () => {
   };
 
   const handleCityChange = async (cityId) => {
-    editParticipantForm.setFieldsValue({
+    editForm.setFieldsValue({
       districtId: null,
       villageRegionId: null,
     });
@@ -262,7 +281,7 @@ const AdminPesertaList = () => {
   };
 
   const handleDistrictChange = async (districtId) => {
-    editParticipantForm.setFieldsValue({
+    editForm.setFieldsValue({
       villageRegionId: null,
     });
     setDesaOptions([]);
@@ -273,36 +292,55 @@ const AdminPesertaList = () => {
 
   useEffect(() => {
     fetchPillars();
+    // Fetch astra groups
     masterService.getAstraGroups().then(result => {
       setAstraGroupOptions(Array.isArray(result) ? result.map(g => ({ id: g.id, name: g.name })) : []);
     }).catch(() => {});
   }, [fetchPillars]);
 
   useEffect(() => {
-    fetchParticipants(1, pagination.pageSize);
-  }, [fetchParticipants, pagination.pageSize]);
+    fetchRegistrations(1, pagination.pageSize);
+  }, [fetchRegistrations, pagination.pageSize]);
 
-  // ─── Detail Modal ──────────────────────────────────────────
-
-  const showDetail = (record) => {
-    setSelectedParticipant(record);
+  /** Fetch detail peserta */
+  const showDetail = async (record) => {
+    setDetailLoading(true);
     setDetailModalVisible(true);
+    try {
+      const detail = await adminService.getRegistrationDetail(record.id);
+      setSelectedPeserta(mapFromApi(detail));
+      setSelectedPesertaRaw(detail);
+    } catch (error) {
+      message.error('Gagal memuat detail peserta');
+      setSelectedPeserta(record);
+      setSelectedPesertaRaw(null);
+    } finally {
+      setDetailLoading(false);
+    }
   };
 
-  // ─── Edit Info Peserta Modal ────────────────────────────────
-
-  const showEditParticipantModal = async (record) => {
-    setEditParticipantLoading(true);
-    setEditParticipantModalVisible(true);
-    setEditParticipantRecord(record);
-    const raw = record._raw;
-
+  /** Buka modal edit */
+  const showEditModal = async (record) => {
+    setEditLoading(true);
+    setEditModalVisible(true);
     try {
+      const detail = await adminService.getRegistrationDetail(record.id);
+      setEditRecord(detail);
+      const pilarId = detail.pillar?.id || detail.pillarId;
+
+      // Ensure pilar options are loaded (re-fetch if empty)
+      if (pilarOptions.length === 0) {
+        await fetchPillars();
+      }
+
+      // Load kategori based on selected pilar
+      if (pilarId) await fetchKategoriByPilar(pilarId);
+
       // Load region options
       await fetchProvinces();
-      if (raw.province?.id) await fetchCities(raw.province.id);
-      if (raw.city?.id) await fetchDistricts(raw.city.id);
-      if (raw.district?.id) await fetchVillages(raw.district.id);
+      if (detail.provinceId) await fetchCities(detail.provinceId);
+      if (detail.cityId) await fetchDistricts(detail.cityId);
+      if (detail.districtId) await fetchVillages(detail.districtId);
 
       // Ensure astra group options are loaded
       if (astraGroupOptions.length === 0) {
@@ -312,6 +350,7 @@ const AdminPesertaList = () => {
         } catch { /* ignore */ }
       }
 
+      // Use setTimeout to ensure Select options are rendered before setting values
       setTimeout(() => {
         editParticipantForm.setFieldsValue({
           villageName: raw.villageName,
@@ -328,20 +367,25 @@ const AdminPesertaList = () => {
           villageRegionId: raw.villageRegion?.id || null,
           socialMedia: raw.socialMedia || '',
         });
+        if (Array.isArray(detail.photos) && detail.photos.length > 0) {
+          setEditPhotos(detail.photos.map(p => ({ url: p.photoUrl, originalName: p.originalName, generatedName: p.generatedName })));
+        } else {
+          setEditPhotos([]);
+        }
       }, 100);
     } catch (error) {
       message.error('Gagal memuat data');
-      setEditParticipantModalVisible(false);
+      setEditModalVisible(false);
     } finally {
-      setEditParticipantLoading(false);
+      setEditLoading(false);
     }
   };
 
-  /** Submit edit info peserta */
-  const handleEditParticipantSubmit = async () => {
+  /** Submit edit */
+  const handleEditSubmit = async () => {
     try {
-      const values = await editParticipantForm.validateFields();
-      setEditParticipantSubmitting(true);
+      const values = await editForm.validateFields();
+      setEditSubmitting(true);
 
       // Cross-field validation (sama seperti FormPendaftaran Step 2)
       const crossErrors = [];
@@ -358,6 +402,8 @@ const AdminPesertaList = () => {
       }
 
       const payload = {
+        pillarId: values.pillarId,
+        categoryId: values.categoryId,
         villageName: values.villageName,
         groupName: values.groupName,
         phoneNumber: values.phoneNumber,
@@ -369,13 +415,11 @@ const AdminPesertaList = () => {
         districtId: values.districtId || null,
         villageRegionId: values.villageRegionId || null,
       };
-
       if (values.astraGroupId === 'others') {
         payload.astraGroupCustom = values.astraGroupCustom || '';
       } else if (values.astraGroupId) {
         payload.astraGroupId = values.astraGroupId;
       }
-
       if (values.socialMedia) payload.socialMedia = values.socialMedia;
 
       await adminService.updateParticipantInfo(editParticipantRecord.userId, payload);
@@ -486,21 +530,21 @@ const AdminPesertaList = () => {
       };
 
       if (editPhotos.length > 0) {
-        payload.photos = editPhotos.map(p => ({
-          url: p.url,
-          originalName: p.originalName,
-          generatedName: p.generatedName,
-        }));
+        payload.photos = editPhotos.map(p => ({ url: p.url, originalName: p.originalName, generatedName: p.generatedName }));
+      }
+      await adminService.updateRegistrationByAdmin(editRecord.id, payload);
+
+      // Update status jika berubah (endpoint terpisah)
+      if (values.status && values.status !== editRecord.status) {
+        await adminService.updateRegistrationStatus(editRecord.id, { status: values.status });
       }
 
-      await adminService.updateProgramInfo(editProgramRecord.id, payload);
-
-      message.success('Data program lomba berhasil diperbarui');
-      setEditProgramModalVisible(false);
-      editProgramForm.resetFields();
-      setEditProgramRecord(null);
+      message.success('Data berhasil diperbarui');
+      setEditModalVisible(false);
+      editForm.resetFields();
+      setEditRecord(null);
       setEditPhotos([]);
-      fetchParticipants(pagination.current, pagination.pageSize);
+      fetchRegistrations(pagination.current, pagination.pageSize);
     } catch (error) {
       const errorData = error.response?.data;
       const errorMsg = errorData?.errors && Array.isArray(errorData.errors) ? (
@@ -517,11 +561,11 @@ const AdminPesertaList = () => {
       );
       message.error(errorMsg);
     } finally {
-      setEditProgramSubmitting(false);
+      setEditSubmitting(false);
     }
   };
 
-  /** Upload foto untuk edit program */
+  /** Upload foto untuk edit */
   const handleEditPhotoUpload = async (file) => {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
@@ -549,7 +593,7 @@ const AdminPesertaList = () => {
     return false;
   };
 
-  /** Hapus foto edit program */
+  /** Hapus foto edit */
   const handleEditPhotoDelete = async (index) => {
     const photo = editPhotos[index];
     try {
@@ -561,18 +605,20 @@ const AdminPesertaList = () => {
     message.success('Foto dihapus');
   };
 
-  // ─── Table & Filter Handlers ────────────────────────────────
-
+  /** Handle perubahan halaman */
   const handleTableChange = (pag) => {
-    fetchParticipants(pag.current, pag.pageSize);
+    fetchRegistrations(pag.current, pag.pageSize);
   };
 
+  /** Reset semua filter */
   const handleReset = () => {
     setSearchText('');
+    setStatusFilter(null);
     setPilarFilter(null);
-    setKategoriFilter(null);
+    setDurasiFilter(null);
   };
 
+  /** Helper: download blob sebagai file */
   const downloadBlob = (blob, filename) => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -584,17 +630,17 @@ const AdminPesertaList = () => {
     window.URL.revokeObjectURL(url);
   };
 
-  /** Export data peserta terkelompok ke Excel */
+  /** Export data peserta ke Excel */
   const handleExport = async () => {
     try {
       const filters = {};
+      if (statusFilter) filters.status = statusFilter;
       if (pilarFilter) filters.pillar_id = pilarFilter;
-      if (kategoriFilter) filters.category_id = kategoriFilter;
       if (searchText) filters.search = searchText;
 
-      const blob = await adminService.exportGroupedParticipants(filters);
+      const blob = await adminService.exportRegistrations(filters);
       const today = new Date().toISOString().split('T')[0];
-      downloadBlob(blob, `export-peserta-grouped-${today}.xlsx`);
+      downloadBlob(blob, `export-peserta-${today}.xlsx`);
       message.success('Berhasil mengunduh file export');
     } catch (error) {
       message.error('Gagal mengexport data');
@@ -602,63 +648,85 @@ const AdminPesertaList = () => {
     }
   };
 
-  // ─── Table Columns ──────────────────────────────────────────
-
   const columns = [
     {
-      title: 'Nama Desa/DSA',
+      title: 'Nama DSA/Nama Desa',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       dataIndex: 'nama_desa',
       key: 'nama_desa',
-      onHeaderCell: () => ({ style: { whiteSpace: 'nowrap' } }),
       render: (text, record) => (
         <Button type="link" onClick={() => showDetail(record)} style={{ padding: 0 }}>
           {text}
         </Button>
       ),
     },
+    { 
+      title: 'Nama Ketua Kelompok', 
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
+      dataIndex: 'nama_kelompok', 
+      key: 'nama_kelompok' },
+    { 
+      title: 'Pilar', 
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
+      dataIndex: 'pilar', 
+      key: 'pilar' },
+    { 
+      title: 'Kategori', 
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
+      dataIndex: 'kategori', 
+      key: 'kategori' },
+    { 
+      title: 'Wilayah', 
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
+      dataIndex: 'wilayah', 
+      key: 'wilayah' },
     {
-      title: 'Nama Ketua Kelompok / PJ',
-      dataIndex: 'nama_kelompok',
-      key: 'nama_kelompok',
-      onHeaderCell: () => ({ style: { whiteSpace: 'nowrap' } }),
+      title: 'Status',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
+      dataIndex: 'status',
+      key: 'status',
+      render: (status) => {
+        let val = status;
+        val = status === 'Finalis' && 'Lolos'  
+        val = status === 'rejected' && 'Tidak Lolos'  
+        
+        return (<Tag color={STATUS_MAP[status]?.color || 'default'}>
+          {STATUS_MAP[status]?.label || status}
+        </Tag>)
+      },
     },
-    {
-      title: 'Wilayah',
-      dataIndex: 'wilayah',
-      key: 'wilayah',
-      onHeaderCell: () => ({ style: { whiteSpace: 'nowrap' } }),
-      ellipsis: true,
-    },
-    {
-      title: 'Program Lomba',
-      dataIndex: 'programText',
-      key: 'programText',
-      onHeaderCell: () => ({ style: { whiteSpace: 'nowrap' } }),
-      render: (text) => (
-        <Text style={{ fontSize: 13 }} ellipsis={{ tooltip: text }}>{text}</Text>
-      ),
-    },
-    {
-      title: 'Jumlah Program',
-      key: 'programCount',
-      onHeaderCell: () => ({ style: { whiteSpace: 'nowrap' } }),
-      width: 130,
-      align: 'center',
-      render: (_, record) => (
-        <Tag color="blue">{record.programs.length} Program</Tag>
-      ),
-    },
+    { 
+      title: 'Tanggal', 
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
+      dataIndex: 'tanggal_daftar', 
+      key: 'tanggal_daftar' },
     {
       title: 'Aksi',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
       key: 'action',
       width: 200,
-      onHeaderCell: () => ({ style: { whiteSpace: 'nowrap' } }),
       render: (_, record) => (
         <Space>
           <Button type="link" icon={<EyeOutlined />} onClick={() => showDetail(record)} style={{ padding: '0 4px' }}>
             Detail
           </Button>
-          <Button type="link" icon={<EditOutlined />} onClick={() => showEditParticipantModal(record)} style={{ padding: '0 4px' }}>
+          <Button type="link" icon={<EditOutlined />} onClick={() => showEditModal(record)} style={{ padding: '0 4px' }}>
             Edit
           </Button>
         </Space>
@@ -666,14 +734,12 @@ const AdminPesertaList = () => {
     },
   ];
 
-  // ─── Render ─────────────────────────────────────────────────
-
   return (
     <div>
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <Title level={3} style={{ margin: 0 }}>Daftar Peserta</Title>
-          <Text type="secondary">Kelola data peserta pendaftaran (terkelompok per peserta)</Text>
+          <Text type="secondary">Kelola data peserta pendaftaran</Text>
         </div>
         <Button icon={<ExportOutlined />} onClick={handleExport}>Export Data</Button>
       </div>
@@ -682,35 +748,46 @@ const AdminPesertaList = () => {
       <Card style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
           <Input
-            placeholder="Cari Nama DSA, Kelompok, User, atau Email..."
+            placeholder="Cari Nama DSA atau Nama Ketua Kelompok..."
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             allowClear
-            style={{ flex: '1 1 250px', minWidth: 200 }}
+            style={{ flex: '1 1 200px', minWidth: 180 }}
           />
           <Select
+            placeholder="Status"
+            style={{ flex: '1 1 140px', minWidth: 130 }}
+            allowClear
+            value={statusFilter}
+            onChange={(value) => setStatusFilter(value)}
+          >
+            {Object.entries(STATUS_MAP).map(([key, val]) => (
+              <Option key={key} value={key}>{val.label}</Option>
+            ))}
+          </Select>
+          <Select
             placeholder="Pilar"
-            style={{ flex: '1 1 160px', minWidth: 140 }}
+            style={{ flex: '1 1 140px', minWidth: 130 }}
             allowClear
             value={pilarFilter}
-            onChange={(value) => { setPilarFilter(value); setKategoriFilter(null); if (value) fetchKategoriByPilar(value); else setKategoriOptions([]); }}
+            onChange={(value) => setPilarFilter(value)}
           >
             {pilarOptions.map((pilar) => (
               <Option key={pilar.id} value={pilar.id}>{pilar.name}</Option>
             ))}
           </Select>
           <Select
-            placeholder="Kategori"
-            style={{ flex: '1 1 160px', minWidth: 140 }}
+            placeholder="Durasi"
+            style={{ flex: '1 1 130px', minWidth: 120 }}
             allowClear
-            value={kategoriFilter}
-            onChange={(value) => setKategoriFilter(value)}
-            disabled={!pilarFilter}
+            value={durasiFilter}
+            onChange={(value) => setDurasiFilter(value)}
           >
-            {kategoriOptions.map((cat) => (
-              <Option key={cat.id} value={cat.id}>{cat.name}</Option>
-            ))}
+            <Option value="<1 Tahun">&lt;1 Tahun</Option>
+            <Option value="1-3 Tahun">1-3 Tahun</Option>
+            <Option value="3-5 Tahun">3-5 Tahun</Option>
+            <Option value=">5 Tahun">&gt;5 Tahun</Option>
           </Select>
           <Button onClick={handleReset} style={{ flexShrink: 0 }}>Reset</Button>
         </div>
@@ -722,7 +799,7 @@ const AdminPesertaList = () => {
           <Table
             columns={columns}
             dataSource={data}
-            rowKey="userId"
+            rowKey="id"
             pagination={{
               ...pagination,
               showSizeChanger: true,
@@ -735,9 +812,8 @@ const AdminPesertaList = () => {
         </Spin>
       </Card>
 
-      {/* ─── Detail Modal (Grouped) ─────────────────────────── */}
-      <Modal
-        title={null}
+      {/* Detail Modal */}
+      <RegistrationDetailModal
         open={detailModalVisible}
         closable={false}
         onCancel={() => { setDetailModalVisible(false); setSelectedParticipant(null); }}
@@ -990,23 +1066,58 @@ const AdminPesertaList = () => {
         })()}
       </Modal>
 
-      {/* ─── Edit Info Peserta Modal ─────────────────────────── */}
+      {/* Edit Modal — admin bisa edit semua field */}
       <Modal
-        title="Edit Informasi Peserta"
-        open={editParticipantModalVisible}
-        onOk={handleEditParticipantSubmit}
-        confirmLoading={editParticipantSubmitting}
-        onCancel={() => { setEditParticipantModalVisible(false); editParticipantForm.resetFields(); setEditParticipantRecord(null); }}
+        title="Edit Data Peserta"
+        open={editModalVisible}
+        onOk={handleEditSubmit}
+        confirmLoading={editSubmitting}
+        onCancel={() => { setEditModalVisible(false); editForm.resetFields(); setEditRecord(null); setEditPhotos([]); }}
         okText="Simpan"
         cancelText="Batal"
         width={680}
       >
-        <Spin spinning={editParticipantLoading}>
-          {editParticipantRecord && (
-            <Form form={editParticipantForm} layout="vertical">
-              <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
-                Perubahan akan berlaku untuk <strong>semua program lomba</strong> yang diikuti peserta ini.
-              </Text>
+        <Spin spinning={editLoading}>
+          {editRecord && (
+            <Form form={editForm} layout="vertical">
+              {/* Status */}
+              {/* <Form.Item name="status" label="Status Pendaftaran" rules={[{ required: true, message: 'Pilih status' }]}>
+                <Select placeholder="Pilih status">
+                  <Option value="draft">Draft</Option>
+                  <Option value="waiting_screening">Menunggu Screening</Option>
+                  <Option value="being_assessed">Sedang Dinilai</Option>
+                  <Option value="assessed">Selesai Dinilai</Option>
+                  <Option value="finalist">Finalis</Option>
+                  <Option value="rejected">Ditolak</Option>
+                </Select>
+              </Form.Item> */}
+
+              {/* Pilar & Kategori */}
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item name="pillarId" label="Pilar">
+                    <Select
+                      placeholder="Pilih Pilar"
+                      allowClear
+                      showSearch
+                      optionFilterProp="label"
+                      options={pilarOptions.map(p => ({ value: p.id, label: p.name }))}
+                      onChange={(val) => { fetchKategoriByPilar(val); editForm.setFieldsValue({ categoryId: null }); }}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item name="categoryId" label="Kategori">
+                    <Select
+                      placeholder="Pilih Kategori"
+                      allowClear
+                      showSearch
+                      optionFilterProp="label"
+                      options={kategoriOptions.map(c => ({ value: c.id, label: c.name }))}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
 
               {/* Data DSA */}
               <Row gutter={16}>
@@ -1042,9 +1153,6 @@ const AdminPesertaList = () => {
                     />
                   </Form.Item>
                 </Col>
-              </Row>
-
-              <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item noStyle shouldUpdate={(prev, cur) => prev.astraGroupId !== cur.astraGroupId}>
                     {({ getFieldValue }) => getFieldValue('astraGroupId') === 'others' && (
@@ -1055,6 +1163,14 @@ const AdminPesertaList = () => {
                   </Form.Item>
                 </Col>
               </Row>
+
+              <Form.Item noStyle shouldUpdate={(prev, cur) => prev.astraGroupId !== cur.astraGroupId}>
+                {({ getFieldValue }) => getFieldValue('astraGroupId') === 'others' && (
+                  <Form.Item name="astraGroupCustom" label="Nama Binaan Lainnya">
+                    <Input placeholder="Masukkan nama Perusahaan/Yayasan Pembina lainnya" />
+                  </Form.Item>
+                )}
+              </Form.Item>
 
               <Row gutter={16}>
                 <Col span={12}>
@@ -1098,6 +1214,7 @@ const AdminPesertaList = () => {
                           </Form.Item>
                         </Col>
                       </Row>
+
                       <Row gutter={16}>
                         <Col span={12}>
                           <Form.Item name="districtId" label="Kecamatan" rules={[{ required: true, message: 'Kecamatan wajib dipilih' }]}>

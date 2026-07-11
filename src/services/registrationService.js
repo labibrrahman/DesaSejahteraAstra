@@ -1,14 +1,10 @@
 import api from '../lib/api';
 
 const registrationService = {
-  /** GET /api/registrations/my — ambil semua pendaftaran milik peserta */
+  /** GET /api/registrations/my — ambil data pendaftaran milik peserta */
   getMyRegistration: async () => {
     const { data } = await api.get('/registrations/my');
-    const result = data.data ?? data;
-    // Normalisasi: selalu return array (handle BE lama yg return single object)
-    if (Array.isArray(result)) return result;
-    if (result && result.id) return [result];
-    return [];
+    return data.data || data;
   },
 
   /** POST /api/registrations — buat draft baru */

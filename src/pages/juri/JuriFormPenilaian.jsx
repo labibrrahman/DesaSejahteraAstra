@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Form, Input, InputNumber, Button, Typography, Tag, Row, Col, message, Result, Spin, Modal } from 'antd';
-import { SaveOutlined, ArrowLeftOutlined, FileTextOutlined, BulbOutlined, ThunderboltOutlined, ToolOutlined, CheckCircleFilled, CameraOutlined, ExclamationCircleOutlined, LinkOutlined } from '@ant-design/icons';
+import { Form, Input, InputNumber, Button, Typography, Tag, Row, Col, message, Result, Spin, Modal, Space } from 'antd';
+import { SaveOutlined, ArrowLeftOutlined, FileTextOutlined, BulbOutlined, ThunderboltOutlined, ToolOutlined, CheckCircleFilled, CameraOutlined, ExclamationCircleOutlined, LinkOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import adminService from '../../services/adminService';
 
@@ -27,6 +27,7 @@ const mapFromApi = (i) => ({
   foto: Array.isArray(i.photos) ? i.photos : [],
   jenis_dsa: i.dsaType || '-', phone_number: i.phoneNumber || '-',
   nama_kontak_darurat: i.emergencyContactName || '-', no_hp_kontak_darurat: i.emergencyContactPhone || '-',
+  judul_inovasi: i.innovationTitle || i.innovation_title || '-',
 });
 
 const JuriFormPenilaian = () => {
@@ -60,18 +61,51 @@ const JuriFormPenilaian = () => {
   useEffect(() => { fetchDetail(); }, [fetchDetail]);
 
   const onValuesChange = (_, v) => {
-    const c1 = v.criteria1 || 0, c2 = v.criteria2 || 0, c3 = v.criteria3 || 0, c4 = v.criteria4 || 0;
+    const c1 = Number(v.criteria1) || 0,
+          c2 = Number(v.criteria2) || 0,
+          c3 = Number(v.criteria3) || 0,
+          c4 = Number(v.criteria4) || 0;
     const hasAny = v.criteria1 != null || v.criteria2 != null || v.criteria3 != null || v.criteria4 != null;
     setTotalScore(hasAny ? Math.round((c1 + c2 + c3 + c4) / 4) : 0);
   };
 
+  const handlePreSubmit = async () => {
+    try {
+      await form.validateFields();
+      setShowConfirmModal(true);
+    } catch (errorInfo) {
+      if (errorInfo.errorFields && errorInfo.errorFields.length > 0) {
+        form.scrollToField(errorInfo.errorFields[0].name, { behavior: 'smooth', block: 'center' });
+      }
+    }
+  };
+
   const handleSubmit = async () => {
     try {
-      const v = await form.validateFields(); setSubmitting(true);
-      await adminService.createAssessment({ registrationId: id, criteria1: v.criteria1, criteria2: v.criteria2, criteria3: v.criteria3, criteria4: v.criteria4, notes: v.notes || undefined });
-      message.success('Penilaian berhasil disubmit!'); setSubmitted(true);
-    } catch (e) { if (e.response) message.error(e.response.data?.message || 'Gagal menyimpan'); }
-    finally { setSubmitting(false); }
+      const v = await form.validateFields();
+      setSubmitting(true);
+      await adminService.createAssessment({
+        registrationId: id,
+        criteria1: Number(v.criteria1),
+        criteria2: Number(v.criteria2),
+        criteria3: Number(v.criteria3),
+        criteria4: Number(v.criteria4),
+        notes: v.notes || undefined
+      });
+      message.success('Penilaian berhasil disubmit!');
+      setSubmitted(true);
+    } catch (e) {
+      setShowConfirmModal(false);
+      if (e.response) {
+        message.error(e.response.data?.message || 'Gagal menyimpan');
+      } else if (e.errorFields) {
+        if (e.errorFields.length > 0) {
+          form.scrollToField(e.errorFields[0].name, { behavior: 'smooth', block: 'center' });
+        }
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const scoreColor = totalScore >= 90 ? '#2563eb' : totalScore >= 75 ? '#22c55e' : totalScore >= 60 ? '#f59e0b' : totalScore > 0 ? '#ef4444' : '#94a3b8';
@@ -98,11 +132,64 @@ const JuriFormPenilaian = () => {
   return (
     <div>
       {/* Header */}
-      <div style={{ background: 'linear-gradient(135deg, #1a1a2e, #16213e)', borderRadius: 16, padding: 32, marginBottom: 32, position: 'relative', overflow: 'hidden' }}>
+      <div style={{
+        background: 'linear-gradient(135deg, #1a1a2e, #16213e)',
+        borderRadius: 16,
+        padding: '24px 32px',
+        marginBottom: 32,
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
         <div style={{ position: 'absolute', right: -40, top: -40, width: 160, height: 160, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)' }} />
-        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/juri/peserta')} style={{ marginBottom: 16, background: 'rgba(255,255,255,0.1)', borderColor: 'rgba(255,255,255,0.15)', color: '#fff' }}>Kembali</Button>
-        <Title level={3} style={{ margin: 0, color: '#fff', fontWeight: 700 }}>Form Penilaian</Title>
-        <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 14, marginTop: 4, display: 'block' }}>Beri nilai untuk peserta: <Text strong style={{ color: '#fff' }}>{peserta.nama_desa}</Text></Text>
+        
+        <Row gutter={[24, 16]} align="middle">
+          <Col xs={24} md={14}>
+            <Button
+              icon={<ArrowLeftOutlined />}
+              onClick={() => navigate('/juri/peserta')}
+              style={{
+                marginBottom: 16,
+                background: 'rgba(255,255,255,0.1)',
+                borderColor: 'rgba(255,255,255,0.15)',
+                color: '#fff'
+              }}
+            >
+              Kembali
+            </Button>
+            <Title level={3} style={{ margin: 0, color: '#fff', fontWeight: 700 }}>Form Penilaian</Title>
+            <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 14, marginTop: 4, display: 'block' }}>
+              Beri nilai untuk peserta: <Text strong style={{ color: '#fff' }}>{peserta.nama_desa}</Text>
+            </Text>
+            <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 2, display: 'block' }}>
+              Kelompok: <Text strong style={{ color: '#fff' }}>{peserta.nama_kelompok}</Text>
+            </Text>
+          </Col>
+          <Col xs={24} md={10}>
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              borderRadius: 12,
+              padding: '16px 20px',
+              backdropFilter: 'blur(4px)'
+            }}>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+                <Tag style={{ border: 'none', background: 'rgba(56,189,248,0.2)', color: '#38bdf8', fontWeight: 600, margin: 0 }}>{peserta.pilar}</Tag>
+                <Tag style={{ border: 'none', background: 'rgba(45,212,191,0.2)', color: '#2dd4bf', fontWeight: 600, margin: 0 }}>{peserta.kategori}</Tag>
+              </div>
+              <div style={{ marginBottom: 8 }}>
+                <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 10, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 }}>Judul Inovasi</span>
+                <span style={{ color: '#fff', fontWeight: 600, fontSize: 14, lineHeight: 1.4, display: 'block' }}>{peserta.judul_inovasi || '-'}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>Durasi:</span>
+                <span style={{ color: '#fff', fontWeight: 600, fontSize: 12 }}>
+                  <ClockCircleOutlined style={{ marginRight: 4, color: '#38bdf8' }} />
+                  {peserta.durasi_program}
+                </span>
+              </div>
+            </div>
+          </Col>
+        </Row>
       </div>
 
       <Row gutter={[24, 24]}>
@@ -208,21 +295,17 @@ const JuriFormPenilaian = () => {
             <div style={{ padding: 20 }}>
               {[
                 { l: 'Nama DSA/Nama Desa', v: peserta.nama_desa },
-                { l: 'Jenis DSA', v: peserta.jenis_dsa },
-                { l: peserta.jenis_dsa === 'Individu' ? 'Nama Ketua Kelompok' : 'Nama Ketua Kelompok', v: peserta.nama_kelompok },
+                { l: 'Nama Ketua Kelompok', v: peserta.nama_kelompok },
                 { l: 'Nomor HP Ketua Kelompok', v: peserta.phone_number },
                 { l: 'Nama Kontak Lainnya', v: peserta.nama_kontak_darurat },
                 { l: 'Nomor Kontak Lainnya', v: peserta.no_hp_kontak_darurat },
-                { l: 'Pilar', v: peserta.pilar, tag: true },
-                { l: 'Kategori', v: peserta.kategori },
                 { l: 'Wilayah', v: peserta.wilayah },
                 { l: 'Perusahaan/Yayasan Pembina', v: peserta.grup_astra },
-                { l: 'Durasi Program', v: peserta.durasi_program },
                 ...(peserta.social_media ? [{ l: 'Media Sosial', v: peserta.social_media }] : []),
               ].map((item, idx, arr) => (
                 <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', padding: '10px 0', borderBottom: idx < arr.length - 1 ? '1px solid #f5f5f5' : 'none' }}>
-                  <Text  className='pr-5' style={{ fontSize: 13, color: '#64748b', width: '40%', flexShrink: 0 }}>{item.l}</Text>
-                  {item.tag ? <Tag color="blue" style={{ margin: 0 }}>{item.v}</Tag> : <Text strong style={{ fontSize: 13, color: '#1e293b', flex: 1 }}>{item.v}</Text>}
+                  <Text className='pr-5' style={{ fontSize: 13, color: '#64748b', width: '40%', flexShrink: 0 }}>{item.l}</Text>
+                  <Text strong style={{ fontSize: 13, color: '#1e293b', flex: 1 }}>{item.v}</Text>
                 </div>
               ))}
             </div>
@@ -240,8 +323,41 @@ const JuriFormPenilaian = () => {
                 </div>
                 <div style={{ padding: 20 }}>
                   <Text style={{ fontSize: 13, color: '#64748b', display: 'block', marginBottom: 16, lineHeight: 1.6 }}>{k.desc}</Text>
-                  <Form.Item name={k.key} rules={[{ required: true, message: 'Masukkan nilai' }, { type: 'number', min: 0, max: 100, message: 'Nilai harus bilangan bulat 0-100' }]} style={{ marginBottom: 0 }}>
-                    <InputNumber min={0} max={100} precision={0} controls={false} keyboard={true} style={{ width: '100%', height: 48, borderRadius: 10, fontSize: 16, fontWeight: 600 }} placeholder="Masukkan nilai (0-100)" addonAfter={<span style={{ color: '#94a3b8' }}>/ 100</span>} onKeyPress={(e) => { if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'Tab') e.preventDefault(); }} />
+                  <Form.Item
+                    name={k.key}
+                    rules={[
+                      { required: true, message: 'Masukkan nilai' },
+                      {
+                        type: 'number',
+                        min: 0,
+                        max: 100,
+                        transform: (value) => (value === undefined || value === null || value === '' ? undefined : Number(value)),
+                        message: 'Nilai harus bilangan bulat 0-100'
+                      }
+                    ]}
+                    style={{ marginBottom: 0 }}
+                  >
+                    <Space.Compact style={{ width: '100%' }}>
+                      <InputNumber min={0} max={100} precision={0} controls={false} keyboard={true} style={{ width: 'calc(100% - 60px)', height: 48, borderTopLeftRadius: 10, borderBottomLeftRadius: 10, borderTopRightRadius: 0, borderBottomRightRadius: 0, fontSize: 16, fontWeight: 600 }} placeholder="Masukkan nilai (0-100)" onKeyPress={(e) => { if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'Tab') e.preventDefault(); }} />
+                      <div style={{
+                        width: 60,
+                        height: 48,
+                        background: '#fafafa',
+                        border: '1px solid #d9d9d9',
+                        borderLeft: 'none',
+                        borderTopRightRadius: 10,
+                        borderBottomRightRadius: 10,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#94a3b8',
+                        fontWeight: 600,
+                        fontSize: 14,
+                        boxSizing: 'border-box'
+                      }}>
+                        / 100
+                      </div>
+                    </Space.Compact>
                   </Form.Item>
                 </div>
               </div>
@@ -277,7 +393,7 @@ const JuriFormPenilaian = () => {
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
               <Button onClick={() => navigate('/juri/peserta')} style={{ height: 44, borderRadius: 8 }}>Batal</Button>
-              <Button type="primary" icon={<SaveOutlined />} onClick={() => setShowConfirmModal(true)} disabled={totalScore === 0} style={{ height: 44, borderRadius: 8, fontWeight: 600 }}>Submit Penilaian</Button>
+              <Button type="primary" icon={<SaveOutlined />} onClick={handlePreSubmit} disabled={totalScore === 0} style={{ height: 44, borderRadius: 8, fontWeight: 600 }}>Submit Penilaian</Button>
             </div>
           </Form>
         </Col>

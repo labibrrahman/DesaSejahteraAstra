@@ -44,6 +44,7 @@ const mapFromApi = (item) => ({
   nama_kelompok: item.groupName || '-',
   pilar: item.pillar?.name || '-',
   kategori: item.category?.name || '-',
+  innovationTitle: item.innovationTitle || '-',
   wilayah: item.province?.name
     ? [item.province?.name, item.city?.name, item.district?.name, item.villageRegion?.name].filter(Boolean).join(', ')
     : '-',
@@ -152,6 +153,7 @@ const JuriPesertaList = () => {
     { title: 'Nama Ketua Kelompok', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
     { title: 'Pilar', dataIndex: 'pilar', key: 'pilar' },
     { title: 'Kategori', dataIndex: 'kategori', key: 'kategori' },
+    { title: 'Judul Inovasi', dataIndex: 'innovationTitle', key: 'innovationTitle' },
     { title: 'Wilayah', dataIndex: 'wilayah', key: 'wilayah' },
     // {
     //   title: 'Status',

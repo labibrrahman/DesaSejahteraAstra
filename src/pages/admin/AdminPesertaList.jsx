@@ -87,6 +87,7 @@ const AdminPesertaList = () => {
   // Detail modal
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState(null);
+  const [previewPhoto, setPreviewPhoto] = useState(null);
 
   // Edit Info Peserta modal
   const [editParticipantModalVisible, setEditParticipantModalVisible] = useState(false);
@@ -386,7 +387,20 @@ const AdminPesertaList = () => {
       setEditParticipantRecord(null);
       fetchParticipants(pagination.current, pagination.pageSize);
     } catch (error) {
-      message.error(error.response?.data?.message || 'Gagal memperbarui data');
+      const errorData = error.response?.data;
+      const errorMsg = errorData?.errors && Array.isArray(errorData.errors) ? (
+        <div style={{ textAlign: 'left' }}>
+          <div style={{ fontWeight: 600, marginBottom: 4 }}>Validasi gagal:</div>
+          <ul style={{ margin: 0, paddingLeft: 16 }}>
+            {errorData.errors.map((err, idx) => (
+              <li key={idx}>{err}</li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        errorData?.message || 'Gagal memperbarui data'
+      );
+      message.error(errorMsg);
     } finally {
       setEditParticipantSubmitting(false);
     }
@@ -414,6 +428,7 @@ const AdminPesertaList = () => {
         editProgramForm.setFieldsValue({
           pillarId: program.pillar?.id || undefined,
           categoryId: program.category?.id || undefined,
+          innovationTitle: program.innovationTitle || '',
           background: program.background,
           programImpact: program.programImpact,
           programImpactAfter: program.programImpactAfter || '',
@@ -459,6 +474,7 @@ const AdminPesertaList = () => {
       const payload = {
         pillarId: values.pillarId,
         categoryId: values.categoryId,
+        innovationTitle: values.innovationTitle,
         background: values.background,
         programImpact: values.programImpact,
         programImpactAfter: values.programImpactAfter || '',
@@ -487,7 +503,20 @@ const AdminPesertaList = () => {
       setEditPhotos([]);
       fetchParticipants(pagination.current, pagination.pageSize);
     } catch (error) {
-      message.error(error.response?.data?.message || 'Gagal memperbarui data program');
+      const errorData = error.response?.data;
+      const errorMsg = errorData?.errors && Array.isArray(errorData.errors) ? (
+        <div style={{ textAlign: 'left' }}>
+          <div style={{ fontWeight: 600, marginBottom: 4 }}>Validasi gagal:</div>
+          <ul style={{ margin: 0, paddingLeft: 16 }}>
+            {errorData.errors.map((err, idx) => (
+              <li key={idx}>{err}</li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        errorData?.message || 'Gagal memperbarui data program'
+      );
+      message.error(errorMsg);
     } finally {
       setEditProgramSubmitting(false);
     }
@@ -826,125 +855,136 @@ const AdminPesertaList = () => {
                     <FileTextOutlined style={{ marginRight: 6 }} /> Program Lomba ({raw.programs?.length || 0})
                   </Text>
                   {raw.programs && raw.programs.length > 0 ? (
-                    <Collapse accordion>
-                      {raw.programs.map((prog, idx) => (
-                        <Panel
-                          key={prog.id || idx}
-                          header={
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                              <Text strong>{prog.pillar?.name || 'Unknown'} - {prog.category?.name || 'Unknown'}</Text>
-                              <Tag color={STATUS_MAP[prog.status]?.color || 'default'}>
-                                {STATUS_MAP[prog.status]?.label || prog.status}
-                              </Tag>
-                            </div>
-                          }
-                          extra={
-                            <Button
-                              type="link"
-                              size="small"
-                              icon={<EditOutlined />}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDetailModalVisible(false);
-                                showEditProgramModal(prog);
-                              }}
-                            >
-                              Edit Program
-                            </Button>
-                          }
-                        >
-                          <Row gutter={[16, 12]}>
-                            <Col xs={12} sm={8}>
-                              <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Durasi Program</Text><Text strong style={{ fontSize: 13 }}>{prog.programDuration || '-'}</Text></div>
-                            </Col>
-                            <Col xs={12} sm={8}>
-                              <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Status</Text><Tag color={STATUS_MAP[prog.status]?.color || 'default'}>{STATUS_MAP[prog.status]?.label || prog.status}</Tag></div>
-                            </Col>
-                            {prog.documentLink && (
-                              <Col xs={24}>
-                                <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Link Dokumen</Text><a href={prog.documentLink} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, wordBreak: 'break-all' }}>{prog.documentLink}</a></div>
+                    <Collapse
+                      accordion
+                      items={raw.programs.map((prog, idx) => ({
+                        key: prog.id || idx,
+                        label: (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                            <Text strong>{prog.pillar?.name || 'Unknown'} - {prog.category?.name || 'Unknown'}</Text>
+                            <Tag color={STATUS_MAP[prog.status]?.color || 'default'}>
+                              {STATUS_MAP[prog.status]?.label || prog.status}
+                            </Tag>
+                          </div>
+                        ),
+                        extra: (
+                          <Button
+                            type="link"
+                            size="small"
+                            icon={<EditOutlined />}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDetailModalVisible(false);
+                              showEditProgramModal(prog);
+                            }}
+                          >
+                            Edit Program
+                          </Button>
+                        ),
+                        children: (
+                          <>
+                            <Row gutter={[16, 12]}>
+                              {prog.innovationTitle && (
+                                <Col xs={24} style={{ marginBottom: 4 }}>
+                                  <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Judul Inovasi</Text><Text strong style={{ fontSize: 13 }}>{prog.innovationTitle}</Text></div>
+                                </Col>
+                              )}
+                              <Col xs={12} sm={8}>
+                                <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Durasi Program</Text><Text strong style={{ fontSize: 13 }}>{prog.programDuration || '-'}</Text></div>
                               </Col>
+                              <Col xs={12} sm={8}>
+                                <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Status</Text><Tag color={STATUS_MAP[prog.status]?.color || 'default'}>{STATUS_MAP[prog.status]?.label || prog.status}</Tag></div>
+                              </Col>
+                              {prog.documentLink && (
+                                <Col xs={24}>
+                                  <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Link Dokumen</Text><a href={prog.documentLink} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, wordBreak: 'break-all' }}>{prog.documentLink}</a></div>
+                                </Col>
+                              )}
+                            </Row>
+
+                            {/* Deskripsi blocks */}
+                            {prog.background && (
+                              <div style={{ marginTop: 12 }}>
+                                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Latar Belakang</Text>
+                                <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #1890ff' }}>
+                                  <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{prog.background}</Text>
+                                </div>
+                              </div>
                             )}
-                          </Row>
+                            {prog.programImpact && (
+                              <div style={{ marginTop: 12 }}>
+                                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Kondisi Sebelum Program</Text>
+                                <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #52c41a' }}>
+                                  <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{prog.programImpact}</Text>
+                                </div>
+                              </div>
+                            )}
+                            {prog.programImpactAfter && (
+                              <div style={{ marginTop: 12 }}>
+                                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Kondisi Setelah Program</Text>
+                                <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #16a34a' }}>
+                                  <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{prog.programImpactAfter}</Text>
+                                </div>
+                              </div>
+                            )}
+                            {prog.developmentPlan && (
+                              <div style={{ marginTop: 12 }}>
+                                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Rencana Pengembangan</Text>
+                                <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #722ed1' }}>
+                                  <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{prog.developmentPlan}</Text>
+                                </div>
+                              </div>
+                            )}
+                            {prog.implementationMethod && (
+                              <div style={{ marginTop: 12 }}>
+                                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Metode Pelaksanaan</Text>
+                                <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #0ea5e9' }}>
+                                  <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{prog.implementationMethod}</Text>
+                                </div>
+                              </div>
+                            )}
+                            {prog.sustainabilityPlan && (
+                              <div style={{ marginTop: 12 }}>
+                                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Keberlanjutan Program</Text>
+                                <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #10b981' }}>
+                                  <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{prog.sustainabilityPlan}</Text>
+                                </div>
+                              </div>
+                            )}
+                            {prog.programEvaluation && (
+                              <div style={{ marginTop: 12 }}>
+                                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Evaluasi Program</Text>
+                                <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #f59e0b' }}>
+                                  <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{prog.programEvaluation}</Text>
+                                </div>
+                              </div>
+                            )}
 
-                          {/* Deskripsi blocks */}
-                          {prog.background && (
-                            <div style={{ marginTop: 12 }}>
-                              <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Latar Belakang</Text>
-                              <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #1890ff' }}>
-                                <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{prog.background}</Text>
+                            {/* Foto */}
+                            {Array.isArray(prog.photos) && prog.photos.length > 0 && (
+                              <div style={{ marginTop: 12 }}>
+                                <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 8 }}>Foto Dokumentasi</Text>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                  {prog.photos.map((photo, i) => (
+                                    <div
+                                      key={i}
+                                      onClick={() => setPreviewPhoto(photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`)}
+                                      style={{ width: 80, height: 80, borderRadius: 6, overflow: 'hidden', border: '1px solid #e2e8f0', cursor: 'pointer' }}
+                                    >
+                                      <img
+                                        src={photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`}
+                                        alt={photo.originalName || `Foto ${i + 1}`}
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                          )}
-                          {prog.programImpact && (
-                            <div style={{ marginTop: 12 }}>
-                              <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Kondisi Sebelum Program</Text>
-                              <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #52c41a' }}>
-                                <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{prog.programImpact}</Text>
-                              </div>
-                            </div>
-                          )}
-                          {prog.programImpactAfter && (
-                            <div style={{ marginTop: 12 }}>
-                              <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Kondisi Setelah Program</Text>
-                              <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #16a34a' }}>
-                                <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{prog.programImpactAfter}</Text>
-                              </div>
-                            </div>
-                          )}
-                          {prog.developmentPlan && (
-                            <div style={{ marginTop: 12 }}>
-                              <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Rencana Pengembangan</Text>
-                              <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #722ed1' }}>
-                                <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{prog.developmentPlan}</Text>
-                              </div>
-                            </div>
-                          )}
-                          {prog.implementationMethod && (
-                            <div style={{ marginTop: 12 }}>
-                              <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Metode Pelaksanaan</Text>
-                              <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #0ea5e9' }}>
-                                <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{prog.implementationMethod}</Text>
-                              </div>
-                            </div>
-                          )}
-                          {prog.sustainabilityPlan && (
-                            <div style={{ marginTop: 12 }}>
-                              <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Keberlanjutan Program</Text>
-                              <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #10b981' }}>
-                                <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{prog.sustainabilityPlan}</Text>
-                              </div>
-                            </div>
-                          )}
-                          {prog.programEvaluation && (
-                            <div style={{ marginTop: 12 }}>
-                              <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 6 }}>Evaluasi Program</Text>
-                              <div style={{ background: '#f8f9fa', borderRadius: 8, padding: '12px 16px', borderLeft: '3px solid #f59e0b' }}>
-                                <Text style={{ fontSize: 13, lineHeight: 1.7, color: '#333' }}>{prog.programEvaluation}</Text>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Foto */}
-                          {Array.isArray(prog.photos) && prog.photos.length > 0 && (
-                            <div style={{ marginTop: 12 }}>
-                              <Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 8 }}>Foto Dokumentasi</Text>
-                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                                {prog.photos.map((photo, i) => (
-                                  <div key={i} style={{ width: 80, height: 80, borderRadius: 6, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-                                    <img
-                                      src={photo.photoUrl?.startsWith('http') ? photo.photoUrl : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.photoUrl}`}
-                                      alt={photo.originalName || `Foto ${i + 1}`}
-                                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                    />
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </Panel>
-                      ))}
-                    </Collapse>
+                            )}
+                          </>
+                        )
+                      }))}
+                    />
                   ) : (
                     <Text type="secondary">Tidak ada program terdaftar</Text>
                   )}
@@ -1137,6 +1177,17 @@ const AdminPesertaList = () => {
                 </Col>
               </Row>
 
+              <Form.Item
+                name="innovationTitle"
+                label="Judul Inovasi"
+                rules={[
+                  { required: true, message: 'Judul inovasi wajib diisi' },
+                  { max: 255, message: 'Maksimal 255 karakter' }
+                ]}
+              >
+                <Input placeholder="Masukkan judul inovasi program..." style={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 13 }} />
+              </Form.Item>
+
               <Form.Item name="programDuration" label="Durasi Program" rules={[{ required: true, message: 'Durasi program wajib diisi' }]}>
                 <Select placeholder="Pilih durasi program..." allowClear>
                   <Option value="<1 Tahun">&lt;1 Tahun</Option>
@@ -1183,7 +1234,11 @@ const AdminPesertaList = () => {
                 <Text style={{ display: 'block', marginBottom: 8, fontWeight: 500 }}>Foto Dokumentasi (Maks. 2 foto, 5 MB per foto)</Text>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
                   {editPhotos.map((photo, index) => (
-                    <div key={index} style={{ width: 100, height: 100, borderRadius: 8, overflow: 'hidden', border: '1px solid #e2e8f0', position: 'relative' }}>
+                    <div
+                      key={index}
+                      onClick={() => setPreviewPhoto(photo.url?.startsWith('http') ? photo.url : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.url}`)}
+                      style={{ width: 100, height: 100, borderRadius: 8, overflow: 'hidden', border: '1px solid #e2e8f0', position: 'relative', cursor: 'pointer' }}
+                    >
                       <img
                         src={photo.url?.startsWith('http') ? photo.url : `${import.meta.env.VITE_API_BASE_URL_MAIN}${photo.url}`}
                         alt={photo.originalName}
@@ -1193,7 +1248,7 @@ const AdminPesertaList = () => {
                         type="text"
                         size="small"
                         icon={<CloseOutlined style={{ fontSize: 12, color: '#fff' }} />}
-                        onClick={() => handleEditPhotoDelete(index)}
+                        onClick={(e) => { e.stopPropagation(); handleEditPhotoDelete(index); }}
                         style={{ position: 'absolute', top: 4, right: 4, width: 24, height: 24, minWidth: 24, background: 'rgba(0,0,0,0.5)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       />
                     </div>
@@ -1210,6 +1265,21 @@ const AdminPesertaList = () => {
             </Form>
           )}
         </Spin>
+      </Modal>
+
+      {/* Modal Preview Foto */}
+      <Modal
+        open={!!previewPhoto}
+        onCancel={() => setPreviewPhoto(null)}
+        footer={null}
+        centered
+        width={'90vw'}
+        style={{ maxWidth: 900 }}
+        styles={{ body: { padding: 0, background: 'transparent' } }}
+      >
+        {previewPhoto && (
+          <img src={previewPhoto} alt="Preview" style={{ width: '100%', height: 'auto', maxHeight: '80vh', objectFit: 'contain', borderRadius: 8 }} />
+        )}
       </Modal>
     </div>
   );

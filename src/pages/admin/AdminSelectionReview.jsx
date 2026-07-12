@@ -266,6 +266,15 @@ const AdminSelectionReview = () => {
       render: (p) => p?.name || '-',
     },
     {
+      title: 'Judul Inovasi',
+      onHeaderCell: () => ({
+        style: { whiteSpace: 'nowrap' },
+      }),
+      dataIndex: 'innovationTitle',
+      key: 'innovationTitle',
+      render: (text) => text || '-',
+    },
+    {
       title: 'Wilayah',
       onHeaderCell: () => ({
         style: { whiteSpace: 'nowrap' },
@@ -513,6 +522,18 @@ const AdminSelectionReview = () => {
             </div>
           ) : (
             <>
+              {/* Highlight Card: Judul Inovasi, Pilar, Kategori */}
+              {detailPeserta && (
+                <div style={{ marginBottom: 16, background: '#f8fafc', border: '1px solid #e2e8f0', padding: '14px 18px', borderRadius: 10, borderLeft: '4px solid #2563eb' }}>
+                  <Text style={{ fontSize: 11, color: '#64748b', display: 'block', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 }}>Judul Inovasi</Text>
+                  <Text strong style={{ fontSize: 14, color: '#1e293b', display: 'block', marginBottom: 8, lineHeight: 1.4 }}>{detailPeserta.innovationTitle || '-'}</Text>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <Tag style={{ border: 'none', background: 'rgba(37,99,235,0.08)', color: '#2563eb', fontWeight: 600, margin: 0 }}>{detailPeserta.pillar?.name || '-'}</Tag>
+                    <Tag style={{ border: 'none', background: 'rgba(13,148,136,0.08)', color: '#0d9488', fontWeight: 600, margin: 0 }}>{detailPeserta.category?.name || '-'}</Tag>
+                  </div>
+                </div>
+              )}
+
               {/* Summary */}
               {detailPeserta && (
                 <div style={{ marginBottom: 20, padding: 16, background: '#f8fafc', borderRadius: 8, display: 'flex', justifyContent: 'space-around', textAlign: 'center' }}>

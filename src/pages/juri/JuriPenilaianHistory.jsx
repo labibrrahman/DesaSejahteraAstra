@@ -35,6 +35,7 @@ const mapFromApi = (item) => ({
   nama_kelompok: item.registration?.groupName || '-',
   pilar: item.registration?.pillar?.name || '-',
   kategori: item.registration?.category?.name || '-',
+  innovationTitle: item.registration?.innovationTitle || '-',
   kriteria1: item.criteria1 || 0,
   kriteria2: item.criteria2 || 0,
   kriteria3: item.criteria3 || 0,
@@ -128,6 +129,7 @@ const JuriPenilaianHistory = () => {
     { title: 'Nama Ketua Kelompok', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
     { title: 'Pilar', dataIndex: 'pilar', key: 'pilar' },
     { title: 'Kategori', dataIndex: 'kategori', key: 'kategori' },
+    { title: 'Judul Inovasi', dataIndex: 'innovationTitle', key: 'innovationTitle' },
     {
       title: 'Kriteria 1',
       dataIndex: 'kriteria1',
@@ -292,6 +294,10 @@ const JuriPenilaianHistory = () => {
               <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13, marginTop: 4, display: 'block' }}>
                 {selectedRecord.nama_kelompok}
               </Text>
+              <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+                <Tag style={{ border: 'none', background: 'rgba(24,144,255,0.2)', color: '#38bdf8', fontWeight: 600, margin: 0 }}>{selectedRecord.pilar}</Tag>
+                <Tag style={{ border: 'none', background: 'rgba(19,194,194,0.2)', color: '#2dd4bf', fontWeight: 600, margin: 0 }}>{selectedRecord.kategori}</Tag>
+              </div>
             </div>
 
             {/* Content */}
@@ -302,13 +308,19 @@ const JuriPenilaianHistory = () => {
                   <span style={{ marginRight: 6 }}><FileTextOutlined /></span> Informasi Penilaian
                 </Text>
                 <Row gutter={[20, 12]}>
+                  <Col xs={24}>
+                    <Text style={{ fontSize: 11, color: '#94a3b8', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                      Judul Inovasi
+                    </Text>
+                    <Text strong style={{ fontSize: 13, color: '#1e293b', display: 'block', marginBottom: 12 }}>
+                      {selectedRecord.innovationTitle || '-'}
+                    </Text>
+                  </Col>
                   {[
-                    { label: 'Pilar', value: selectedRecord.pilar },
-                    { label: 'Kategori', value: selectedRecord.kategori },
                     { label: 'Durasi Program', value: selectedRecord.durasi_program },
                     { label: 'Tanggal', value: selectedRecord.tanggal_nilai },
                   ].map((item, idx) => (
-                    <Col xs={12} sm={8} key={idx}>
+                    <Col xs={12} sm={12} key={idx}>
                       <Text style={{ fontSize: 11, color: '#94a3b8', display: 'block', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>
                         {item.label}
                       </Text>

@@ -150,7 +150,7 @@ const AdminDashboard = () => {
                 title={item.title}
                 value={item.value}
                 prefix={item.icon}
-                valueStyle={{ color: item.color }}
+                styles={{ content: { color: item.color } }}
               />
             </Card>
           </Col>

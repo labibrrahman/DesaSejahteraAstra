@@ -210,10 +210,12 @@ const AppLayout = ({ role = 'admin' }) => {
           placement="left"
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
-          width={siderWidth}
+          size={siderWidth}
           closable={false}
-          bodyStyle={{ padding: 0 }}
-          headerStyle={{ display: 'none' }}
+          styles={{
+            body: { padding: 0 },
+            header: { display: 'none' }
+          }}
         >
           {sidebarContent}
         </Drawer>

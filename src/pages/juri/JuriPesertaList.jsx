@@ -150,7 +150,7 @@ const JuriPesertaList = () => {
         </Button>
       ),
     },
-    { title: 'Nama Ketua Kelompok', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
+    { title: 'Nama Ketua Kelompok / PJ (Local Champion)', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
     { title: 'Pilar', dataIndex: 'pilar', key: 'pilar' },
     { title: 'Kategori', dataIndex: 'kategori', key: 'kategori' },
     { title: 'Judul Inovasi', dataIndex: 'innovationTitle', key: 'innovationTitle' },
@@ -193,7 +193,7 @@ const JuriPesertaList = () => {
       <Card style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
           <Input
-            placeholder="Cari Nama DSA atau Nama Peserta/Ketua Kelompok..."
+            placeholder="Cari Nama DSA, Peserta, Ketua Kelompok / Local Champion..."
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}

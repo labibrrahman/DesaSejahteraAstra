@@ -198,7 +198,7 @@ const AdminPenilaianHistory = () => {
       ),
     },
     { 
-      title: 'Nama Ketua Kelompok', 
+      title: 'Nama Ketua Kelompok / Local Champion', 
       onHeaderCell: () => ({
         style: { whiteSpace: 'nowrap' },
       }),

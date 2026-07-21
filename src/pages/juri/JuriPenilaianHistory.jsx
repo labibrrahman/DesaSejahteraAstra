@@ -126,7 +126,7 @@ const JuriPenilaianHistory = () => {
         </Button>
       ),
     },
-    { title: 'Nama Ketua Kelompok', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
+    { title: 'Nama Ketua Kelompok / Local Champion', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
     { title: 'Pilar', dataIndex: 'pilar', key: 'pilar' },
     { title: 'Kategori', dataIndex: 'kategori', key: 'kategori' },
     { title: 'Judul Inovasi', dataIndex: 'innovationTitle', key: 'innovationTitle' },
@@ -225,7 +225,7 @@ const JuriPenilaianHistory = () => {
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12}>
             <Input
-              placeholder="Cari Nama DSA atau Nama Ketua Kelompok..."
+              placeholder="Cari Nama DSA atau Nama Ketua Kelompok / Local Champion..."
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}

@@ -33,6 +33,7 @@ import adminService from '../../services/adminService';
 import masterService from '../../services/masterService';
 import registrationService from '../../services/registrationService';
 import logger from '../../lib/logger';
+import { getLabelsForDsaType, getDsaTypeFromPrograms } from '../../lib/labelHelper';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -344,13 +345,16 @@ const AdminPesertaList = () => {
       const values = await editParticipantForm.validateFields();
       setEditParticipantSubmitting(true);
 
+      const dsaType = getDsaTypeFromPrograms(editParticipantRecord?.programs);
+      const labels = getLabelsForDsaType(dsaType);
+
       // Cross-field validation (sama seperti FormPendaftaran Step 2)
       const crossErrors = [];
       if (values.emergencyContactName && values.groupName && values.emergencyContactName === values.groupName) {
-        crossErrors.push('Nama Kontak Lainnya tidak boleh sama dengan Nama Ketua Kelompok');
+        crossErrors.push(`Nama Kontak Lainnya tidak boleh sama dengan ${labels.namaKetua}`);
       }
       if (values.emergencyContactPhone && values.phoneNumber && values.emergencyContactPhone === values.phoneNumber) {
-        crossErrors.push('Nomor HP Kontak Lainnya tidak boleh sama dengan Nomor HP Ketua Kelompok');
+        crossErrors.push(`Nomor HP Kontak Lainnya tidak boleh sama dengan ${labels.nomorHpKetuaKelompok}`);
       }
       if (crossErrors.length > 0) {
         crossErrors.forEach(msg => message.error(msg));
@@ -669,6 +673,9 @@ const AdminPesertaList = () => {
 
   // ─── Render ─────────────────────────────────────────────────
 
+  const editDsaType = getDsaTypeFromPrograms(editParticipantRecord?.programs);
+  const editLabels = getLabelsForDsaType(editDsaType);
+
   return (
     <div>
       <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
@@ -748,6 +755,8 @@ const AdminPesertaList = () => {
       >
         {selectedParticipant && (() => {
           const raw = selectedParticipant._raw;
+          const dsaType = getDsaTypeFromPrograms(raw.programs);
+          const labels = getLabelsForDsaType(dsaType);
           return (
             <div>
               {/* Header */}
@@ -776,7 +785,7 @@ const AdminPesertaList = () => {
                   {raw.villageName || '-'}
                 </Title>
                 <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13, marginTop: 6, display: 'block' }}>
-                  {raw.groupName || '-'} &bull; {raw.user?.name || '-'}
+                  {labels.ketuaKelompok}: {raw.groupName || '-'} &bull; {raw.user?.name || '-'}
                 </Text>
               </div>
 
@@ -805,7 +814,7 @@ const AdminPesertaList = () => {
                       <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Email</Text><Text strong style={{ fontSize: 13 }}>{raw.user?.email || '-'}</Text></div>
                     </Col>
                     <Col xs={12} sm={8}>
-                      <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nomor HP</Text><Text strong style={{ fontSize: 13 }}>{raw.phoneNumber || '-'}</Text></div>
+                      <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>{labels.noHpKetua}</Text><Text strong style={{ fontSize: 13 }}>{raw.phoneNumber || '-'}</Text></div>
                     </Col>
                     <Col xs={12} sm={8}>
                       <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nama Kontak Lainnya</Text><Text strong style={{ fontSize: 13 }}>{raw.emergencyContactName || '-'}</Text></div>
@@ -1021,15 +1030,15 @@ const AdminPesertaList = () => {
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item name="groupName" label="Nama Ketua Kelompok" rules={[{ required: true, message: 'Nama Ketua Kelompok wajib diisi' }]}>
-                    <Input placeholder="Masukan Nama Ketua Kelompok" />
+                  <Form.Item name="groupName" label={editLabels.namaKetua} rules={[{ required: true, message: `${editLabels.namaKetua} wajib diisi` }]}>
+                    <Input placeholder={`Masukan ${editLabels.namaKetua}`} />
                   </Form.Item>
                 </Col>
               </Row>
 
               <Row gutter={16}>
                 <Col span={12}>
-                  <Form.Item name="phoneNumber" label="Nomor HP Ketua Kelompok" rules={[{ required: true, message: 'Nomor HP wajib diisi' }, { min: 8, message: 'Nomor HP minimal 8 digit' }, { pattern: /^[0-9]+$/, message: 'Nomor HP hanya boleh angka' }]}>
+                  <Form.Item name="phoneNumber" label={editLabels.nomorHpKetuaKelompok} rules={[{ required: true, message: 'Nomor HP wajib diisi' }, { min: 8, message: 'Nomor HP minimal 8 digit' }, { pattern: /^[0-9]+$/, message: 'Nomor HP hanya boleh angka' }]}>
                     <Input placeholder="Contoh: 08123456789" maxLength={15} />
                   </Form.Item>
                 </Col>

@@ -3,6 +3,7 @@ import { Form, Input, InputNumber, Button, Typography, Tag, Row, Col, message, R
 import { SaveOutlined, ArrowLeftOutlined, FileTextOutlined, BulbOutlined, ThunderboltOutlined, ToolOutlined, CheckCircleFilled, CameraOutlined, ExclamationCircleOutlined, LinkOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import adminService from '../../services/adminService';
+import { getLabelsForDsaType } from '../../lib/labelHelper';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -28,6 +29,7 @@ const mapFromApi = (i) => ({
   jenis_dsa: i.dsaType || '-', phone_number: i.phoneNumber || '-',
   nama_kontak_darurat: i.emergencyContactName || '-', no_hp_kontak_darurat: i.emergencyContactPhone || '-',
   judul_inovasi: i.innovationTitle || i.innovation_title || '-',
+  category_dsa_type: i.category?.dsaType || i.dsaType || '-',
 });
 
 const JuriFormPenilaian = () => {
@@ -293,21 +295,24 @@ const JuriFormPenilaian = () => {
               <Text strong style={{ fontSize: 14, color: '#1a1a2e' }}>Informasi Peserta</Text>
             </div>
             <div style={{ padding: 20 }}>
-              {[
-                { l: 'Nama DSA/Nama Desa', v: peserta.nama_desa },
-                { l: 'Nama Ketua Kelompok', v: peserta.nama_kelompok },
-                { l: 'Nomor HP Ketua Kelompok', v: peserta.phone_number },
-                { l: 'Nama Kontak Lainnya', v: peserta.nama_kontak_darurat },
-                { l: 'Nomor Kontak Lainnya', v: peserta.no_hp_kontak_darurat },
-                { l: 'Wilayah', v: peserta.wilayah },
-                { l: 'Perusahaan/Yayasan Pembina', v: peserta.grup_astra },
-                ...(peserta.social_media ? [{ l: 'Media Sosial', v: peserta.social_media }] : []),
-              ].map((item, idx, arr) => (
-                <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', padding: '10px 0', borderBottom: idx < arr.length - 1 ? '1px solid #f5f5f5' : 'none' }}>
-                  <Text className='pr-5' style={{ fontSize: 13, color: '#64748b', width: '40%', flexShrink: 0 }}>{item.l}</Text>
-                  <Text strong style={{ fontSize: 13, color: '#1e293b', flex: 1 }}>{item.v}</Text>
-                </div>
-              ))}
+              {(() => {
+                const labels = getLabelsForDsaType(peserta.category_dsa_type);
+                return [
+                  { l: 'Nama DSA/Nama Desa', v: peserta.nama_desa },
+                  { l: labels.namaKetua, v: peserta.nama_kelompok },
+                  { l: labels.nomorHpKetuaKelompok, v: peserta.phone_number },
+                  { l: 'Nama Kontak Lainnya', v: peserta.nama_kontak_darurat },
+                  { l: 'Nomor Kontak Lainnya', v: peserta.no_hp_kontak_darurat },
+                  { l: 'Wilayah', v: peserta.wilayah },
+                  { l: 'Perusahaan/Yayasan Pembina', v: peserta.grup_astra },
+                  ...(peserta.social_media ? [{ l: 'Media Sosial', v: peserta.social_media }] : []),
+                ].map((item, idx, arr) => (
+                  <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', padding: '10px 0', borderBottom: idx < arr.length - 1 ? '1px solid #f5f5f5' : 'none' }}>
+                    <Text className='pr-5' style={{ fontSize: 13, color: '#64748b', width: '40%', flexShrink: 0 }}>{item.l}</Text>
+                    <Text strong style={{ fontSize: 13, color: '#1e293b', flex: 1 }}>{item.v}</Text>
+                  </div>
+                ));
+              })()}
             </div>
           </div>
         </Col>

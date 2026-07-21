@@ -1286,8 +1286,8 @@ const FormPendaftaran = () => {
       <ReviewCard title="Data Peserta" icon={<MedicineBoxOutlined style={{ color: '#1890ff', fontSize: 16 }} />}>
         <Row gutter={[16, 12]}>
           <ReviewField label="Nama DSA/Nama Desa" value={formData.nama_desa} />
-          <ReviewField label={formData.jenis_dsa === 'individu' ? 'Nama Peserta' : 'Nama Ketua Kelompok'} value={formData.nama_kelompok ? formData.nama_kelompok : formData.nama_ketua ? formData.nama_ketua: ''} />
-          <ReviewField label="Nomor HP Ketua Kelompok" value={formData.phone_number} />
+          <ReviewField label={labels.namaKetua} value={formData.nama_kelompok ? formData.nama_kelompok : formData.nama_ketua ? formData.nama_ketua: ''} />
+          <ReviewField label={labels.nomorHpKetuaKelompok} value={formData.phone_number} />
           <ReviewField label="Perusahaan/Yayasan Pembina" value={grupLabel || '-'} span={24} />
           <ReviewField label="Nama Kontak Lainnya" value={formData.nama_kontak_darurat} />
           <ReviewField label="Nomor HP Kontak Lainnya" value={formData.no_hp_kontak_darurat} />

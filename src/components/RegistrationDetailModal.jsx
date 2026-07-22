@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Typography, Button, Row, Col, Modal } from 'antd';
+import { getLabelsForDsaType } from '../lib/labelHelper';
 import {
   CloseOutlined,
   TagOutlined,
@@ -36,6 +37,7 @@ const RegistrationDetailModal = ({
 
   const namaDesa = reg.villageName || reg.nama_desa || '—';
   const namaKelompok = reg.groupName || reg.nama_kelompok || '—';
+  const labels = getLabelsForDsaType(reg.category?.dsaType || reg.dsaType);
 
   const defaultFooter = [
     <Button key="close" onClick={onClose}>Tutup</Button>,
@@ -99,10 +101,7 @@ const RegistrationDetailModal = ({
               </Text>
               <Row gutter={[20, 16]}>
                 <Col xs={12} sm={8}>
-                  <FieldLabel label="Jenis DSA" value={reg.dsaType} />
-                </Col>
-                <Col xs={12} sm={8}>
-                  <FieldLabel label="Nomor HP" value={reg.phoneNumber} />
+                  <FieldLabel label="No. HP" value={reg.phoneNumber} />
                 </Col>
                 <Col xs={12} sm={8}>
                   <FieldLabel label="Nama Kontak Lainnya" value={reg.emergencyContactName} />

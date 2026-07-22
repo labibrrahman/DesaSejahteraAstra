@@ -33,6 +33,7 @@ import adminService from '../../services/adminService';
 import masterService from '../../services/masterService';
 import registrationService from '../../services/registrationService';
 import logger from '../../lib/logger';
+import { getLabelsForDsaType, getDsaTypeFromPrograms } from '../../lib/labelHelper';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -344,13 +345,16 @@ const AdminPesertaList = () => {
       const values = await editParticipantForm.validateFields();
       setEditParticipantSubmitting(true);
 
+      const dsaType = getDsaTypeFromPrograms(editParticipantRecord?.programs);
+      const labels = getLabelsForDsaType(dsaType);
+
       // Cross-field validation (sama seperti FormPendaftaran Step 2)
       const crossErrors = [];
       if (values.emergencyContactName && values.groupName && values.emergencyContactName === values.groupName) {
-        crossErrors.push('Nama Kontak Lainnya tidak boleh sama dengan Nama Ketua Kelompok');
+        crossErrors.push(`Nama Kontak Lainnya tidak boleh sama dengan ${labels.namaKetua}`);
       }
       if (values.emergencyContactPhone && values.phoneNumber && values.emergencyContactPhone === values.phoneNumber) {
-        crossErrors.push('Nomor HP Kontak Lainnya tidak boleh sama dengan Nomor HP Ketua Kelompok');
+        crossErrors.push(`Nomor HP Kontak Lainnya tidak boleh sama dengan ${labels.nomorHpKetuaKelompok}`);
       }
       if (crossErrors.length > 0) {
         crossErrors.forEach(msg => message.error(msg));
@@ -608,43 +612,61 @@ const AdminPesertaList = () => {
   const columns = [
     {
       title: 'Nama Desa/DSA',
+      width: 220,
       dataIndex: 'nama_desa',
       key: 'nama_desa',
-      onHeaderCell: () => ({ style: { whiteSpace: 'nowrap' } }),
+      onHeaderCell: () => ({ style: { whiteSpace: 'normal', wordBreak: 'break-word' } }),
+      onCell: () => ({ style: { whiteSpace: 'normal', wordBreak: 'break-word' } }),
       render: (text, record) => (
-        <Button type="link" onClick={() => showDetail(record)} style={{ padding: 0 }}>
+        <Button
+          type="link"
+          onClick={() => showDetail(record)}
+          style={{
+            padding: 0,
+            whiteSpace: 'normal',
+            height: 'auto',
+            textAlign: 'left',
+            wordBreak: 'break-word',
+          }}
+        >
           {text}
         </Button>
       ),
     },
     {
-      title: 'Nama Ketua Kelompok / PJ',
+      title: 'Ketua Kelompok/Local Champion',
+      width: 200,
       dataIndex: 'nama_kelompok',
       key: 'nama_kelompok',
-      onHeaderCell: () => ({ style: { whiteSpace: 'nowrap' } }),
+      onHeaderCell: () => ({ style: { whiteSpace: 'normal', wordBreak: 'break-word' } }),
+      onCell: () => ({ style: { whiteSpace: 'normal', wordBreak: 'break-word' } }),
     },
     {
       title: 'Wilayah',
+      width: 220,
       dataIndex: 'wilayah',
       key: 'wilayah',
-      onHeaderCell: () => ({ style: { whiteSpace: 'nowrap' } }),
-      ellipsis: true,
+      onHeaderCell: () => ({ style: { whiteSpace: 'normal', wordBreak: 'break-word' } }),
+      onCell: () => ({ style: { whiteSpace: 'normal', wordBreak: 'break-word' } }),
     },
     {
       title: 'Program Lomba',
+      width: 250,
       dataIndex: 'programText',
       key: 'programText',
-      onHeaderCell: () => ({ style: { whiteSpace: 'nowrap' } }),
+      onHeaderCell: () => ({ style: { whiteSpace: 'normal', wordBreak: 'break-word' } }),
+      onCell: () => ({ style: { whiteSpace: 'normal', wordBreak: 'break-word' } }),
       render: (text) => (
-        <Text style={{ fontSize: 13 }} ellipsis={{ tooltip: text }}>{text}</Text>
+        <Text style={{ fontSize: 13, whiteSpace: 'normal', wordBreak: 'break-word' }}>{text}</Text>
       ),
     },
     {
       title: 'Jumlah Program',
       key: 'programCount',
-      onHeaderCell: () => ({ style: { whiteSpace: 'nowrap' } }),
       width: 130,
       align: 'center',
+      onHeaderCell: () => ({ style: { whiteSpace: 'normal', wordBreak: 'break-word' } }),
+      onCell: () => ({ style: { whiteSpace: 'normal', wordBreak: 'break-word' } }),
       render: (_, record) => (
         <Tag color="blue">{record.programs.length} Program</Tag>
       ),
@@ -653,7 +675,7 @@ const AdminPesertaList = () => {
       title: 'Aksi',
       key: 'action',
       width: 200,
-      onHeaderCell: () => ({ style: { whiteSpace: 'nowrap' } }),
+      onHeaderCell: () => ({ style: { whiteSpace: 'normal', wordBreak: 'break-word' } }),
       render: (_, record) => (
         <Space>
           <Button type="link" icon={<EyeOutlined />} onClick={() => showDetail(record)} style={{ padding: '0 4px' }}>
@@ -668,6 +690,9 @@ const AdminPesertaList = () => {
   ];
 
   // ─── Render ─────────────────────────────────────────────────
+
+  const editDsaType = getDsaTypeFromPrograms(editParticipantRecord?.programs);
+  const editLabels = getLabelsForDsaType(editDsaType);
 
   return (
     <div>
@@ -731,7 +756,7 @@ const AdminPesertaList = () => {
             }}
             onChange={handleTableChange}
             size="middle"
-            scroll={{ x: 900 }}
+            scroll={{ x: 1220 }}
           />
         </Spin>
       </Card>
@@ -748,6 +773,8 @@ const AdminPesertaList = () => {
       >
         {selectedParticipant && (() => {
           const raw = selectedParticipant._raw;
+          const dsaType = getDsaTypeFromPrograms(raw.programs);
+          const labels = getLabelsForDsaType(dsaType);
           return (
             <div>
               {/* Header */}
@@ -776,7 +803,7 @@ const AdminPesertaList = () => {
                   {raw.villageName || '-'}
                 </Title>
                 <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13, marginTop: 6, display: 'block' }}>
-                  {raw.groupName || '-'} &bull; {raw.user?.name || '-'}
+                 {raw.groupName || '-'} &bull; {raw.user?.name || '-'}
                 </Text>
               </div>
 
@@ -799,13 +826,13 @@ const AdminPesertaList = () => {
                   </div>
                   <Row gutter={[20, 16]}>
                     <Col xs={12} sm={8}>
-                      <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nama User</Text><Text strong style={{ fontSize: 13 }}>{raw.user?.name || '-'}</Text></div>
+                      <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Ketua Kelompok/Local Champion</Text><Text strong style={{ fontSize: 13 }}>{raw.groupName || '-'}</Text></div>
                     </Col>
                     <Col xs={12} sm={8}>
                       <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Email</Text><Text strong style={{ fontSize: 13 }}>{raw.user?.email || '-'}</Text></div>
                     </Col>
                     <Col xs={12} sm={8}>
-                      <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nomor HP</Text><Text strong style={{ fontSize: 13 }}>{raw.phoneNumber || '-'}</Text></div>
+                      <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>No.HP</Text><Text strong style={{ fontSize: 13 }}>{raw.phoneNumber || '-'}</Text></div>
                     </Col>
                     <Col xs={12} sm={8}>
                       <div><Text style={{ fontSize: 12, color: '#8c8c8c', display: 'block', marginBottom: 4 }}>Nama Kontak Lainnya</Text><Text strong style={{ fontSize: 13 }}>{raw.emergencyContactName || '-'}</Text></div>
@@ -1015,25 +1042,25 @@ const AdminPesertaList = () => {
 
               {/* Data DSA */}
               <Row gutter={16}>
-                <Col span={12}>
+                <Col xs={24} sm={12}>
                   <Form.Item name="villageName" label="Nama DSA/Nama Desa" rules={[{ required: true, message: 'Nama DSA wajib diisi' }]}>
                     <Input placeholder="Contoh: Desa Suka Maju" />
                   </Form.Item>
                 </Col>
-                <Col span={12}>
-                  <Form.Item name="groupName" label="Nama Ketua Kelompok" rules={[{ required: true, message: 'Nama Ketua Kelompok wajib diisi' }]}>
-                    <Input placeholder="Masukan Nama Ketua Kelompok" />
+                <Col xs={24} sm={12}>
+                  <Form.Item name="groupName" label="Ketua Kelompok/Local Champion" rules={[{ required: true, message: `Nama Ketua Kelompok / Local Champion wajib diisi` }]}>
+                    <Input placeholder={`Masukan Nama Ketua Kelompok / Local Champion`} />
                   </Form.Item>
                 </Col>
               </Row>
 
               <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item name="phoneNumber" label="Nomor HP Ketua Kelompok" rules={[{ required: true, message: 'Nomor HP wajib diisi' }, { min: 8, message: 'Nomor HP minimal 8 digit' }, { pattern: /^[0-9]+$/, message: 'Nomor HP hanya boleh angka' }]}>
+                <Col xs={24} sm={12}>
+                  <Form.Item name="phoneNumber" label="No. HP" rules={[{ required: true, message: 'No. HP Ketua Kelompok / Local Champion wajib diisi' }, { min: 8, message: 'No. HP Ketua Kelompok / Local Champion minimal 8 digit' }, { pattern: /^[0-9]+$/, message: 'No. HP Ketua Kelompok / Local Champion hanya boleh angka' }]}>
                     <Input placeholder="Contoh: 08123456789" maxLength={15} />
                   </Form.Item>
                 </Col>
-                <Col span={12}>
+                <Col xs={24} sm={12}>
                   <Form.Item name="astraGroupId" label="Perusahaan/Yayasan Pembina">
                     <Select
                       placeholder="Pilih Perusahaan/Yayasan Pembina"
@@ -1050,7 +1077,7 @@ const AdminPesertaList = () => {
               </Row>
 
               <Row gutter={16}>
-                <Col span={12}>
+                <Col xs={24} sm={12}>
                   <Form.Item noStyle shouldUpdate={(prev, cur) => prev.astraGroupId !== cur.astraGroupId}>
                     {({ getFieldValue }) => getFieldValue('astraGroupId') === 'others' && (
                       <Form.Item name="astraGroupCustom" label="Nama Binaan Lainnya">
@@ -1062,12 +1089,12 @@ const AdminPesertaList = () => {
               </Row>
 
               <Row gutter={16}>
-                <Col span={12}>
+                <Col xs={24} sm={12}>
                   <Form.Item name="emergencyContactName" label="Nama Kontak Lainnya" rules={[{ required: true, message: 'Nama Kontak Lainnya wajib diisi' }, { pattern: /^[a-zA-Z\s.\-]+$/, message: 'Hanya boleh huruf, spasi, titik, dan tanda hubung' }]}>
                     <Input placeholder="Contoh: Siti Aminah" />
                   </Form.Item>
                 </Col>
-                <Col span={12}>
+                <Col xs={24} sm={12}>
                   <Form.Item name="emergencyContactPhone" label="Nomor Kontak Lainnya" rules={[{ required: true, message: 'Nomor HP Kontak Lainnya wajib diisi' }, { min: 8, message: 'Minimal 8 digit' }, { pattern: /^[0-9]+$/, message: 'Hanya boleh angka' }]}>
                     <Input placeholder="Contoh: 08123456789" maxLength={15} />
                   </Form.Item>
@@ -1088,14 +1115,14 @@ const AdminPesertaList = () => {
                     <>
                       <div style={{ marginTop: 12, marginBottom: 12, fontWeight: 600 }}>Wilayah Administratif</div>
                       <Row gutter={16}>
-                        <Col span={12}>
+                        <Col xs={24} sm={12}>
                           <Form.Item name="provinceId" label="Provinsi" rules={[{ required: true, message: 'Provinsi wajib dipilih' }]}>
                             <Select placeholder="Pilih Provinsi" allowClear showSearch optionFilterProp="children" onChange={handleProvinceChange} loading={loadingProvinces}>
                               {provinceOptions.map(p => (<Option key={p.id} value={p.id}>{p.name}</Option>))}
                             </Select>
                           </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} sm={12}>
                           <Form.Item name="cityId" label="Kabupaten / Kota" rules={[{ required: true, message: 'Kabupaten/Kota wajib dipilih' }]}>
                             <Select placeholder="Pilih Kabupaten / Kota" allowClear showSearch optionFilterProp="children" onChange={handleCityChange} loading={loadingCities} disabled={!provinceId}>
                               {cityOptions.map(c => (<Option key={c.id} value={c.id}>{c.name}</Option>))}
@@ -1104,14 +1131,14 @@ const AdminPesertaList = () => {
                         </Col>
                       </Row>
                       <Row gutter={16}>
-                        <Col span={12}>
+                        <Col xs={24} sm={12}>
                           <Form.Item name="districtId" label="Kecamatan" rules={[{ required: true, message: 'Kecamatan wajib dipilih' }]}>
                             <Select placeholder="Pilih Kecamatan" allowClear showSearch optionFilterProp="children" onChange={handleDistrictChange} loading={loadingDistricts} disabled={!cityId}>
                               {districtOptions.map(d => (<Option key={d.id} value={d.id}>{d.name}</Option>))}
                             </Select>
                           </Form.Item>
                         </Col>
-                        <Col span={12}>
+                        <Col xs={24} sm={12}>
                           <Form.Item name="villageRegionId" label="Desa / Kelurahan" rules={[{ required: true, message: 'Desa/Kelurahan wajib dipilih' }]}>
                             <Select placeholder="Pilih Desa / Kelurahan" allowClear showSearch optionFilterProp="children" loading={loadingDesa} disabled={!districtId}>
                               {desaOptions.map(v => (<Option key={v.id} value={v.id}>{v.name}</Option>))}
@@ -1152,7 +1179,7 @@ const AdminPesertaList = () => {
 
               {/* Pilar & Kategori */}
               <Row gutter={16}>
-                <Col span={12}>
+                <Col xs={24} sm={12}>
                   <Form.Item name="pillarId" label="Pilar" rules={[{ required: true, message: 'Pilar wajib dipilih' }]}>
                     <Select
                       placeholder="Pilih Pilar"
@@ -1164,7 +1191,7 @@ const AdminPesertaList = () => {
                     />
                   </Form.Item>
                 </Col>
-                <Col span={12}>
+                <Col xs={24} sm={12}>
                   <Form.Item name="categoryId" label="Kategori" rules={[{ required: true, message: 'Kategori wajib dipilih' }]}>
                     <Select
                       placeholder="Pilih Kategori"

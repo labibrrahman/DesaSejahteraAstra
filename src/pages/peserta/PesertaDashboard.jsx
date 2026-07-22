@@ -27,6 +27,7 @@ import useRegistration from '../../hooks/useRegistration';
 import astraLogo from '../../assets/images/astra-logo.png';
 import satuIndoLogo from '../../assets/images/satu-indonesia-logo.png';
 import RegistrationDetailModal from '../../components/RegistrationDetailModal';
+import { getLabelsForDsaType } from '../../lib/labelHelper';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -370,13 +371,15 @@ const PesertaDashboard = () => {
                             </div>
                           )}
                           <div style={{ marginBottom: 6 }}>
-                            <Text style={{ fontSize: 11, color: '#64748b', display: 'block', textTransform: 'uppercase' }}>Nama Desa / Kelompok</Text>
+                            <Text style={{ fontSize: 11, color: '#64748b', display: 'block', textTransform: 'uppercase' }}>Nama DSA</Text>
                             <Text strong style={{ fontSize: 13, color: '#1e293b' }}>
-                              {regItem.villageName || '—'} / {regItem.groupName || '—'}
+                              {regItem.villageName || '—'}
                             </Text>
                           </div>
                           <div>
-                            <Text style={{ fontSize: 11, color: '#64748b', display: 'block', textTransform: 'uppercase' }}>Ketua Kelompok</Text>
+                            <Text style={{ fontSize: 11, color: '#64748b', display: 'block', textTransform: 'uppercase' }}>
+                              {getLabelsForDsaType(regItem.category?.dsaType).ketuaKelompok}
+                            </Text>
                             <Text style={{ fontSize: 13, color: '#1e293b', fontWeight: 500 }}>
                               {regItem.groupName || '—'}
                             </Text>

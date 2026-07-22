@@ -23,6 +23,7 @@ import api from '../../lib/api';
 import masterService from '../../services/masterService';
 import registrationService from '../../services/registrationService';
 import logger from '../../lib/logger';
+import { getLabelsForDsaType } from '../../lib/labelHelper';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -163,6 +164,7 @@ const FormPendaftaran = () => {
   const STEPS = isAddNew ? STEPS_ADD : STEPS_ALL;
   const STEP_TITLES = isAddNew ? STEP_TITLES_ADD : STEP_TITLES_ALL;
   const STEP_SUBTITLES = isAddNew ? STEP_SUBTITLES_ADD : STEP_SUBTITLES_ALL;
+  const labels = getLabelsForDsaType(formData.jenis_dsa);
 
   // Map visible step number → actual step number (for rendering & validation)
   const mapToActualStep = (visibleStep) => {
@@ -467,7 +469,7 @@ const FormPendaftaran = () => {
         // Skip validasi jika identitas terkunci (data dari pendaftaran sebelumnya)
         if (isStep2Locked) break;
         if (!formData.nama_desa) e.nama_desa = 'Nama DSA wajib diisi';
-        if (!formData.nama_kelompok) e.nama_kelompok = 'Nama Ketua Kelompok wajib diisi';
+        if (!formData.nama_kelompok) e.nama_kelompok = `${labels.namaKetua} wajib diisi`;
         if (!formData.phone_number) {
           e.phone_number = 'Nomor HP wajib diisi';
         } else if (formData.phone_number.length < 8) {
@@ -476,7 +478,7 @@ const FormPendaftaran = () => {
         if (!formData.nama_kontak_darurat) {
           e.nama_kontak_darurat = 'Nama Kontak Lainnya wajib diisi';
         } else if (formData.nama_kontak_darurat === formData.nama_kelompok) {
-          e.nama_kontak_darurat = 'Tidak boleh sama dengan Nama Ketua Kelompok';
+          e.nama_kontak_darurat = `Tidak boleh sama dengan ${labels.namaKetua}`;
         }
         if (!formData.no_hp_kontak_darurat) {
           e.no_hp_kontak_darurat = 'Nomor Kontak Lainnya wajib diisi';
@@ -963,9 +965,9 @@ const FormPendaftaran = () => {
         <Row gutter={[24, 0]}>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={errors.nama_kelompok ? labelErrorStyle : labelStyle}>Nama Ketua Kelompok *</Text>
+              <Text style={errors.nama_kelompok ? labelErrorStyle : labelStyle}>{labels.namaKetua} *</Text>
               <Input
-                placeholder="Nama Ketua Kelompok"
+                placeholder={labels.namaKetua}
                 style={errors.nama_kelompok ? inputErrorStyle : inputStyle}
                 value={formData.nama_kelompok ? formData.nama_kelompok : formData.nama_ketua ? formData.nama_ketua : ''}
                 onChange={e => handleNameChange('nama_kelompok', e)}
@@ -976,7 +978,7 @@ const FormPendaftaran = () => {
           </Col>
           <Col xs={24} sm={12}>
             <div style={fieldWrapper}>
-              <Text style={errors.phone_number ? labelErrorStyle : labelStyle}>Nomor HP Ketua Kelompok *</Text>
+              <Text style={errors.phone_number ? labelErrorStyle : labelStyle}>{labels.nomorHpKetuaKelompok} *</Text>
               <Input placeholder="Contoh: 08123456789" style={errors.phone_number ? inputErrorStyle : inputStyle} value={formData.phone_number} onChange={handlePhoneChange} maxLength={15} inputMode="numeric" disabled={isStep2Locked} />
               {errors.phone_number && <Text style={errorTextStyle}>{errors.phone_number}</Text>}
             </div>
@@ -1284,8 +1286,8 @@ const FormPendaftaran = () => {
       <ReviewCard title="Data Peserta" icon={<MedicineBoxOutlined style={{ color: '#1890ff', fontSize: 16 }} />}>
         <Row gutter={[16, 12]}>
           <ReviewField label="Nama DSA/Nama Desa" value={formData.nama_desa} />
-          <ReviewField label={formData.jenis_dsa === 'individu' ? 'Nama Peserta' : 'Nama Ketua Kelompok'} value={formData.nama_kelompok ? formData.nama_kelompok : formData.nama_ketua ? formData.nama_ketua: ''} />
-          <ReviewField label="Nomor HP Ketua Kelompok" value={formData.phone_number} />
+          <ReviewField label={labels.namaKetua} value={formData.nama_kelompok ? formData.nama_kelompok : formData.nama_ketua ? formData.nama_ketua: ''} />
+          <ReviewField label={labels.nomorHpKetuaKelompok} value={formData.phone_number} />
           <ReviewField label="Perusahaan/Yayasan Pembina" value={grupLabel || '-'} span={24} />
           <ReviewField label="Nama Kontak Lainnya" value={formData.nama_kontak_darurat} />
           <ReviewField label="Nomor HP Kontak Lainnya" value={formData.no_hp_kontak_darurat} />
@@ -1402,7 +1404,11 @@ const FormPendaftaran = () => {
           </div>
 
           <Title level={2} style={{ color: '#002444', textAlign: 'center', marginBottom: 8, fontWeight: 700 }}>{STEP_TITLES[currentStep - 1]}</Title>
-          <Paragraph style={{ color: '#64748b', textAlign: 'center', marginBottom: 40, maxWidth: 560, fontSize: 14 }}>{STEP_SUBTITLES[currentStep - 1]}</Paragraph>
+          <Paragraph style={{ color: '#64748b', textAlign: 'center', marginBottom: 40, maxWidth: 560, fontSize: 14 }}>
+            {currentStep === 2 && formData.jenis_dsa === 'individu'
+              ? 'Lengkapi data identitas desa dan Local Champion program.'
+              : STEP_SUBTITLES[currentStep - 1]}
+          </Paragraph>
 
           {renderStepContent()}
 

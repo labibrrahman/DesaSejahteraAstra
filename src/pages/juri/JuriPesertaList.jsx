@@ -150,7 +150,7 @@ const JuriPesertaList = () => {
         </Button>
       ),
     },
-    { title: 'Nama Ketua Kelompok / PJ (Local Champion)', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
+    { title: 'Ketua Kelompok/Local Champion', dataIndex: 'nama_kelompok', key: 'nama_kelompok' },
     { title: 'Pilar', dataIndex: 'pilar', key: 'pilar' },
     { title: 'Kategori', dataIndex: 'kategori', key: 'kategori' },
     { title: 'Judul Inovasi', dataIndex: 'innovationTitle', key: 'innovationTitle' },

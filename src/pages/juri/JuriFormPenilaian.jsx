@@ -163,7 +163,7 @@ const JuriFormPenilaian = () => {
               Beri nilai untuk peserta: <Text strong style={{ color: '#fff' }}>{peserta.nama_desa}</Text>
             </Text>
             <Text style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, marginTop: 2, display: 'block' }}>
-              Kelompok: <Text strong style={{ color: '#fff' }}>{peserta.nama_kelompok}</Text>
+              Kelompok/Local Champion: <Text strong style={{ color: '#fff' }}>{peserta.nama_kelompok}</Text>
             </Text>
           </Col>
           <Col xs={24} md={10}>
@@ -299,8 +299,8 @@ const JuriFormPenilaian = () => {
                 const labels = getLabelsForDsaType(peserta.category_dsa_type);
                 return [
                   { l: 'Nama DSA/Nama Desa', v: peserta.nama_desa },
-                  { l: labels.namaKetua, v: peserta.nama_kelompok },
-                  { l: labels.nomorHpKetuaKelompok, v: peserta.phone_number },
+                  { l: 'Ketua Kelompok/Local Champion', v: peserta.nama_kelompok },
+                  { l: 'No. HP', v: peserta.phone_number },
                   { l: 'Nama Kontak Lainnya', v: peserta.nama_kontak_darurat },
                   { l: 'Nomor Kontak Lainnya', v: peserta.no_hp_kontak_darurat },
                   { l: 'Wilayah', v: peserta.wilayah },

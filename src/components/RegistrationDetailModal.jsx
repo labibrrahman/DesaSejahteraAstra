@@ -88,7 +88,7 @@ const RegistrationDetailModal = ({
               {namaDesa}
             </Title>
             <Text style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13, marginTop: 6, display: 'block' }}>
-              {labels.ketuaKelompok}: {namaKelompok}
+              {namaKelompok}
             </Text>
           </div>
 
@@ -101,10 +101,7 @@ const RegistrationDetailModal = ({
               </Text>
               <Row gutter={[20, 16]}>
                 <Col xs={12} sm={8}>
-                  <FieldLabel label="Jenis DSA" value={reg.dsaType} />
-                </Col>
-                <Col xs={12} sm={8}>
-                  <FieldLabel label={labels.nomorHpKetuaKelompok} value={reg.phoneNumber} />
+                  <FieldLabel label="No. HP" value={reg.phoneNumber} />
                 </Col>
                 <Col xs={12} sm={8}>
                   <FieldLabel label="Nama Kontak Lainnya" value={reg.emergencyContactName} />

@@ -371,9 +371,9 @@ const PesertaDashboard = () => {
                             </div>
                           )}
                           <div style={{ marginBottom: 6 }}>
-                            <Text style={{ fontSize: 11, color: '#64748b', display: 'block', textTransform: 'uppercase' }}>Nama Desa / Kelompok</Text>
+                            <Text style={{ fontSize: 11, color: '#64748b', display: 'block', textTransform: 'uppercase' }}>Nama DSA</Text>
                             <Text strong style={{ fontSize: 13, color: '#1e293b' }}>
-                              {regItem.villageName || '—'} / {regItem.groupName || '—'}
+                              {regItem.villageName || '—'}
                             </Text>
                           </div>
                           <div>

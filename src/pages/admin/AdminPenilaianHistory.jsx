@@ -28,6 +28,7 @@ import masterService from '../../services/masterService';
 import logger from '../../lib/logger';
 
 const { Title, Text, Paragraph } = Typography;
+const { Option } = Select;
 
 /**
  * Mapping data assessment dari API ke format UI.
@@ -186,51 +187,88 @@ const AdminPenilaianHistory = () => {
   const columns = [
     {
       title: 'Nama DSA/Nama Desa',
+      width: 250,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
+      }),
+      onCell: () => ({
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       dataIndex: 'nama_desa',
       key: 'nama_desa',
       render: (text, record) => (
-        <Button type="link" onClick={() => showDetail(record)} style={{ padding: 0 }}>
+        <Button
+          type="link"
+          onClick={() => showDetail(record)}
+          style={{
+            padding: 0,
+            whiteSpace: 'normal',
+            height: 'auto',
+            textAlign: 'left',
+            wordBreak: 'break-word',
+          }}
+        >
           {text}
         </Button>
       ),
     },
     { 
-      title: 'Nama Ketua Kelompok / Local Champion', 
+      title: 'Ketua Kelompok/Local Champion', 
+      width: 200,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
+      }),
+      onCell: () => ({
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       dataIndex: 'nama_kelompok', 
-      key: 'nama_kelompok' },
+      key: 'nama_kelompok'
+    },
     { 
       title: 'Pilar', 
+      width: 180,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
+      }),
+      onCell: () => ({
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       dataIndex: 'pilar', 
-      key: 'pilar' },
+      key: 'pilar'
+    },
     { 
       title: 'Kategori', 
+      width: 180,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
+      }),
+      onCell: () => ({
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       dataIndex: 'kategori', 
-      key: 'kategori' },
+      key: 'kategori'
+    },
     {
       title: 'Juri',
+      width: 150,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
+      }),
+      onCell: () => ({
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       dataIndex: 'juri',
       key: 'juri',
-      render: (juri) => <Tag color="blue">{juri}</Tag>,
+      render: (juri) => <Tag color="blue" style={{ whiteSpace: 'normal', height: 'auto' }}>{juri}</Tag>,
     },
     {
       title: 'Kriteria 1',
+      width: 110,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
+      }),
+      onCell: () => ({
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       dataIndex: 'kriteria1',
       key: 'kriteria1',
@@ -240,8 +278,12 @@ const AdminPenilaianHistory = () => {
     },
     {
       title: 'Kriteria 2',
+      width: 110,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
+      }),
+      onCell: () => ({
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       dataIndex: 'kriteria2',
       key: 'kriteria2',
@@ -251,8 +293,12 @@ const AdminPenilaianHistory = () => {
     },
     {
       title: 'Kriteria 3',
+      width: 110,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
+      }),
+      onCell: () => ({
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       dataIndex: 'kriteria3',
       key: 'kriteria3',
@@ -262,8 +308,12 @@ const AdminPenilaianHistory = () => {
     },
     {
       title: 'Kriteria 4',
+      width: 110,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
+      }),
+      onCell: () => ({
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       dataIndex: 'kriteria4',
       key: 'kriteria4',
@@ -273,8 +323,12 @@ const AdminPenilaianHistory = () => {
     },
     {
       title: 'Total',
+      width: 130,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
+      }),
+      onCell: () => ({
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       dataIndex: 'total',
       key: 'total',
@@ -288,16 +342,21 @@ const AdminPenilaianHistory = () => {
     },
     { 
       title: 'Tanggal', 
+      width: 120,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
+      }),
+      onCell: () => ({
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       dataIndex: 'tanggal_nilai', 
       key: 'tanggal_nilai' 
     },
     {
       title: 'Aksi',
+      width: 110,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       key: 'action',
       render: (_, record) => (
@@ -394,7 +453,7 @@ const AdminPenilaianHistory = () => {
             }}
             onChange={handleTableChange}
             size="middle"
-            scroll={{ x: 1200 }}
+            scroll={{ x: 1760 }}
           />
         </Spin>
       </Card>

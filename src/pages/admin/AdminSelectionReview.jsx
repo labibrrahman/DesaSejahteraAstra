@@ -245,21 +245,40 @@ const AdminSelectionReview = () => {
   const columns = [
     {
       title: 'Nama DSA/Nama Desa',
+      width: 250,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
+      }),
+      onCell: () => ({
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       dataIndex: 'namaDsa',
       key: 'namaDsa',
       render: (text, record) => (
-        <Button type="link" onClick={() => showRegDetail(record)} style={{ padding: 0, fontWeight: 600 }}>
+        <Button
+          type="link"
+          onClick={() => showRegDetail(record)}
+          style={{
+            padding: 0,
+            fontWeight: 600,
+            whiteSpace: 'normal',
+            height: 'auto',
+            textAlign: 'left',
+            wordBreak: 'break-word',
+          }}
+        >
           {text}
         </Button>
       ),
     },
     {
       title: 'Pilar',
+      width: 180,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
+      }),
+      onCell: () => ({
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       dataIndex: 'pillar',
       key: 'pillar',
@@ -267,8 +286,12 @@ const AdminSelectionReview = () => {
     },
     {
       title: 'Judul Inovasi',
+      width: 250,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
+      }),
+      onCell: () => ({
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       dataIndex: 'innovationTitle',
       key: 'innovationTitle',
@@ -276,19 +299,27 @@ const AdminSelectionReview = () => {
     },
     {
       title: 'Wilayah',
+      width: 220,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
+      }),
+      onCell: () => ({
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       key: 'wilayah',
       render: (_, r) => {
         const w = [r.province?.name, r.city?.name, r.district?.name].filter(Boolean).join(', ');
-        return <Text style={{ fontSize: 12 }}>{w || '-'}</Text>;
+        return <Text style={{ fontSize: 12, whiteSpace: 'normal', wordBreak: 'break-word' }}>{w || '-'}</Text>;
       },
     },
     {
       title: 'Jumlah Juri',
+      width: 120,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
+      }),
+      onCell: () => ({
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       dataIndex: 'jurorCount',
       key: 'jurorCount',
@@ -297,8 +328,12 @@ const AdminSelectionReview = () => {
     },
     {
       title: 'Rata-rata',
+      width: 120,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
+      }),
+      onCell: () => ({
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       dataIndex: 'averageScore',
       key: 'averageScore',
@@ -316,8 +351,12 @@ const AdminSelectionReview = () => {
     },
     {
       title: 'Status',
+      width: 120,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
+      }),
+      onCell: () => ({
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       dataIndex: 'statusLabel',
       key: 'statusLabel',
@@ -328,8 +367,12 @@ const AdminSelectionReview = () => {
     },
     {
       title: 'Status Email',
+      width: 130,
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
+      }),
+      onCell: () => ({
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       key: 'emailStatus',
       align: 'center',
@@ -349,7 +392,7 @@ const AdminSelectionReview = () => {
     {
       title: 'Aksi',
       onHeaderCell: () => ({
-        style: { whiteSpace: 'nowrap' },
+        style: { whiteSpace: 'normal', wordBreak: 'break-word' },
       }),
       key: 'action',
       width: 140,
@@ -410,7 +453,7 @@ const AdminSelectionReview = () => {
           { label: 'Tidak Lolos', value: summary.tidakLolosCount, icon: <CloseCircleOutlined />, color: '#ef4444', bg: '#fef2f2' },
         ].map((item, idx) => (
           <Col xs={12} sm={6} key={idx}>
-            <Card style={{ borderRadius: 12, border: '1px solid #e2e8f0' }} bodyStyle={{ padding: 20 }}>
+            <Card style={{ borderRadius: 12, border: '1px solid #e2e8f0' }} styles={{ body: { padding: 20 } }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 44, height: 44, borderRadius: 10, background: item.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: item.color, fontSize: 20 }}>
                   {item.icon}
@@ -495,7 +538,7 @@ const AdminSelectionReview = () => {
               showTotal: (total) => `Total ${total} data`,
               onChange: (page, limit) => fetchData(page, limit),
             }}
-            scroll={{ x: 900 }}
+            scroll={{ x: 1530 }}
           />
         </Spin>
       </Card>

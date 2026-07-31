@@ -7,6 +7,7 @@ import {
   Button,
   Spin,
   Tag,
+  message,
 } from 'antd';
 import {
   FileTextOutlined,
@@ -68,6 +69,7 @@ const PesertaDashboard = () => {
   const [selectedReg, setSelectedReg] = useState(null);
   const [timelineData, setTimelineData] = useState([]);
   const [announcementDate, setAnnouncementDate] = useState(null);
+  const [submissionUrl, setSubmissionUrl] = useState('');
 
   const [allCategories, setAllCategories] = useState([]);
   const [canAddMore, setCanAddMore] = useState(false);
@@ -135,6 +137,10 @@ const PesertaDashboard = () => {
         const sadSetting = settings.find(s => s.key === 'selection_announcement_date');
         if (sadSetting?.value) {
           setAnnouncementDate(sadSetting.value);
+        }
+        const suSetting = settings.find(s => s.key === 'finalist_submission_url');
+        if (suSetting?.value) {
+          setSubmissionUrl(suSetting.value);
         }
       }).catch(() => {});
     });
@@ -433,7 +439,13 @@ const PesertaDashboard = () => {
                     height: 40,
                     boxShadow: '0 4px 12px rgba(34,197,94,0.3)',
                   }}
-                  onClick={() => window.open('https://forms.gle/dsa-submission-demo', '_blank')}
+                  onClick={() => {
+                    if (!submissionUrl) {
+                      message.warning('Link pengumpulan berkas belum tersedia. Silakan hubungi admin.');
+                      return;
+                    }
+                    window.open(submissionUrl, '_blank', 'noopener,noreferrer');
+                  }}
                 >
                   Upload Berkas
                 </Button>

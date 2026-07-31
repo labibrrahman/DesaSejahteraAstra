@@ -21,6 +21,11 @@ import {
   ReadOutlined,
   ShopOutlined,
   MessageOutlined,
+  TrophyOutlined,
+  FilePptOutlined,
+  VideoCameraOutlined,
+  LinkOutlined,
+  SendOutlined,
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import useRegistration from '../../hooks/useRegistration';
@@ -69,20 +74,20 @@ const PesertaDashboard = () => {
 
   // Fetch all pillars & categories on mount
   React.useEffect(() => {
-    if (hasRegistration) {
-      import('../../services/masterService').then(({ default: masterService }) => {
-        masterService.getPillars().then(async (pillarsData) => {
-          const cats = [];
-          for (const p of pillarsData) {
-            try {
-              const c = await masterService.getCategories(p.id);
-              if (Array.isArray(c)) cats.push(...c);
-            } catch { /* ignore */ }
-          }
-          setAllCategories(cats);
-        }).catch(() => {});
-      });
-    }
+    if (!hasRegistration) return;
+
+    import('../../services/masterService').then(({ default: masterService }) => {
+      masterService.getPillars().then(async (pillarsData) => {
+        const cats = [];
+        for (const p of pillarsData) {
+          try {
+            const c = await masterService.getCategories(p.id);
+            if (Array.isArray(c)) cats.push(...c);
+          } catch { /* ignore */ }
+        }
+        setAllCategories(cats);
+      }).catch(() => {});
+    });
   }, [hasRegistration]);
 
   // Check if user can add more registrations
@@ -292,6 +297,151 @@ const PesertaDashboard = () => {
 
       {/* Main Content */}
       <div style={{ padding: '24px' }}>
+        {/* Announcement Cards for assessed registrations */}
+        {processedRegistrations.filter(r => r.status === 'assessed' || r.status === 'finalist').map(regItem => (
+          <div
+            key={`ann-${regItem.id}`}
+            style={{
+              background: 'linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f0f9ff 100%)',
+              border: '1px solid #86efac',
+              borderRadius: 16,
+              padding: '24px 28px',
+              marginBottom: 24,
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Decorative circles */}
+            <div style={{ position: 'absolute', right: -30, top: -30, width: 120, height: 120, borderRadius: '50%', background: 'rgba(34,197,94,0.08)' }} />
+            <div style={{ position: 'absolute', right: 40, bottom: -40, width: 100, height: 100, borderRadius: '50%', background: 'rgba(34,197,94,0.05)' }} />
+
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              {/* Header */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                <div style={{
+                  width: 48, height: 48, borderRadius: 12,
+                  background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(34,197,94,0.3)',
+                }}>
+                  <TrophyOutlined style={{ color: '#fff', fontSize: 24 }} />
+                </div>
+                <div>
+                  <Title level={4} style={{ margin: 0, color: '#166534', fontWeight: 700, fontSize: 18 }}>
+                    🎉 Selamat! {regItem.villageName} Telah Lolos Seleksi
+                  </Title>
+                  <Text style={{ color: '#15803d', fontSize: 13 }}>
+                    Pilar {regItem.pillar?.name} — Kategori {regItem.category?.name}
+                  </Text>
+                </div>
+              </div>
+
+              {/* Message */}
+              <div style={{
+                background: '#fff',
+                borderRadius: 12,
+                padding: '16px 20px',
+                marginBottom: 16,
+                border: '1px solid #bbf7d0',
+              }}>
+                <Text style={{ fontSize: 14, color: '#1e293b', lineHeight: 1.8, display: 'block' }}>
+                  Dengan bangga kami informasikan bahwa <strong>{regItem.villageName}</strong> dengan program
+                  "<strong>{regItem.innovationTitle}</strong>" telah berhasil lolos ke tahap selanjutnya
+                  dalam Apresiasi Desa Sejahtera Astra {new Date().getFullYear()}.
+                </Text>
+                <Text style={{ fontSize: 14, color: '#1e293b', lineHeight: 1.8, display: 'block', marginTop: 12 }}>
+                  Mohon untuk segera mengumpulkan bahan presentasi berikut sebelum batas waktu yang ditentukan:
+                </Text>
+              </div>
+
+              {/* Submission Requirements */}
+              <Row gutter={[16, 12]} style={{ marginBottom: 16 }}>
+                <Col xs={24} sm={12}>
+                  <div style={{
+                    background: '#fff',
+                    borderRadius: 10,
+                    padding: '14px 16px',
+                    border: '1px solid #e2e8f0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                  }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: 8,
+                      background: '#eff6ff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <FilePptOutlined style={{ color: '#2563eb', fontSize: 20 }} />
+                    </div>
+                    <div>
+                      <Text strong style={{ fontSize: 13, color: '#1e293b', display: 'block' }}>File Presentasi (PPT/PDF)</Text>
+                      <Text style={{ fontSize: 11, color: '#64748b' }}>Maks. 50MB</Text>
+                    </div>
+                  </div>
+                </Col>
+                <Col xs={24} sm={12}>
+                  <div style={{
+                    background: '#fff',
+                    borderRadius: 10,
+                    padding: '14px 16px',
+                    border: '1px solid #e2e8f0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                  }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: 8,
+                      background: '#fef2f2',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <VideoCameraOutlined style={{ color: '#ef4444', fontSize: 20 }} />
+                    </div>
+                    <div>
+                      <Text strong style={{ fontSize: 13, color: '#1e293b', display: 'block' }}>Video Presentasi</Text>
+                      <Text style={{ fontSize: 11, color: '#64748b' }}>Link YouTube/Google Drive</Text>
+                    </div>
+                  </div>
+                </Col>
+              </Row>
+
+              {/* Deadline & Upload Button */}
+              <div style={{
+                background: 'linear-gradient(135deg, #fffbeb, #fef3c7)',
+                borderRadius: 10,
+                padding: '14px 18px',
+                border: '1px solid #fde68a',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 12,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <ClockCircleOutlined style={{ color: '#d97706', fontSize: 16 }} />
+                  <Text style={{ fontSize: 13, color: '#92400e', fontWeight: 600 }}>
+                    Batas pengumpulan: 30 Agustus 2026, pukul 23:59 WIB
+                  </Text>
+                </div>
+                <Button
+                  type="primary"
+                  icon={<SendOutlined />}
+                  style={{
+                    background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                    border: 'none',
+                    borderRadius: 8,
+                    fontWeight: 600,
+                    height: 40,
+                    boxShadow: '0 4px 12px rgba(34,197,94,0.3)',
+                  }}
+                  onClick={() => window.open('https://forms.gle/dsa-submission-demo', '_blank')}
+                >
+                  Upload Berkas
+                </Button>
+              </div>
+            </div>
+          </div>
+        ))}
+
         <Row gutter={[24, 24]}>
           {/* Left Column: Pendaftaran Saya */}
           <Col xs={24} lg={allRejected ? 24 : 16} xl={allRejected ? 24 : 17}>

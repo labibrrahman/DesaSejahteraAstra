@@ -22,11 +22,9 @@ const useAuthStore = create((set, get) => ({
       const tokens = await authService.login(credentials);
       const { access_token, refresh_token } = tokens;
 
-      // Simpan token ke localStorage
       localStorage.setItem('access_token', access_token);
       localStorage.setItem('refresh_token', refresh_token);
 
-      // Ambil profile user setelah login
       const user = await authService.getProfile();
       localStorage.setItem('userRole', user.role);
 
@@ -53,7 +51,6 @@ const useAuthStore = create((set, get) => ({
 
   /**
    * Login peserta via Google OAuth redirect
-   * Tidak ada API call — langsung redirect ke backend
    */
   loginWithGoogle: () => {
     authService.redirectToGoogle();
@@ -61,7 +58,6 @@ const useAuthStore = create((set, get) => ({
 
   /**
    * Handle callback dari Google OAuth
-   * Dipanggil di halaman /auth/callback setelah redirect dari backend
    */
   handleGoogleCallback: async (accessToken, refreshToken) => {
     set({ loading: true, error: null });

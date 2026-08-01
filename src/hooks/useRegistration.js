@@ -15,13 +15,11 @@ const useRegistration = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Fetch kedua endpoint secara paralel
         const [regRes, dashRes] = await Promise.allSettled([
           api.get('/registrations/my'),
           api.get('/dashboard/peserta'),
         ]);
 
-        // Parse registration data — selalu array
         if (regRes.status === 'fulfilled') {
           const raw = regRes.value?.data?.data ?? regRes.value?.data;
           const list = Array.isArray(raw)
@@ -32,7 +30,6 @@ const useRegistration = () => {
           setRegistrations(list);
         }
 
-        // Parse dashboard data (steps, status_label, support, registrations)
         if (dashRes.status === 'fulfilled') {
           const dashData = dashRes.value?.data?.data ?? dashRes.value?.data;
           if (dashData) {
@@ -50,7 +47,6 @@ const useRegistration = () => {
 
   return {
     registrations,
-    // Backward-compat alias: registrasi pertama (untuk komponen lama)
     registration: registrations[0] ?? null,
     dashboardData,
     loading,

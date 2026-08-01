@@ -48,13 +48,6 @@ const Login = ({ adminMode = false }) => {
         padding: '32px 24px 60px', textAlign: 'center', position: 'relative',
         flex: '0 0 auto',
       }}>
-        {/* <div style={{
-          width: 56, height: 56, borderRadius: 12, background: 'rgba(255,255,255,0.15)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          margin: '0 auto 16px', border: '1px solid rgba(255,255,255,0.2)',
-        }}>
-          <img src={astraLogo} alt="Logo" style={{ width: 32, height: 32, objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
-        </div> */}
         <Title level={2} style={{ color: '#fff', fontWeight: 700, fontSize: 24, marginBottom: 8 }}>{title}</Title>
         <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13, lineHeight: 1.6 }}>{subtitle}</Text>
       </div>
@@ -67,7 +60,6 @@ const Login = ({ adminMode = false }) => {
         boxShadow: '0 -4px 20px rgba(0,0,0,0.08)',
         flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
       }}>
-        {/* <div style={{ width: 40, height: 4, borderRadius: 2, background: '#e2e8f0', margin: '0 auto 20px' }} /> */}
         <div style={{ maxWidth: 380, margin: '0 auto', width: '100%' }}>
           <Title level={3} style={{ margin: '0 0 8px', fontWeight: 700, color: '#1e293b', textAlign: 'center', fontSize: 20 }}>{title}</Title>
           <Text type="secondary" style={{ display: 'block', marginBottom: 28, fontSize: 13, textAlign: 'center' }}>{subtitle}</Text>
@@ -212,7 +204,6 @@ const Login = ({ adminMode = false }) => {
         <DesktopBranding
           title="Apresiasi Desa Sejahtera Astra"
           subtitle={BRAND_SUBTITLE}
-          // stats={[{ num: '900+', label: 'Desa' }, { num: '4.5M', label: 'Manfaat' }, { num: '34', label: 'Provinsi' }]}
         />
         <DesktopFormPanel title="Masuk sebagai Peserta" subtitle="Gunakan akun Google yang terdaftar untuk mengakses dashboard peserta.">
           <Button type="default" icon={<GoogleOutlined style={{ color: '#4285f4' }} />} size="large" block onClick={loginWithGoogle} loading={loading}

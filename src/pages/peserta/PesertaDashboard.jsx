@@ -15,7 +15,6 @@ import {
   CheckCircleFilled,
   SearchOutlined,
   FormOutlined,
-  ClockCircleOutlined,
   EnvironmentOutlined,
   EditOutlined,
   PlusOutlined,
@@ -404,74 +403,8 @@ const PesertaDashboard = () => {
                   </div>
                 )}
 
-                {/* Submission Requirements */}
-                <Row gutter={[16, 12]} style={{ marginBottom: 16 }}>
-                  <Col xs={24} sm={12}>
-                    <div style={{
-                      background: '#fff',
-                      borderRadius: 10,
-                      padding: '14px 16px',
-                      border: '1px solid #e2e8f0',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                    }}>
-                      <div style={{
-                        width: 40, height: 40, borderRadius: 8,
-                        background: '#eff6ff',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      }}>
-                        <FilePptOutlined style={{ color: '#2563eb', fontSize: 20 }} />
-                      </div>
-                      <div>
-                        <Text strong style={{ fontSize: 13, color: '#1e293b', display: 'block' }}>File Presentasi (PPT/PDF)</Text>
-                        <Text style={{ fontSize: 11, color: '#64748b' }}>Maks. 50MB</Text>
-                      </div>
-                    </div>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <div style={{
-                      background: '#fff',
-                      borderRadius: 10,
-                      padding: '14px 16px',
-                      border: '1px solid #e2e8f0',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                    }}>
-                      <div style={{
-                        width: 40, height: 40, borderRadius: 8,
-                        background: '#fef2f2',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      }}>
-                        <VideoCameraOutlined style={{ color: '#ef4444', fontSize: 20 }} />
-                      </div>
-                      <div>
-                        <Text strong style={{ fontSize: 13, color: '#1e293b', display: 'block' }}>Video Presentasi</Text>
-                        <Text style={{ fontSize: 11, color: '#64748b' }}>Link YouTube/Google Drive</Text>
-                      </div>
-                    </div>
-                  </Col>
-                </Row>
-
-                {/* Deadline & Upload Button */}
-                <div style={{
-                  background: 'linear-gradient(135deg, #fffbeb, #fef3c7)',
-                  borderRadius: 10,
-                  padding: '14px 18px',
-                  border: '1px solid #fde68a',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: 12,
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <ClockCircleOutlined style={{ color: '#d97706', fontSize: 16 }} />
-                    <Text style={{ fontSize: 13, color: '#92400e', fontWeight: 600 }}>
-                      Batas pengumpulan: 30 Agustus 2026, pukul 23:59 WIB
-                    </Text>
-                  </div>
+                {/* Upload Button */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                   <Button
                     type="primary"
                     icon={<SendOutlined />}

@@ -65,6 +65,7 @@ const STATUS_TAGS = {
 const PesertaDashboard = () => {
   const navigate = useNavigate();
   const { registrations, dashboardData, loading, hasRegistration } = useRegistration();
+
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedReg, setSelectedReg] = useState(null);
   const [timelineData, setTimelineData] = useState([]);
@@ -176,9 +177,9 @@ const PesertaDashboard = () => {
   // Sembunyikan timeline jika semua pendaftaran rejected
   const allRejected = processedRegistrations.length > 0 && processedRegistrations.every(r => r.status === 'rejected');
 
-  // Registrasi yang lolos/assessed untuk pengumuman
+  // Registrasi yang lolos untuk pengumuman (hanya finalist)
   const announcedRegistrations = React.useMemo(() =>
-    processedRegistrations.filter(r => r.status === 'assessed' || r.status === 'finalist'),
+    processedRegistrations.filter(r => r.status === 'finalist'),
     [processedRegistrations]
   );
 
@@ -309,8 +310,8 @@ const PesertaDashboard = () => {
 
       {/* Main Content */}
       <div style={{ padding: '24px' }}>
-        {/* Announcement Card — single card for all finalist/assessed registrations */}
-        {announcedRegistrations.length > 0 && (() => {
+        {/* Announcement Card — single card for all finalist registrations (only after announcement date) */}
+        {isAnnouncementPassed && announcedRegistrations.length > 0 && (() => {
           const villageName = announcedRegistrations[0].villageName;
           const isMultiple = announcedRegistrations.length > 1;
           return (
@@ -371,12 +372,11 @@ const PesertaDashboard = () => {
                     ))} telah berhasil lolos ke tahap selanjutnya
                     dalam Apresiasi Desa Sejahtera Astra {new Date().getFullYear()}.
                   </Text>
-                  <Text style={{ fontSize: 14, color: '#1e293b', lineHeight: 1.8, display: 'block', marginTop: 12 }}>
-                    {isMultiple
-                      ? 'Berikut informasi masing-masing program yang lolos:'
-                      : 'Mohon untuk segera mengumpulkan bahan presentasi berikut sebelum batas waktu yang ditentukan:'
-                    }
-                  </Text>
+                  {isMultiple && (
+                    <Text style={{ fontSize: 14, color: '#1e293b', lineHeight: 1.8, display: 'block', marginTop: 12 }}>
+                      Berikut informasi masing-masing program yang lolos:
+                    </Text>
+                  )}
                 </div>
 
                 {/* List of programs if multiple */}
@@ -403,29 +403,30 @@ const PesertaDashboard = () => {
                   </div>
                 )}
 
-                {/* Upload Button */}
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <Button
-                    type="primary"
-                    icon={<SendOutlined />}
-                    style={{
-                      background: 'linear-gradient(135deg, #22c55e, #16a34a)',
-                      border: 'none',
-                      borderRadius: 8,
-                      fontWeight: 600,
-                      height: 40,
-                      boxShadow: '0 4px 12px rgba(34,197,94,0.3)',
-                    }}
-                    onClick={() => {
-                      if (!submissionUrl) {
-                        message.warning('Link pengumpulan berkas belum tersedia. Silakan hubungi admin.');
-                        return;
-                      }
-                      window.open(submissionUrl, '_blank', 'noopener,noreferrer');
-                    }}
-                  >
-                    Upload Berkas
-                  </Button>
+                {/* Upload Info */}
+                <div style={{
+                  background: '#fff',
+                  borderRadius: 12,
+                  padding: '16px 20px',
+                  border: '1px solid #bbf7d0',
+                }}>
+                  <Text style={{ fontSize: 14, color: '#1e293b', lineHeight: 1.8, display: 'block' }}>
+                    Mohon untuk segera mengumpulkan bahan presentasi berupa <strong>PPT</strong> dan <strong>Video</strong> melalui tautan berikut sebelum batas waktu yang ditentukan {' '}
+                    <a
+                      href={submissionUrl || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: '#2563eb', fontWeight: 600 }}
+                      onClick={e => {
+                        if (!submissionUrl) {
+                          e.preventDefault();
+                          message.warning('Link pengumpulan berkas belum tersedia. Silakan hubungi admin.');
+                        }
+                      }}
+                    >
+                      Klik di sini untuk mengumpulkan
+                    </a>
+                  </Text>
                 </div>
               </div>
             </div>

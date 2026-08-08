@@ -264,11 +264,15 @@ const adminService = {
 
   /**
    * GET /api/assessments/history — riwayat penilaian juri sendiri
-   * Response: { success, message, data: Assessment[] }
+   * @param {{ page?: number, limit?: number, search?: string }} params
+   * Response: { success, message, data: Assessment[], meta: { total, page, limit, totalPages } }
    */
-  getMyAssessmentHistory: async () => {
-    const { data } = await api.get('/assessments/history');
-    return Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
+  getMyAssessmentHistory: async (params = {}) => {
+    const { data } = await api.get('/assessments/history', { params });
+    return {
+      data: Array.isArray(data?.data) ? data.data : [],
+      meta: data?.meta || { total: 0, page: 1, limit: 10, totalPages: 0 },
+    };
   },
 
   /**

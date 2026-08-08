@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Card,
   Table,
@@ -9,7 +9,6 @@ import {
   Col,
   Typography,
   Modal,
-  Descriptions,
   Spin,
   message,
 } from 'antd';
@@ -52,16 +51,37 @@ const JuriPenilaianHistory = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
+  const searchTimer = useRef(null);
 
-  /** Fetch riwayat penilaian juri dari API */
-  const fetchHistory = useCallback(async () => {
+  // Debounce search input — tunggu 400ms setelah user berhenti ketik
+  useEffect(() => {
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      setDebouncedSearch(searchText);
+      setPagination((prev) => ({ ...prev, current: 1 }));
+    }, 400);
+    return () => clearTimeout(searchTimer.current);
+  }, [searchText]);
+
+  /** Fetch riwayat penilaian juri dari API (server-side) */
+  const fetchHistory = useCallback(async (page = 1, limit = 10, search = '') => {
     setLoading(true);
     try {
-      const result = await adminService.getMyAssessmentHistory();
-      const list = Array.isArray(result) ? result : [];
+      const params = { page, limit };
+      if (search) params.search = search;
+
+      const { data: list, meta } = await adminService.getMyAssessmentHistory(params);
       setData(list.map(mapFromApi));
+      setPagination((prev) => ({
+        ...prev,
+        current: meta.page || page,
+        pageSize: meta.limit || limit,
+        total: meta.total || 0,
+      }));
     } catch (error) {
       const status = error.response?.status;
       const backendMsg = error.response?.data?.message;
@@ -80,27 +100,18 @@ const JuriPenilaianHistory = () => {
     }
   }, []);
 
+  // Fetch saat page/search berubah
   useEffect(() => {
-    fetchHistory();
-  }, [fetchHistory]);
+    fetchHistory(pagination.current, pagination.pageSize, debouncedSearch);
+  }, [fetchHistory, pagination.current, pagination.pageSize, debouncedSearch]);
 
-  /** Filter data di client side */
-  const filteredData = data.filter((item) => {
-    return (
-      item.nama_desa.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.nama_kelompok.toLowerCase().includes(searchText.toLowerCase())
-    );
-  });
-
-  /** Hitung statistik */
-  const stats = {
-    total: data.length,
-    rataRata: data.length > 0
-      ? Math.round(data.reduce((sum, item) => sum + item.total, 0) / data.length)
-      : 0,
-    tertinggi: data.length > 0
-      ? Math.max(...data.map((item) => item.total))
-      : 0,
+  /** Handle table pagination change */
+  const handleTableChange = (tablePagination) => {
+    setPagination((prev) => ({
+      ...prev,
+      current: tablePagination.current,
+      pageSize: tablePagination.pageSize,
+    }));
   };
 
   const showDetail = (record) => {
@@ -192,34 +203,6 @@ const JuriPenilaianHistory = () => {
         <Text type="secondary">Daftar penilaian yang telah dilakukan</Text>
       </div>
 
-      {/* Summary Cards */}
-      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={8}>
-          <Card>
-            <div style={{ textAlign: 'center' }}>
-              <Title level={2} style={{ margin: 0, color: '#1890ff' }}>{stats.total}</Title>
-              <Text type="secondary">Total Penilaian</Text>
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card>
-            <div style={{ textAlign: 'center' }}>
-              <Title level={2} style={{ margin: 0, color: '#52c41a' }}>{stats.rataRata}</Title>
-              <Text type="secondary">Rata-rata Nilai</Text>
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card>
-            <div style={{ textAlign: 'center' }}>
-              <Title level={2} style={{ margin: 0, color: '#722ed1' }}>{stats.tertinggi}</Title>
-              <Text type="secondary">Nilai Tertinggi</Text>
-            </div>
-          </Card>
-        </Col>
-      </Row>
-
       {/* Filter */}
       <Card style={{ marginBottom: 24 }}>
         <Row gutter={[16, 16]}>
@@ -233,7 +216,7 @@ const JuriPenilaianHistory = () => {
             />
           </Col>
           <Col xs={24} sm={12}>
-            <Button icon={<FilterOutlined />} onClick={() => setSearchText('')}>
+            <Button icon={<FilterOutlined />} onClick={() => { setSearchText(''); setDebouncedSearch(''); setPagination((prev) => ({ ...prev, current: 1 })); }}>
               Reset Filter
             </Button>
           </Col>
@@ -245,9 +228,16 @@ const JuriPenilaianHistory = () => {
         <Spin spinning={loading}>
           <Table
             columns={columns}
-            dataSource={filteredData}
+            dataSource={data}
             rowKey="id"
-            pagination={{ pageSize: 10 }}
+            pagination={{
+              current: pagination.current,
+              pageSize: pagination.pageSize,
+              total: pagination.total,
+              showSizeChanger: true,
+              showTotal: (total) => `Total ${total} penilaian`,
+            }}
+            onChange={handleTableChange}
             size="middle"
             scroll={{ x: 1000 }}
           />

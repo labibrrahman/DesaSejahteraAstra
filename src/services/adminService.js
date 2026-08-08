@@ -251,13 +251,15 @@ const adminService = {
 
   /**
    * GET /api/assessments/tasks — daftar peserta yang siap dinilai juri
-   * Response: { success, message, data: Registration[] }
+   * @param {{ page?: number, limit?: number, search?: string }} params
+   * Response: { success, message, data: Registration[], meta: { total, page, limit, totalPages } }
    */
-  getAssessmentTasks: async () => {
-    const { data } = await api.get('/assessments/tasks');
-    // Backend wraps: { success, message, data: [...] }
-    // data.data = array of registrations
-    return Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
+  getAssessmentTasks: async (params = {}) => {
+    const { data } = await api.get('/assessments/tasks', { params });
+    return {
+      data: Array.isArray(data?.data) ? data.data : [],
+      meta: data?.meta || { total: 0, page: 1, limit: 10, totalPages: 0 },
+    };
   },
 
   /**

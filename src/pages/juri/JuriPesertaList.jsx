@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Card,
   Table,
@@ -7,7 +7,6 @@ import {
   Select,
   Typography,
   Space,
-  Spin,
   message,
 } from 'antd';
 import {
@@ -35,8 +34,6 @@ const STATUS_MAP = {
 
 /**
  * Mapping data task dari API ke format UI.
- * Backend findTasks hanya load: pillar, category, user, astraGroup.
- * Relasi province/city/district TIDAK di-load, jadi gunakan ID atau '-'
  */
 const mapFromApi = (item) => ({
   id: item.id,
@@ -73,20 +70,41 @@ const JuriPesertaList = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [pilarFilter, setPilarFilter] = useState(null);
   const [durasiFilter, setDurasiFilter] = useState(null);
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 10, total: 0 });
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [selectedPeserta, setSelectedPeserta] = useState(null);
   const [selectedPesertaRaw, setSelectedPesertaRaw] = useState(null);
   const navigate = useNavigate();
+  const searchTimer = useRef(null);
 
-  /** Fetch assessment tasks dari API */
-  const fetchTasks = useCallback(async () => {
+  // Debounce search input — tunggu 400ms setelah user berhenti ketik
+  useEffect(() => {
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    searchTimer.current = setTimeout(() => {
+      setDebouncedSearch(searchText);
+      setPagination((prev) => ({ ...prev, current: 1 })); // reset ke page 1 saat search berubah
+    }, 400);
+    return () => clearTimeout(searchTimer.current);
+  }, [searchText]);
+
+  /** Fetch assessment tasks dari API (server-side pagination + search) */
+  const fetchTasks = useCallback(async (page = 1, limit = 10, search = '') => {
     setLoading(true);
     try {
-      const result = await adminService.getAssessmentTasks();
-      const list = Array.isArray(result) ? result : [];
+      const params = { page, limit };
+      if (search) params.search = search;
+
+      const { data: list, meta } = await adminService.getAssessmentTasks(params);
       setData(list.map(mapFromApi));
+      setPagination((prev) => ({
+        ...prev,
+        current: meta.page || page,
+        pageSize: meta.limit || limit,
+        total: meta.total || 0,
+      }));
     } catch (error) {
       const status = error.response?.status;
       const backendMsg = error.response?.data?.message;
@@ -107,22 +125,29 @@ const JuriPesertaList = () => {
     }
   }, []);
 
+  // Fetch saat page/search berubah
   useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
+    fetchTasks(pagination.current, pagination.pageSize, debouncedSearch);
+  }, [fetchTasks, pagination.current, pagination.pageSize, debouncedSearch]);
 
-  /** Filter data di client side */
+  /** Client-side filter untuk pilar & durasi (BE belum support) */
   const filteredData = data.filter((item) => {
-    const matchSearch =
-      item.nama_desa.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.nama_kelompok.toLowerCase().includes(searchText.toLowerCase());
     const matchPilar = !pilarFilter || item.pilar === pilarFilter;
     const matchDurasi = !durasiFilter || item.durasi_program === durasiFilter;
-    return matchSearch && matchPilar && matchDurasi;
+    return matchPilar && matchDurasi;
   });
 
-  /** Ambil daftar pilar unik dari data */
+  /** Ambil daftar pilar unik dari data halaman saat ini */
   const pilarOptions = [...new Set(data.map((item) => item.pilar))].filter(Boolean);
+
+  /** Handle table pagination change */
+  const handleTableChange = (tablePagination) => {
+    setPagination((prev) => ({
+      ...prev,
+      current: tablePagination.current,
+      pageSize: tablePagination.pageSize,
+    }));
+  };
 
   const showDetail = async (record) => {
     setSelectedPeserta(record);
@@ -223,7 +248,7 @@ const JuriPesertaList = () => {
             <Option value="3-5 Tahun">3-5 Tahun</Option>
             <Option value=">5 Tahun">&gt;5 Tahun</Option>
           </Select>
-          <Button icon={<FilterOutlined />} onClick={() => { setSearchText(''); setPilarFilter(null); setDurasiFilter(null); }} style={{ flexShrink: 0 }}>
+          <Button icon={<FilterOutlined />} onClick={() => { setSearchText(''); setDebouncedSearch(''); setPilarFilter(null); setDurasiFilter(null); setPagination((prev) => ({ ...prev, current: 1 })); }} style={{ flexShrink: 0 }}>
             Reset
           </Button>
         </div>
@@ -236,7 +261,14 @@ const JuriPesertaList = () => {
             columns={columns}
             dataSource={filteredData}
             rowKey="id"
-            pagination={{ pageSize: 10 }}
+            pagination={{
+              current: pagination.current,
+              pageSize: pagination.pageSize,
+              total: pagination.total,
+              showSizeChanger: true,
+              showTotal: (total) => `Total ${total} peserta`,
+            }}
+            onChange={handleTableChange}
             size="middle"
             scroll={{ x: 900 }}
           />
